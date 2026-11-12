@@ -694,6 +694,28 @@ function initCinematicScroll() {
 // 7. INITIALIZE ALL EVENT LISTENERS ON DOM READY
 // =========================================================================
 document.addEventListener("DOMContentLoaded", () => {
+  // Partner Referral Code Detection & Persistence (?ref=CODE or ?code=CODE)
+  try {
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = (urlParams.get("ref") || urlParams.get("code") || urlParams.get("partner") || "").toUpperCase().trim();
+    if (refCode) {
+      localStorage.setItem("speakly_referral_code", refCode);
+      const banner = document.createElement("div");
+      banner.id = "partner-welcome-banner";
+      banner.style.cssText = "background: linear-gradient(90deg, rgba(255,208,0,0.18), rgba(56,189,248,0.18)); border-bottom: 1px solid rgba(255,208,0,0.3); color: #ffd000; text-align: center; padding: 10px 16px; font-size: 13.5px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px;";
+      banner.innerHTML = `<span>🐥 You were invited by partner <strong>${refCode}</strong>! Your early access trial is active.</span>`;
+      document.body.prepend(banner);
+    }
+
+    const activeRef = refCode || localStorage.getItem("speakly_referral_code");
+    if (activeRef) {
+      const modalKicker = document.querySelector(".section-kicker");
+      if (modalKicker) {
+        modalKicker.innerHTML = `PARTNER INVITE: <span style="color:#ffd000;">${activeRef}</span> · DIRECT DOWNLOAD`;
+      }
+    }
+  } catch (_) {}
+
   mountAllDuckIcons();
   renderStudioMode("smart_polish", false);
   renderTargetWindow("cursor");

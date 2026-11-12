@@ -891,6 +891,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const modal = document.getElementById("download-modal");
   const closeModalBtn = document.getElementById("close-modal-btn");
 
+  // Dynamic Release CDN Resolution (Localhost uses local files; production uses GitHub Releases CDN)
+  const isLocalHost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+  const macDownloadLink = document.getElementById("dl-mac-btn");
+  const winDownloadLink = document.getElementById("dl-win-btn");
+  const githubRepo = window.SPEAKLY_GITHUB_REPO || "https://github.com/speakly-ai/speakly";
+  const releaseTag = "v1.0.0";
+
+  if (!isLocalHost && macDownloadLink && winDownloadLink) {
+    macDownloadLink.href = `${githubRepo}/releases/download/${releaseTag}/Speakly-1.0.0-mac-arm64.dmg`;
+    winDownloadLink.href = `${githubRepo}/releases/download/${releaseTag}/Speakly-Setup-1.0.0-win.exe`;
+  }
+
   document.querySelectorAll("[data-open-modal='download']").forEach((btn) => {
     btn.addEventListener("click", () => {
       if (modal) modal.hidden = false;

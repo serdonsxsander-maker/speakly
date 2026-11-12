@@ -1,37 +1,53 @@
 /**
  * Speakly Cloud AI Backend Proxy Server
  * 
- * SECURITY & PRIVACY DOCTRINE:
- * 1. Zero-Retention Audio: Voice audio is held ephemerally in RAM only during transcription.
+ * PRODUCTION & SECURITY DOCTRINE:
+ * 1. Authenticated Users Only: All speech transcription calls require a valid Supabase JWT.
+ *    Public guests and unauthenticated clients are denied (protects Groq/OpenAI LPU tokens).
+ * 2. Zero-Retention Audio: Voice audio is held ephemerally in RAM only during transcription.
  *    No audio bytes or transcript text are ever written to server disk or database.
- * 2. Strict Authentication: Endpoints require either a valid Supabase JWT Bearer token
- *    or a verified Speakly client integrity handshake.
- * 3. OOM / DoS Defense: Strict 25MB payload ceiling prevents memory exhaustion.
- * 4. Rate Limiting: Sliding-window rate limiter prevents API drain and abuse.
- * 5. Data Minimization: Server logs never output user audio, transcripts, or personal credentials.
+ * 3. Rate Limiting Active: Sliding-window rate limiting per authenticated user (45 req/min)
+ *    and per IP on auth endpoints (15 req/min).
+ * 4. OOM / DoS Defense: Strict 25MB payload ceiling prevents memory exhaustion.
+ * 5. Free-Tier Keep-Alive Ready: Lightweight /health and / endpoints return instant 200 OK.
  */
 
 const http = require('http');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+
+// Load environment variables from parent and local .env files if present (for local development)
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 const { createClient } = require('@supabase/supabase-js');
 
-const PORT = process.env.PORT || 8787;
+const PORT = parseInt(process.env.PORT || '8787', 10);
+const NODE_ENV = process.env.NODE_ENV || 'development';
 const GROQ_API_KEY = (process.env.GROQ_API_KEY || '').trim();
 const OPENAI_API_KEY = (process.env.OPENAI_API_KEY || '').trim();
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://lwiznvgeemrkrildyyvw.supabase.co';
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
+const SUPABASE_URL = (process.env.SUPABASE_URL || 'https://lwiznvgeemrkrildyyvw.supabase.co').trim();
+const SUPABASE_ANON_KEY = (process.env.SUPABASE_ANON_KEY || '').trim();
 const SUPABASE_SERVICE_ROLE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
-const SPEAKLY_CLIENT_SECRET = (process.env.SPEAKLY_CLIENT_SECRET || 'speakly_client_beta_v1_secure_handshake').trim();
-const BILLING_WEBHOOK_SECRET = (process.env.BILLING_WEBHOOK_SECRET || '').trim();
+const BILLING_WEBHOOK_SECRET = (process.env.BILLING_WEBHOOK_SECRET || process.env.LEMONSQUEEZY_WEBHOOK_SECRET || '').trim();
+const LEMONSQUEEZY_API_KEY = (process.env.LEMONSQUEEZY_API_KEY || '').trim();
+const LEMONSQUEEZY_STORE_ID = (process.env.LEMONSQUEEZY_STORE_ID || '').trim();
+const LEMONSQUEEZY_VARIANT_ID = (process.env.LEMONSQUEEZY_VARIANT_ID || '').trim();
+const LEMONSQUEEZY_CHECKOUT_URL = (process.env.LEMONSQUEEZY_CHECKOUT_URL || 'https://speakly.lemonsqueezy.com/buy/speakly-pro').trim();
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Initialize Supabase Client
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false
+  }
+});
+
 const supabaseAdmin = SUPABASE_SERVICE_ROLE_KEY
-  ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { autoRefreshToken: false, persistSession: false } })
+  ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { autoRefreshToken: false, persistSession: false }
+    })
   : null;
 
 const GRAMMAR_CLEANUP_PROMPT = `
@@ -56,40 +72,87 @@ const HALLUCINATION_PHRASES = new Set([
   '...'
 ]);
 
-// In-Memory Sliding-Window Rate Limiting (Prevents API abuse & wallet drain)
-const rateLimitMap = new Map();
-const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
-const MAX_REQUESTS_AUTH_USER = 45;       // 45 dictations / min for signed-in users
-const MAX_REQUESTS_GUEST = 15;           // 15 dictations / min for guest handshake
+// ============================================================================
+// Sliding-Window Rate Limiters (Prevents API abuse & token exhaustion)
+// ============================================================================
 
-// Clean up stale rate-limit buckets every 5 minutes
+// Transcribe: Per authenticated user (45 dictations / min)
+const userRateLimitMap = new Map();
+const USER_RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const MAX_REQUESTS_PER_USER = 45;
+
+// Auth endpoints: Per IP (15 attempts / min) to prevent credential stuffing
+const authRateLimitMap = new Map();
+const AUTH_RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const MAX_AUTH_ATTEMPTS_PER_IP = 15;
+
+// Periodically clean up stale buckets every 5 minutes
 setInterval(() => {
   const now = Date.now();
-  for (const [key, record] of rateLimitMap.entries()) {
-    if (now - record.windowStart > RATE_LIMIT_WINDOW_MS) {
-      rateLimitMap.delete(key);
+  for (const [key, record] of userRateLimitMap.entries()) {
+    if (now - record.windowStart > USER_RATE_LIMIT_WINDOW_MS) {
+      userRateLimitMap.delete(key);
     }
   }
-}, 5 * 60 * 1000);
+  for (const [key, record] of authRateLimitMap.entries()) {
+    if (now - record.windowStart > AUTH_RATE_LIMIT_WINDOW_MS) {
+      authRateLimitMap.delete(key);
+    }
+  }
+}, 5 * 60 * 1000).unref();
 
-function checkRateLimit(key, isGuest = false) {
+function checkUserRateLimit(userId) {
+  const key = `user:${userId}`;
   const now = Date.now();
-  const limit = isGuest ? MAX_REQUESTS_GUEST : MAX_REQUESTS_AUTH_USER;
-  let record = rateLimitMap.get(key);
+  let record = userRateLimitMap.get(key);
 
-  if (!record || (now - record.windowStart) > RATE_LIMIT_WINDOW_MS) {
+  if (!record || (now - record.windowStart) > USER_RATE_LIMIT_WINDOW_MS) {
     record = { windowStart: now, count: 1 };
-    rateLimitMap.set(key, record);
-    return { allowed: true, remaining: limit - 1, resetMs: RATE_LIMIT_WINDOW_MS };
+    userRateLimitMap.set(key, record);
+    return {
+      allowed: true,
+      remaining: MAX_REQUESTS_PER_USER - 1,
+      resetMs: USER_RATE_LIMIT_WINDOW_MS
+    };
   }
 
   record.count += 1;
-  if (record.count > limit) {
-    const resetMs = RATE_LIMIT_WINDOW_MS - (now - record.windowStart);
+  const resetMs = Math.max(0, USER_RATE_LIMIT_WINDOW_MS - (now - record.windowStart));
+
+  if (record.count > MAX_REQUESTS_PER_USER) {
     return { allowed: false, remaining: 0, resetMs };
   }
 
-  return { allowed: true, remaining: limit - record.count, resetMs: RATE_LIMIT_WINDOW_MS - (now - record.windowStart) };
+  return {
+    allowed: true,
+    remaining: MAX_REQUESTS_PER_USER - record.count,
+    resetMs
+  };
+}
+
+function checkAuthIpRateLimit(ip) {
+  const key = `ip:${ip}`;
+  const now = Date.now();
+  let record = authRateLimitMap.get(key);
+
+  if (!record || (now - record.windowStart) > AUTH_RATE_LIMIT_WINDOW_MS) {
+    record = { windowStart: now, count: 1 };
+    authRateLimitMap.set(key, record);
+    return { allowed: true, remaining: MAX_AUTH_ATTEMPTS_PER_IP - 1, resetMs: AUTH_RATE_LIMIT_WINDOW_MS };
+  }
+
+  record.count += 1;
+  const resetMs = Math.max(0, AUTH_RATE_LIMIT_WINDOW_MS - (now - record.windowStart));
+
+  if (record.count > MAX_AUTH_ATTEMPTS_PER_IP) {
+    return { allowed: false, remaining: 0, resetMs };
+  }
+
+  return {
+    allowed: true,
+    remaining: MAX_AUTH_ATTEMPTS_PER_IP - record.count,
+    resetMs
+  };
 }
 
 function getClientIp(req) {
@@ -101,67 +164,53 @@ function getClientIp(req) {
 }
 
 /**
- * Authenticates request via either:
- * 1. Supabase Bearer JWT (Signed-in user)
- * 2. Speakly Client Handshake Secret (Desktop app guest mode)
+ * Strictly authenticates request via Supabase Bearer JWT.
+ * Speech transcription and personal data access require an authenticated Supabase user.
+ * Public guests or unauthenticated clients are denied to protect Groq/OpenAI resources.
  */
-async function authenticateRequest(req) {
+async function authenticateUser(req) {
   const authHeader = req.headers['authorization'] || '';
-  const clientAuth = req.headers['x-speakly-client-auth'] || '';
-  const clientApp = req.headers['x-speakly-client'] || '';
 
-  // 1. Check for Supabase JWT
-  if (authHeader.startsWith('Bearer ')) {
-    const token = authHeader.slice(7).trim();
-    if (token) {
-      try {
-        const { data: { user }, error } = await supabase.auth.getUser(token);
-        if (!error && user && user.id) {
-          return {
-            ok: true,
-            authType: 'user',
-            userId: user.id,
-            email: user.email,
-            rateLimitKey: `user:${user.id}`
-          };
-        }
-      } catch (err) {
-        // Fall through to client handshake check
-      }
-    }
-  }
-
-  // 2. Check for Genuine Speakly Client Handshake
-  if (clientAuth) {
-    const clientAuthStr = String(clientAuth).trim();
-    const isSecretMatch = crypto.timingSafeEqual(
-      Buffer.from(clientAuthStr.padEnd(64, ' ')),
-      Buffer.from(SPEAKLY_CLIENT_SECRET.padEnd(64, ' '))
-    );
-
-    if (isSecretMatch) {
-      const ip = getClientIp(req);
-      return {
-        ok: true,
-        authType: 'guest_handshake',
-        userId: `guest_${ip}`,
-        rateLimitKey: `guest:${ip}`
-      };
-    }
-  }
-
-  // 3. Fallback for Localhost Testing
-  const ip = getClientIp(req);
-  if (clientApp === 'desktop-v1' && (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1')) {
+  if (!authHeader.startsWith('Bearer ')) {
     return {
-      ok: true,
-      authType: 'localhost_dev',
-      userId: `local_${ip}`,
-      rateLimitKey: `local:${ip}`
+      ok: false,
+      statusCode: 401,
+      error: 'Authentication required. Please sign in to your Speakly account to transcribe speech.'
     };
   }
 
-  return { ok: false, error: 'Unauthorized: Missing or invalid authentication token.' };
+  const token = authHeader.slice(7).trim();
+  if (!token) {
+    return {
+      ok: false,
+      statusCode: 401,
+      error: 'Invalid authentication token: Bearer token is empty.'
+    };
+  }
+
+  try {
+    const { data: { user }, error } = await supabase.auth.getUser(token);
+    if (error || !user || !user.id) {
+      return {
+        ok: false,
+        statusCode: 401,
+        error: error?.message || 'Invalid or expired authentication session. Please sign in again.'
+      };
+    }
+
+    return {
+      ok: true,
+      user,
+      userId: user.id,
+      email: user.email
+    };
+  } catch (err) {
+    return {
+      ok: false,
+      statusCode: 401,
+      error: 'Authentication failed: ' + (err.message || 'Unable to verify session with Supabase.')
+    };
+  }
 }
 
 /**
@@ -202,6 +251,11 @@ function fallbackCleanup(text) {
   return out;
 }
 
+/**
+ * Speech Transcription & Polish Engine
+ * Uses Groq LPU (whisper-large-v3-turbo + llama-3.3-70b-versatile) as primary for ~0.3s latency,
+ * with automatic fallback to OpenAI if configured.
+ */
 async function transcribeAndPolish({
   audioBuffer,
   mimeType = 'audio/wav',
@@ -211,68 +265,135 @@ async function transcribeAndPolish({
   modePrompt = ''
 }) {
   const hasGroq = Boolean(GROQ_API_KEY);
-  const baseUrl = hasGroq ? 'https://api.groq.com/openai/v1' : 'https://api.openai.com/v1';
-  const apiKey = hasGroq ? GROQ_API_KEY : OPENAI_API_KEY;
-  const sttModel = hasGroq ? 'whisper-large-v3-turbo' : 'whisper-1';
-  const llmModels = hasGroq
-    ? ['qwen/qwen3.8-27b', 'openai/gpt-oss-120b', 'openai/gpt-oss-20b']
-    : ['gpt-4o-mini', 'gpt-4o'];
+  const hasOpenAI = Boolean(OPENAI_API_KEY);
 
-  const form = new FormData();
+  if (!hasGroq && !hasOpenAI) {
+    throw new Error('AI transcription service not configured on server (missing GROQ_API_KEY and OPENAI_API_KEY).');
+  }
+
+  // 1. Transcription (STT) via Groq or OpenAI
+  let rawText = '';
+  let activeEngine = hasGroq ? 'groq-lpu' : 'openai';
+
   const ext = mimeType.includes('webm') ? 'webm' : 'wav';
   const blob = new Blob([audioBuffer], { type: mimeType });
-  form.append('file', blob, `recording.${ext}`);
-  form.append('model', sttModel);
-  form.append('response_format', 'json');
 
-  if (language && language.trim()) form.append('language', language.trim());
-  if (dictionary && dictionary.length > 0) {
-    form.append('prompt', `Vocabulary: ${dictionary.slice(0, 50).join(', ')}.`);
-  }
-
-  const sttRes = await fetch(`${baseUrl}/audio/transcriptions`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey}` },
-    body: form
-  });
-
-  if (!sttRes.ok) {
-    let errText = `HTTP ${sttRes.status}`;
+  // Attempt Groq STT first
+  if (hasGroq) {
     try {
-      const errJson = await sttRes.json();
-      errText = errJson?.error?.message || errText;
-    } catch {}
-    throw new Error(`Speech transcription failed: ${errText}`);
+      const form = new FormData();
+      form.append('file', blob, `recording.${ext}`);
+      form.append('model', 'whisper-large-v3-turbo');
+      form.append('response_format', 'json');
+      if (language && language.trim()) form.append('language', language.trim());
+      if (dictionary && dictionary.length > 0) {
+        form.append('prompt', `Vocabulary: ${dictionary.slice(0, 50).join(', ')}.`);
+      }
+
+      const groqRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${GROQ_API_KEY}` },
+        body: form
+      });
+
+      if (groqRes.ok) {
+        const data = await groqRes.json();
+        rawText = String(data?.text || '').trim();
+        activeEngine = 'groq-lpu';
+      } else {
+        const errText = await groqRes.text().catch(() => '');
+        console.warn(`Groq STT failed (HTTP ${groqRes.status}): ${errText}`);
+      }
+    } catch (groqErr) {
+      console.warn('Groq STT network error:', groqErr.message);
+    }
   }
 
-  const sttData = await sttRes.json();
-  const rawText = String(sttData?.text || '').trim();
+  // Fallback to OpenAI STT if Groq failed or not configured
+  if (!rawText && hasOpenAI) {
+    try {
+      const form = new FormData();
+      form.append('file', blob, `recording.${ext}`);
+      form.append('model', 'whisper-1');
+      form.append('response_format', 'json');
+      if (language && language.trim()) form.append('language', language.trim());
+      if (dictionary && dictionary.length > 0) {
+        form.append('prompt', `Vocabulary: ${dictionary.slice(0, 50).join(', ')}.`);
+      }
 
-  if (!rawText || HALLUCINATION_PHRASES.has(rawText.toLowerCase())) {
-    return { rawText: '', finalText: '', engine: hasGroq ? 'groq-lpu' : 'openai' };
+      const openaiRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${OPENAI_API_KEY}` },
+        body: form
+      });
+
+      if (openaiRes.ok) {
+        const data = await openaiRes.json();
+        rawText = String(data?.text || '').trim();
+        activeEngine = 'openai-whisper';
+      } else {
+        const errText = await openaiRes.text().catch(() => '');
+        console.warn(`OpenAI STT failed (HTTP ${openaiRes.status}): ${errText}`);
+      }
+    } catch (openaiErr) {
+      console.warn('OpenAI STT network error:', openaiErr.message);
+    }
   }
 
+  if (!rawText) {
+    // If text is genuinely empty or hallucinated
+    return { rawText: '', finalText: '', engine: activeEngine };
+  }
+
+  if (HALLUCINATION_PHRASES.has(rawText.toLowerCase())) {
+    return { rawText: '', finalText: '', engine: activeEngine };
+  }
+
+  // If raw mode requested, skip LLM cleanup
   if (modeId === 'raw') {
     return {
       rawText,
       finalText: fallbackCleanup(rawText),
-      engine: hasGroq ? 'groq-lpu' : 'openai'
+      engine: activeEngine
     };
   }
 
+  // 2. Grammar & Polish via LLM
   const activeSystemPrompt = (modePrompt && modePrompt.trim()) ? modePrompt.trim() : GRAMMAR_CLEANUP_PROMPT;
   const vocabHint = dictionary.length > 0 ? `\nEnsure terms are spelled accurately: ${dictionary.join(', ')}.` : '';
 
-  for (const model of llmModels) {
+  // Candidate LLM models: Groq Llama 3.3 70B & 3.1 8B, or OpenAI GPT-4o-mini
+  const llmCandidates = [];
+  if (hasGroq) {
+    llmCandidates.push({
+      baseUrl: 'https://api.groq.com/openai/v1',
+      apiKey: GROQ_API_KEY,
+      model: 'llama-3.3-70b-versatile'
+    });
+    llmCandidates.push({
+      baseUrl: 'https://api.groq.com/openai/v1',
+      apiKey: GROQ_API_KEY,
+      model: 'llama-3.1-8b-instant'
+    });
+  }
+  if (hasOpenAI) {
+    llmCandidates.push({
+      baseUrl: 'https://api.openai.com/v1',
+      apiKey: OPENAI_API_KEY,
+      model: 'gpt-4o-mini'
+    });
+  }
+
+  for (const candidate of llmCandidates) {
     try {
-      const llmRes = await fetch(`${baseUrl}/chat/completions`, {
+      const llmRes = await fetch(`${candidate.baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${apiKey}`,
+          Authorization: `Bearer ${candidate.apiKey}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          model,
+          model: candidate.model,
           temperature: 0.1,
           max_tokens: 1500,
           messages: [
@@ -290,23 +411,30 @@ async function transcribeAndPolish({
           return {
             rawText,
             finalText: polished,
-            engine: hasGroq ? 'groq-lpu' : 'openai'
+            engine: `${activeEngine}+${candidate.model}`
           };
         }
       }
     } catch (err) {
-      console.warn(`LLM model ${model} fallback:`, err.message);
+      console.warn(`LLM model ${candidate.model} failed, trying next:`, err.message);
     }
   }
 
+  // Graceful fallback to raw text cleanup if LLM polish times out or fails
   return {
     rawText,
     finalText: fallbackCleanup(rawText),
-    engine: hasGroq ? 'groq-lpu' : 'openai'
+    engine: activeEngine
   };
 }
 
+// ============================================================================
+// HTTP Server Router & Middleware
+// ============================================================================
+
 const server = http.createServer(async (req, res) => {
+  const ip = getClientIp(req);
+
   // Security & Hardening Headers
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
@@ -321,23 +449,55 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  const url = new URL(req.url, `http://${req.headers.host}`);
+  let url;
+  try {
+    url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  } catch {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ success: false, error: 'Malformed URL' }));
+    return;
+  }
 
-  // Sanitized Health check (No internal URLs or secrets leaked)
+  // --------------------------------------------------------------------------
+  // Health Check & Render Keep-Alive Ping Endpoints (/ and /health)
+  // Publicly accessible for 5-minute health check pings so Render doesn't sleep
+  // --------------------------------------------------------------------------
   if (url.pathname === '/health' || url.pathname === '/') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({
       status: 'healthy',
-      service: 'Speakly Cloud Speech Engine',
-      engineReady: Boolean(GROQ_API_KEY || OPENAI_API_KEY),
-      privacyModel: 'Zero-Retention In-Memory Ephemeral Audio',
-      version: '1.0.0'
+      service: 'speakly-backend',
+      version: '1.0.0',
+      uptimeSeconds: Math.floor(process.uptime()),
+      timestamp: new Date().toISOString(),
+      engines: {
+        groqLpu: Boolean(GROQ_API_KEY),
+        openaiFallback: Boolean(OPENAI_API_KEY)
+      },
+      supabaseConnected: Boolean(SUPABASE_URL && SUPABASE_ANON_KEY),
+      security: {
+        authRequired: true,
+        authProvider: 'Supabase JWT Bearer',
+        guestAccess: false,
+        userRateLimitPerMinute: MAX_REQUESTS_PER_USER
+      },
+      privacyModel: 'Zero-Retention Ephemeral RAM Processing'
     }));
     return;
   }
 
+  // --------------------------------------------------------------------------
   // Supabase Auth: Sign Up
+  // Protected with IP rate limiting
+  // --------------------------------------------------------------------------
   if (url.pathname === '/api/v1/auth/signup' && req.method === 'POST') {
+    const ipCheck = checkAuthIpRateLimit(ip);
+    if (!ipCheck.allowed) {
+      res.writeHead(429, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: 'Too many signup attempts. Please try again later.' }));
+      return;
+    }
+
     try {
       const bodyBuffer = await readBodyWithLimit(req, 1024 * 1024); // 1MB limit
       const { email, password, preferences } = JSON.parse(bodyBuffer.toString('utf8'));
@@ -362,8 +522,18 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // --------------------------------------------------------------------------
   // Supabase Auth: Sign In
+  // Protected with IP rate limiting
+  // --------------------------------------------------------------------------
   if (url.pathname === '/api/v1/auth/signin' && req.method === 'POST') {
+    const ipCheck = checkAuthIpRateLimit(ip);
+    if (!ipCheck.allowed) {
+      res.writeHead(429, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: 'Too many signin attempts. Please try again in a few minutes.' }));
+      return;
+    }
+
     try {
       const bodyBuffer = await readBodyWithLimit(req, 1024 * 1024);
       const { email, password } = JSON.parse(bodyBuffer.toString('utf8'));
@@ -384,7 +554,10 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // --------------------------------------------------------------------------
   // Supabase User Preferences Sync (Save & Load per User)
+  // Requires valid user access token
+  // --------------------------------------------------------------------------
   if (url.pathname === '/api/v1/user/preferences' && req.method === 'POST') {
     try {
       const bodyBuffer = await readBodyWithLimit(req, 1024 * 1024);
@@ -412,7 +585,9 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // --------------------------------------------------------------------------
   // Billing & Subscription Webhook (Lemon Squeezy / Polar / Stripe)
+  // --------------------------------------------------------------------------
   if (url.pathname === '/api/v1/billing/webhook' && req.method === 'POST') {
     try {
       const rawBody = await readBodyWithLimit(req, 1024 * 1024); // 1MB limit
@@ -484,24 +659,35 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
-  // Audio Transcribe & Grammar Polish (Hardened with Auth, Rate-Limiter & Memory Guard)
+  // --------------------------------------------------------------------------
+  // Audio Transcribe & Grammar Polish
+  // STRICT REQUIREMENT: Authenticated Supabase User ONLY.
+  // Guests cannot consume server Groq/OpenAI tokens.
+  // --------------------------------------------------------------------------
   if (url.pathname === '/api/v1/transcribe' && req.method === 'POST') {
-    // 1. Authenticate request
-    const authResult = await authenticateRequest(req);
+    // 1. Authenticate user via Supabase Bearer JWT
+    const authResult = await authenticateUser(req);
     if (!authResult.ok) {
-      res.writeHead(401, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: authResult.error }));
+      res.writeHead(authResult.statusCode || 401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: false,
+        error: authResult.error
+      }));
       return;
     }
 
-    // 2. Check Sliding-Window Rate Limit
-    const rateCheck = checkRateLimit(authResult.rateLimitKey, authResult.authType === 'guest_handshake');
+    // 2. Enforce Sliding-Window Rate Limiting per Supabase User (45 dictations / min)
+    const rateCheck = checkUserRateLimit(authResult.userId);
+    res.setHeader('X-RateLimit-Limit', String(MAX_REQUESTS_PER_USER));
     res.setHeader('X-RateLimit-Remaining', String(rateCheck.remaining));
+    res.setHeader('X-RateLimit-Reset', String(Math.ceil(rateCheck.resetMs / 1000)));
+
     if (!rateCheck.allowed) {
       res.setHeader('Retry-After', String(Math.ceil(rateCheck.resetMs / 1000)));
       res.writeHead(429, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({
-        error: 'Rate limit exceeded. Please wait a moment before dictating again.',
+        success: false,
+        error: `Rate limit exceeded (maximum ${MAX_REQUESTS_PER_USER} dictations per minute). Please wait a moment before dictating again.`,
         retryAfterSeconds: Math.ceil(rateCheck.resetMs / 1000)
       }));
       return;
@@ -535,7 +721,7 @@ const server = http.createServer(async (req, res) => {
 
       if (!audioBuffer || audioBuffer.length < 100) {
         res.writeHead(400, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: 'No audio data provided' }));
+        res.end(JSON.stringify({ success: false, error: 'No audio data provided' }));
         return;
       }
 
@@ -555,19 +741,37 @@ const server = http.createServer(async (req, res) => {
       const status = err.statusCode || 500;
       if (!res.headersSent) {
         res.writeHead(status, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ error: err.message || 'Processing failed' }));
+        res.end(JSON.stringify({ success: false, error: err.message || 'Processing failed' }));
       }
     }
     return;
   }
 
   res.writeHead(404, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({ error: 'Endpoint not found' }));
+  res.end(JSON.stringify({ success: false, error: 'Endpoint not found' }));
 });
 
 server.listen(PORT, () => {
-  console.log(`\n🔒 Speakly Secure Backend running on port ${PORT}`);
-  console.log(`   Security:  Supabase JWT & Client Handshake Enforced ✓`);
-  console.log(`   Defense:   Sliding-Window Rate Limiting & 25MB Body Cap Active ✓`);
-  console.log(`   Privacy:   Zero-Retention Ephemeral RAM Processing Guaranteed ✓\n`);
+  console.log(`\n🔒 Speakly Cloud AI Backend running on port ${PORT}`);
+  console.log(`   Environment:   ${NODE_ENV}`);
+  console.log(`   Auth Policy:   STRICT - Supabase Authenticated Users Only (No Guest AI Access)`);
+  console.log(`   Rate Limiter:  Active (${MAX_REQUESTS_PER_USER} req/min per user)`);
+  console.log(`   Engines:       Groq LPU: ${GROQ_API_KEY ? 'Ready ✓' : 'Disabled'} | OpenAI: ${OPENAI_API_KEY ? 'Ready ✓' : 'Disabled'}`);
+  console.log(`   Health Ping:   Ready on / and /health for Render 5-min keep-alive\n`);
 });
+
+// Graceful shutdown handling for Render deployments & container restarts
+function handleShutdown(signal) {
+  console.log(`Received ${signal}, closing HTTP server gracefully...`);
+  server.close(() => {
+    console.log('HTTP server closed.');
+    process.exit(0);
+  });
+  setTimeout(() => {
+    console.error('Forced shutdown due to timeout');
+    process.exit(1);
+  }, 5000).unref();
+}
+
+process.on('SIGTERM', () => handleShutdown('SIGTERM'));
+process.on('SIGINT', () => handleShutdown('SIGINT'));

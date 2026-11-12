@@ -3,18 +3,20 @@ services:
     name: speakly-backend
     env: node
     plan: free
+    region: frankfurt
+    rootDir: backend
     buildCommand: npm install
     startCommand: node server.js
+    healthCheckPath: /health
+    autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
       - key: SUPABASE_URL
-        sync: false
+        value: https://lwiznvgeemrkrildyyvw.supabase.co
       - key: SUPABASE_ANON_KEY
         sync: false
       - key: GROQ_API_KEY
         sync: false
       - key: OPENAI_API_KEY
         sync: false
-      - key: SPEAKLY_CLIENT_SECRET
-        generateValue: true

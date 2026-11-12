@@ -1,0 +1,247 @@
+:root {
+  color-scheme: dark;
+  --bg-pill: rgba(22, 24, 30, 0.94);
+  --border-pill: rgba(255, 208, 0, 0.35);
+  --text-main: #FFFFFF;
+  --text-muted: #94A3B8;
+  --yellow-main: #FFD000;
+  --yellow-glow: rgba(255, 208, 0, 0.4);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+  user-select: none;
+}
+
+.hud-stage {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Compact Floating Mascot Capsule */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 16px 0 8px;
+  gap: 12px;
+  border-radius: 999px;
+  background: var(--bg-pill);
+  border: 1.5px solid var(--border-pill);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5), 0 0 18px var(--yellow-glow);
+  backdrop-filter: blur(20px);
+  transition: all 220ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Default idle state is completely hidden so there is never an idle bar on the desktop */
+.pill.state-idle {
+  display: none;
+}
+
+.pill.state-recording {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  border-color: #FFD000;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.6), 0 0 25px rgba(255, 208, 0, 0.55);
+}
+
+.pill.state-processing {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  border-color: #38BDF8;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.6), 0 0 25px rgba(56, 189, 248, 0.4);
+}
+
+.pill.state-toast {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  border-color: #34D399;
+  box-shadow: 0 14px 35px rgba(0, 0, 0, 0.6), 0 0 25px rgba(52, 211, 153, 0.45);
+}
+
+/* Mascot SVG Styling & Animations */
+.mascot-wrapper {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.duck-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3));
+}
+
+/* Default expression visibilities */
+.eye-listening { display: block; }
+.eye-thinking { display: none; }
+.eye-solved { display: none; }
+
+/* Listening State: Bobbing slightly with headphones on */
+.pill.state-recording .mascot-wrapper {
+  animation: duck-listening 1.4s ease-in-out infinite alternate;
+}
+.pill.state-recording .eye-listening { display: block; }
+.pill.state-recording .eye-thinking { display: none; }
+.pill.state-recording .eye-solved { display: none; }
+
+@keyframes duck-listening {
+  0% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(-3deg); }
+  100% { transform: translateY(0) rotate(3deg); }
+}
+
+/* Thinking State: Head tilt, thinking bubbles floating */
+.pill.state-processing .mascot-wrapper {
+  animation: duck-thinking 1.6s ease-in-out infinite;
+}
+.pill.state-processing .eye-listening { display: none; }
+.pill.state-processing .eye-thinking { display: block; }
+.pill.state-processing .eye-solved { display: none; }
+
+.think-bubble-1 {
+  animation: bubble-float 1.2s infinite ease-in-out alternate;
+}
+.think-bubble-2 {
+  animation: bubble-float 1.2s infinite ease-in-out 0.4s alternate;
+}
+
+@keyframes duck-thinking {
+  0% { transform: rotate(0deg); }
+  25% { transform: rotate(-8deg); }
+  75% { transform: rotate(6deg); }
+  100% { transform: rotate(0deg); }
+}
+
+@keyframes bubble-float {
+  0% { transform: translate(0, 0) scale(0.8); opacity: 0.4; }
+  100% { transform: translate(2px, -4px) scale(1.1); opacity: 0.9; }
+}
+
+/* Solved State: Victory bounce & sparkles */
+.pill.state-toast .mascot-wrapper {
+  animation: duck-solved 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.pill.state-toast .eye-listening { display: none; }
+.pill.state-toast .eye-thinking { display: none; }
+.pill.state-toast .eye-solved { display: block; }
+
+.solved-sparkle {
+  animation: sparkle-spin 1.2s infinite linear;
+  transform-origin: 36px 12px;
+}
+
+@keyframes duck-solved {
+  0% { transform: scale(0.8) translateY(4px); }
+  50% { transform: scale(1.15) translateY(-5px); }
+  100% { transform: scale(1) translateY(0); }
+}
+
+@keyframes sparkle-spin {
+  0% { transform: rotate(0deg) scale(0.9); }
+  50% { transform: rotate(180deg) scale(1.1); }
+  100% { transform: rotate(360deg) scale(0.9); }
+}
+
+/* Text & Info Container */
+.pill-content {
+  display: flex;
+  align-items: center;
+}
+
+.view {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.view[hidden] {
+  display: none;
+}
+
+.status-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.status-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.01em;
+}
+
+.status-sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.listening-pulse {
+  color: #FFD000;
+}
+
+.thinking-shimmer {
+  color: #38BDF8;
+}
+
+.solved-glow {
+  color: #34D399;
+}
+
+/* 5-Bar Waveform */
+.waveform {
+  display: flex;
+  align-items: center;
+  gap: 3.5px;
+  height: 20px;
+  padding: 0 4px;
+}
+
+.waveform .bar {
+  width: 3px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #FFF388 0%, #FFD000 60%, #FF8C00 100%);
+  height: calc(4px + var(--bar-level, 0.25) * 16px);
+  transition: height 60ms ease-out;
+}
+
+/* Cancel mini button */
+.mini-btn-cancel {
+  appearance: none;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: #94A3B8;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease;
+  margin-left: 2px;
+}
+
+.mini-btn-cancel:hover {
+  background: rgba(239, 68, 68, 0.3);
+  color: #F87171;
+}

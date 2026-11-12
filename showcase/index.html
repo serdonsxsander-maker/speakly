@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Speakly — 30-Second Production Ads &amp; 4-Skill Showcase</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700&display=swap');
+
+    :root {
+      --bg-canvas: #0c0d12;
+      --bg-sidebar: #11131b;
+      --bg-surface: #161924;
+      --bg-elevated: #1e2231;
+      --border-subtle: #2a3044;
+      --text-primary: #f1f5f9;
+      --text-secondary: #94a3b8;
+      --duck-yellow: #FFD000;
+      --duck-wing: #F5B800;
+      --duck-beak: #FF6B00;
+      --cyan-think: #38bdf8;
+      --emerald-ok: #34d399;
+      --rose-danger: #fb7185;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 0%, #191e30 0%, var(--bg-canvas) 65%);
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      min-height: 100vh;
+      padding-bottom: 80px;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: 1520px;
+      margin: 0 auto;
+      padding: 0 32px;
+    }
+
+    /* Header / Brand Hero */
+    header.hero {
+      padding: 40px 0 32px;
+      border-bottom: 1.5px solid var(--border-subtle);
+      margin-bottom: 36px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .brand-identity {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .brand-logo-box {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      background: #141822;
+      border: 2px solid rgba(255, 208, 0, 0.5);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.5), 0 0 28px rgba(255, 208, 0, 0.25);
+    }
+
+    .brand-logo-box svg {
+      width: 54px;
+      height: 54px;
+    }
+
+    .brand-title-col h1 {
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: -0.025em;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .badge-duck {
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 5px 12px;
+      border-radius: 999px;
+      background: rgba(255, 208, 0, 0.16);
+      color: var(--duck-yellow);
+      border: 1px solid rgba(255, 208, 0, 0.4);
+    }
+
+    .brand-title-col p {
+      color: var(--text-secondary);
+      font-size: 15px;
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    /* Master Playback Controls */
+    .master-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      appearance: none;
+      border: 1.5px solid var(--border-subtle);
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 11px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      transition: all 150ms ease;
+    }
+
+    .btn:hover {
+      border-color: var(--duck-yellow);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: var(--duck-yellow);
+      color: #0c0d12;
+      border-color: var(--duck-yellow);
+      box-shadow: 0 8px 25px rgba(255, 208, 0, 0.3);
+    }
+
+    .btn-primary:hover {
+      background: #ffe033;
+    }
+
+    /* Section Titles */
+    .section-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .section-heading h2 {
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .section-pill {
+      padding: 5px 14px;
+      border-radius: 999px;
+      background: rgba(52, 211, 153, 0.16);
+      border: 1.5px solid var(--emerald-ok);
+      color: var(--emerald-ok);
+      font-size: 12.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* Brand Kit Strip */
+    .brand-kit-bar {
+      background: var(--bg-surface);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 20px 28px;
+      margin-bottom: 40px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+
+    .kit-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .kit-label {
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-secondary);
+    }
+
+    .swatches {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .swatch {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px 6px 8px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 999px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .swatch-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .live-pill-demo {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .interactive-pill {
+      display: inline-flex;
+      align-items: center;
+      height: 48px;
+      padding: 0 18px 0 10px;
+      gap: 12px;
+      border-radius: 999px;
+      background: rgba(22, 24, 30, 0.96);
+      border: 2px solid var(--duck-yellow);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5), 0 0 20px rgba(255, 208, 0, 0.35);
+      cursor: pointer;
+      user-select: none;
+      transition: all 200ms ease;
+    }
+
+    .interactive-pill svg {
+      width: 34px;
+      height: 34px;
+    }
+
+    .pill-state-text {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: var(--duck-yellow);
+    }
+
+    .pill-state-sub {
+      font-size: 11.5px;
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    /* 2-Column Video Grid */
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 28px;
+      margin-bottom: 52px;
+    }
+
+    @media (max-width: 1100px) {
+      .video-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .video-card {
+      background: var(--bg-surface);
+      border: 2px solid var(--border-subtle);
+      border-radius: 24px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45);
+      transition: border-color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .video-card.hero-30s {
+      border-color: rgba(255, 208, 0, 0.65);
+      box-shadow: 0 24px 65px rgba(0, 0, 0, 0.65), 0 0 38px rgba(255, 208, 0, 0.18);
+    }
+
+    .card-top {
+      padding: 20px 24px;
+      background: var(--bg-sidebar);
+      border-bottom: 1.5px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .skill-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .skill-num {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: rgba(255, 208, 0, 0.18);
+      border: 1.5px solid var(--duck-yellow);
+      color: var(--duck-yellow);
+      font-weight: 900;
+      font-size: 15px;
+      display: grid;
+      place-items: center;
+    }
+
+    .skill-name {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+
+    .skill-repo {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .duration-badge {
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(255, 208, 0, 0.16);
+      border: 1.5px solid var(--duck-yellow);
+      font-size: 12.5px;
+      font-weight: 800;
+      color: var(--duck-yellow);
+    }
+
+    .player-wrap {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      overflow: hidden;
+    }
+
+    .player-wrap video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .card-body {
+      padding: 22px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      flex: 1;
+    }
+
+    .card-desc {
+      font-size: 14.5px;
+      line-height: 1.55;
+      color: #cbd5e1;
+    }
+
+    .beat-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: var(--bg-sidebar);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 14px 18px;
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+
+    .beat-list li strong {
+      color: var(--duck-yellow);
+      font-family: 'JetBrains Mono', monospace;
+      margin-right: 6px;
+    }
+
+    .spec-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .spec-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11.5px;
+      padding: 5px 10px;
+      border-radius: 8px;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+    }
+
+    .card-actions {
+      margin-top: auto;
+      padding-top: 14px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Top Speakly Brand Header -->
+    <header class="hero">
+      <div class="brand-identity">
+        <div class="brand-logo-box" title="Official Speakly Rubber Ducky SVG">
+          <svg viewBox="0 0 100 100" fill="none">
+            <ellipse cx="50" cy="62" rx="32" ry="24" fill="#FFD000" />
+            <path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000" />
+            <path d="M38 58 Q48 50 62 60 Q52 74 38 70 Z" fill="#F5B800" />
+            <circle cx="36" cy="36" r="21" fill="#FFD000" />
+            <path d="M18 36 Q8 38 12 44 Q22 46 26 42 Z" fill="#FF6B00" />
+            <ellipse cx="33" cy="32" rx="4" ry="5.5" fill="#1E293B" />
+            <circle cx="31.5" cy="30" r="1.8" fill="#FFFFFF" />
+          </svg>
+        </div>
+        <div class="brand-title-col">
+          <h1>
+            Speakly
+            <span class="badge-duck">Rubber Ducky AI</span>
+          </h1>
+          <p>30-Second Production Ads (Styles #2 &amp; #3) + Full 4-Skill Showcase</p>
+        </div>
+      </div>
+
+      <div class="master-controls">
+        <button type="button" class="btn btn-primary" id="play-30s-btn">▶ Play Both 30s Ads Together</button>
+        <button type="button" class="btn" id="pause-all-btn">⏸ Pause All</button>
+        <button type="button" class="btn" id="restart-30s-btn">↺ Restart 30s Ads (0:00)</button>
+      </div>
+    </header>
+
+    <!-- Brand Identity & Live Pill HUD Bar -->
+    <section class="brand-kit-bar" aria-label="Speakly Official Brand Tokens">
+      <div class="kit-group">
+        <span class="kit-label">Official Brand Palette:</span>
+        <div class="swatches">
+          <span class="swatch"><span class="swatch-dot" style="background:#FFD000;"></span>#FFD000 Duck Yellow</span>
+          <span class="swatch"><span class="swatch-dot" style="background:#F5B800;"></span>#F5B800 Wing Gold</span>
+          <span class="swatch"><span class="swatch-dot" style="background:#FF6B00;"></span>#FF6B00 Beak Orange</span>
+          <span class="swatch"><span class="swatch-dot" style="background:#0c0d12;"></span>#0C0D12 Dark Canvas</span>
+          <span class="swatch"><span class="swatch-dot" style="background:#38BDF8;"></span>#38BDF8 Thinking Cyan</span>
+          <span class="swatch"><span class="swatch-dot" style="background:#34D399;"></span>#34D399 Pasted Emerald</span>
+        </div>
+      </div>
+
+      <div class="live-pill-demo">
+        <span class="kit-label">Interactive HUD Pill:</span>
+        <div class="interactive-pill" id="demo-pill" title="Click to cycle Listening -> Thinking -> Pasted!">
+          <div id="demo-duck-svg"></div>
+          <div>
+            <div class="pill-state-text" id="demo-pill-title">Listening…</div>
+            <div class="pill-state-sub" id="demo-pill-sub">Click to cycle state</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURED SECTION: 30-SECOND FULL PRODUCTION ADS (#2 AND #3) -->
+    <div class="section-heading">
+      <h2>
+        🏆 Your Selected Winners — Full 30-Second Production Ads
+        <span class="section-pill">New · 30.0s Full Cut</span>
+      </h2>
+    </div>
+
+    <section class="video-grid">
+      <!-- 30s AD #1: REMOTION SPRING & SEQUENCE -->
+      <article class="video-card hero-30s">
+        <div class="card-top">
+          <div class="skill-meta">
+            <div class="skill-num">#2</div>
+            <div>
+              <div class="skill-name">30s Remotion Spring &amp; Sequence Ad</div>
+              <div class="skill-repo">remotion-dev/skills@remotion-best-practices</div>
+            </div>
+          </div>
+          <span class="duration-badge">30.0s · 1080p MP4</span>
+        </div>
+        <div class="player-wrap">
+          <video id="vid-30s-remotion" src="./videos/02-remotion-30s.mp4" controls loop muted playsinline></video>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">
+            Expanded 6-scene programmatic ad driven by frame-accurate spring physics (`stiffness: 150, damping: 14`) and a live timeline progress bar.
+          </p>
+          <ul class="beat-list">
+            <li><strong>0:00 – 0:05</strong> Hook &amp; Speed Chart: 158 WPM Speakly vs. 42 WPM typing + Hold <code>Right ⌘</code></li>
+            <li><strong>0:05 – 0:11</strong> 3-State Mascot HUD: Listening (headphones) → Thinking → Pasted! ✨</li>
+            <li><strong>0:11 – 0:17</strong> Smart Polish Demo: Strips out "Um hey... 2pm wait no..." in real time</li>
+            <li><strong>0:17 – 0:22</strong> 5 AI Modes (Smart Polish, Fast Verbatim, Pro Email, Action Notes, Dev) + Dictionary</li>
+            <li><strong>0:22 – 0:26.5</strong> Dual Cloud Engine: Groq LPU (~0.3s) &amp; OpenAI Whisper (99+ languages)</li>
+            <li><strong>0:26.5 – 0:30</strong> Hero Speakly Rubber Ducky End Lockup &amp; CTA</li>
+          </ul>
+          <div class="card-actions">
+            <a class="btn btn-primary" href="./videos/02-remotion-30s.mp4" download>⬇ Download 30s Remotion MP4</a>
+            <a class="btn" href="./02-remotion-30s.html" target="_blank">Open Interactive Source ↗</a>
+          </div>
+        </div>
+      </article>
+
+      <!-- 30s AD #2: AD-CREATIVE IMESSAGE REVEAL -->
+      <article class="video-card hero-30s">
+        <div class="card-top">
+          <div class="skill-meta">
+            <div class="skill-num">#3</div>
+            <div>
+              <div class="skill-name">30s Ad-Creative iMessage Reveal Ad</div>
+              <div class="skill-repo">coreyhaines31/marketingskills@ad-creative</div>
+            </div>
+          </div>
+          <span class="duration-badge">30.0s · 1080p MP4</span>
+        </div>
+        <div class="player-wrap">
+          <video id="vid-30s-imessage" src="./videos/03-ad-creative-30s.mp4" controls loop muted playsinline></video>
+        </div>
+        <div class="card-body">
+          <p class="card-desc">
+            Expanded 12-bubble iOS-native iMessage reveal ad with real-time composer typing, auto-scrolling thread, objection handling, and synchronized Speakly HUD pill.
+          </p>
+          <ul class="beat-list">
+            <li><strong>0:00 – 0:06</strong> Hook Screenshot (<code>158 WPM · 4.2 hrs saved</code>) + Peer Curiosity ("what app is that??")</li>
+            <li><strong>0:06 – 0:12</strong> Live Composer Typing + Late Brand Reveal ("Speakly — little yellow rubber duck")</li>
+            <li><strong>0:12 – 0:20</strong> Objection Handling ("doesn't voice typing mess up when you say um?") + Smart Polish Proof Card</li>
+            <li><strong>0:20 – 0:26</strong> Cross-Platform Confirmation + Link-Underlined Promo Code (<code>DUCKYPRO</code>)</li>
+            <li><strong>0:26 – 0:30</strong> 300ms Crossfade to Static Speakly Brand End Slate</li>
+          </ul>
+          <div class="card-actions">
+            <a class="btn btn-primary" href="./videos/03-ad-creative-30s.mp4" download>⬇ Download 30s iMessage MP4</a>
+            <a class="btn" href="./03-ad-creative-30s.html" target="_blank">Open Interactive Source ↗</a>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <!-- PREVIOUS 12-SECOND 4-SKILL COMPARISON ARCHIVE -->
+    <div class="section-heading">
+      <h2>🎞️ Original 12-Second 4-Skill Comparison (All 4 Installed Skills)</h2>
+    </div>
+
+    <section class="video-grid">
+      <article class="video-card">
+        <div class="card-top">
+          <div class="skill-meta">
+            <div class="skill-num">1</div>
+            <div>
+              <div class="skill-name">HyperFrames Launch Film (12s)</div>
+              <div class="skill-repo">heygen-com/hyperframes@hyperframes</div>
+            </div>
+          </div>
+          <a class="btn" href="./videos/01-hyperframes-launch.mp4" download>⬇ 12s MP4</a>
+        </div>
+        <div class="player-wrap">
+          <video class="vid-12s" src="./videos/01-hyperframes-launch.mp4" controls loop muted playsinline></video>
+        </div>
+      </article>
+
+      <article class="video-card">
+        <div class="card-top">
+          <div class="skill-meta">
+            <div class="skill-num">4</div>
+            <div>
+              <div class="skill-name">AI Video Generation · Style H Wireglow (12s)</div>
+              <div class="skill-repo">101-skills/superpowers@ai-video-generation</div>
+            </div>
+          </div>
+          <a class="btn" href="./videos/04-ai-video-wireglow.mp4" download>⬇ 12s MP4</a>
+        </div>
+        <div class="player-wrap">
+          <video class="vid-12s" src="./videos/04-ai-video-wireglow.mp4" controls loop muted playsinline></video>
+        </div>
+      </article>
+    </section>
+  </div>
+
+  <script>
+    const vRemotion30 = document.getElementById('vid-30s-remotion');
+    const vImessage30 = document.getElementById('vid-30s-imessage');
+    const allVideos = Array.from(document.querySelectorAll('video'));
+
+    document.getElementById('play-30s-btn').addEventListener('click', () => {
+      vRemotion30.play();
+      vImessage30.play();
+    });
+
+    document.getElementById('pause-all-btn').addEventListener('click', () => {
+      allVideos.forEach((v) => v.pause());
+    });
+
+    document.getElementById('restart-30s-btn').addEventListener('click', () => {
+      vRemotion30.currentTime = 0;
+      vImessage30.currentTime = 0;
+      vRemotion30.play();
+      vImessage30.play();
+    });
+
+    // Interactive Speakly Pill Demo in Header
+    const DUCK_STATES = [
+      {
+        title: 'Listening…',
+        sub: 'Hold Right ⌘ · 60fps Audio',
+        color: '#FFD000',
+        svg: `<svg viewBox="0 0 100 100" fill="none"><ellipse cx="50" cy="62" rx="32" ry="24" fill="#FFD000"/><path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000"/><path d="M38 58 Q48 50 62 60 Q52 74 38 70 Z" fill="#F5B800"/><circle cx="36" cy="36" r="21" fill="#FFD000"/><path d="M18 36 Q8 38 12 44 Q22 46 26 42 Z" fill="#FF6B00"/><ellipse cx="33" cy="32" rx="4" ry="5.5" fill="#1E293B"/><circle cx="31.5" cy="30" r="1.8" fill="#FFFFFF"/><path d="M23 28 C23 15, 48 15, 49 28" stroke="#3B82F6" stroke-width="3.5" stroke-linecap="round"/><rect x="19" y="27" width="6" height="12" rx="3" fill="#2563EB"/><rect x="46" y="27" width="6" height="12" rx="3" fill="#2563EB"/></svg>`
+      },
+      {
+        title: 'Thinking…',
+        sub: 'Polishing with AI',
+        color: '#38BDF8',
+        svg: `<svg viewBox="0 0 100 100" fill="none"><ellipse cx="50" cy="62" rx="32" ry="24" fill="#FFD000"/><path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000"/><path d="M38 58 Q48 50 62 60 Q52 74 38 70 Z" fill="#F5B800"/><circle cx="36" cy="36" r="21" fill="#FFD000"/><path d="M18 36 Q8 38 12 44 Q22 46 26 42 Z" fill="#FF6B00"/><path d="M27 34 Q33 28 39 34" stroke="#1E293B" stroke-width="3" stroke-linecap="round" fill="none"/><circle cx="48" cy="20" r="3.5" fill="#38BDF8"/><circle cx="57" cy="13" r="5" fill="#38BDF8"/></svg>`
+      },
+      {
+        title: 'Pasted! ✨',
+        sub: 'Text ready at cursor',
+        color: '#34D399',
+        svg: `<svg viewBox="0 0 100 100" fill="none"><ellipse cx="50" cy="62" rx="32" ry="24" fill="#FFD000"/><path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000"/><path d="M38 58 Q48 50 62 60 Q52 74 38 70 Z" fill="#F5B800"/><circle cx="36" cy="36" r="21" fill="#FFD000"/><path d="M18 36 Q8 38 12 44 Q22 46 26 42 Z" fill="#FF6B00"/><path d="M28 33 Q34 26 40 33" stroke="#0F172A" stroke-width="3.2" stroke-linecap="round" fill="none"/><ellipse cx="26" cy="38" rx="4" ry="2.2" fill="#FF8A8A"/><path d="M36 4 L38 10 L44 12 L38 14 L36 20 L34 14 L28 12 L34 10 Z" fill="#FBBF24"/></svg>`
+      }
+    ];
+
+    let pillIdx = 0;
+    const demoPill = document.getElementById('demo-pill');
+    const demoSvg = document.getElementById('demo-duck-svg');
+    const demoTitle = document.getElementById('demo-pill-title');
+    const demoSub = document.getElementById('demo-pill-sub');
+
+    function renderPillState() {
+      const st = DUCK_STATES[pillIdx];
+      demoSvg.innerHTML = st.svg;
+      demoTitle.textContent = st.title;
+      demoTitle.style.color = st.color;
+      demoSub.textContent = st.sub;
+      demoPill.style.borderColor = st.color;
+    }
+
+    demoPill.addEventListener('click', () => {
+      pillIdx = (pillIdx + 1) % DUCK_STATES.length;
+      renderPillState();
+    });
+
+    renderPillState();
+  </script>
+</body>
+</html>

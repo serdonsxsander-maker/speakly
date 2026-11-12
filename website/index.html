@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Speakly — Rubber Ducky AI. Speak at 158 WPM. Paste clean text anywhere.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- =========================================================================
+       PERSISTENT INTERACTIVE RUBBER DUCKY FLOATING PILL HUD (Bottom Center)
+       1:1 Replica of Speakly's non-focus-stealing desktop pill
+       ========================================================================= -->
+  <div id="floating-ducky-pill" class="ducky-pill-hud state-idle" role="button" tabindex="0" aria-label="Test live Rubber Ducky AI dictation">
+    <div class="ducky-pill-mascot" id="hud-mascot">
+      <!-- Populated dynamically with Official Rubber Ducky SVG (Listening / Thinking / Solved) -->
+    </div>
+    <div class="ducky-pill-waveform" id="hud-waveform">
+      <span class="wave-bar"></span>
+      <span class="wave-bar"></span>
+      <span class="wave-bar"></span>
+      <span class="wave-bar"></span>
+      <span class="wave-bar"></span>
+    </div>
+    <div class="ducky-pill-status" id="hud-status-text">
+      Hold <kbd>Space</kbd> or Click to Dictate
+    </div>
+    <div class="ducky-pill-badge" id="hud-engine-badge">Groq 0.3s</div>
+  </div>
+
+  <!-- =========================================================================
+       APPLE TRANSLUCENT GLOBAL NAVIGATION BAR
+       ========================================================================= -->
+  <header class="apple-global-nav">
+    <div class="nav-inner">
+      <a href="#landing" class="brand-lockup" data-nav-view="landing">
+        <div class="brand-duck-mini" id="nav-duck-svg"></div>
+        <div class="brand-titles">
+          <span class="brand-name">Speakly</span>
+          <span class="brand-sub">Rubber Ducky AI</span>
+        </div>
+      </a>
+
+      <nav class="view-switcher" role="tablist" aria-label="Website Sections">
+        <button class="view-tab active" data-view="landing" role="tab" aria-selected="true">
+          Overview
+        </button>
+        <button class="view-tab" data-view="brandkit" role="tab" aria-selected="false">
+          Branding Kit &amp; Icons
+          <span class="tab-pill">Rate 6 Options</span>
+        </button>
+        <button class="view-tab" data-view="playground" role="tab" aria-selected="false">
+          Live Desktop App
+          <span class="tab-pill">Interactive</span>
+        </button>
+        <button class="view-tab" data-view="films" role="tab" aria-selected="false">
+          Launch Films
+          <span class="tab-pill">30s Ads</span>
+        </button>
+        <button class="view-tab" data-view="pricing" role="tab" aria-selected="false">
+          Pricing &amp; Specs
+        </button>
+      </nav>
+
+      <div class="nav-actions">
+        <button class="btn-secondary-glass" data-open-view="playground">
+          Try in Browser
+        </button>
+        <button class="btn-primary-duck" data-open-modal="download">
+          Download Free
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       VIEW 1: APPLE KEYNOTE LANDING PAGE (Default Active View)
+       Built with apple-design + design-taste-frontend + cinematic-scroll-storytelling + copywriting
+       ========================================================================= -->
+  <main id="view-landing" class="page-view active">
+
+    <!-- HERO SECTION + "ONE LIVE THING" INTERACTIVE SANDBOX -->
+    <section class="hero-section">
+      <div class="hero-ambient-glow"></div>
+      <div class="container">
+        <div class="hero-eyebrow-pill">
+          <span class="eyebrow-dot"></span>
+          <span>macOS &amp; Windows Push-to-Talk Voice Engine</span>
+          <span class="eyebrow-sep">·</span>
+          <span class="eyebrow-highlight">Groq LPU 0.3s Latency</span>
+        </div>
+
+        <h1 class="hero-display" data-split-reveal>
+          Speak at 158 words per minute.<br />
+          <span class="text-gradient-duck">Paste clean text at your cursor.</span>
+        </h1>
+
+        <p class="hero-lead">
+          Hold <kbd>Right ⌘</kbd> on macOS or <kbd>Right Ctrl</kbd> on Windows. Your rubber duck listens, strips out filler words and mid-sentence self-corrections, and drops formatted text directly into Slack, Cursor, Notion, or Gmail.
+        </p>
+
+        <div class="hero-cta-row">
+          <button class="btn-hero-primary" data-open-modal="download">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.33c.64-.78 1.08-1.86.96-2.94-.93.04-2.06.62-2.72 1.4-.58.68-1.1 1.79-.96 2.84 1.04.08 2.08-.52 2.72-1.3z"/></svg>
+            Download for macOS &amp; Windows
+          </button>
+          <button class="btn-hero-secondary" id="hero-watch-film-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+            Watch 30s Launch Film
+          </button>
+        </div>
+
+        <!-- "ONE LIVE THING" (design-taste-frontend): Real Interactive Push-to-Talk Studio -->
+        <div class="live-studio-shell" data-ui="interactive-dictation-studio">
+          <div class="studio-topbar">
+            <div class="window-dots">
+              <span class="dot-red"></span>
+              <span class="dot-yellow"></span>
+              <span class="dot-green"></span>
+            </div>
+            <div class="studio-mode-pills" role="tablist" aria-label="AI Formatting Mode">
+              <button class="mode-chip active" data-sample="smart_polish">✨ Smart Polish</button>
+              <button class="mode-chip" data-sample="email">✉️ Professional Email</button>
+              <button class="mode-chip" data-sample="notes">📋 Actionable Notes</button>
+              <button class="mode-chip" data-sample="code">⌨️ AI Prompt / Dev</button>
+              <button class="mode-chip" data-sample="verbatim">⚡ Fast Verbatim</button>
+            </div>
+            <div class="studio-latency-readout">
+              <span class="status-led"></span>
+              <span id="studio-latency-num">0.29s Groq LPU</span>
+            </div>
+          </div>
+
+          <div class="studio-split-body">
+            <!-- Left Pane: Raw Spoken Audio Stream -->
+            <div class="studio-pane pane-raw">
+              <div class="pane-header">
+                <span class="pane-label">1. WHAT YOU SAY OUT LOUD (158 WPM)</span>
+                <span class="pane-badge-muted">Whisper Large v3 Turbo</span>
+              </div>
+              <div class="spoken-transcript-box" id="live-raw-box">
+                <!-- Populated dynamically with strikethrough self-corrections -->
+              </div>
+              <div class="pane-footer">
+                <button class="ptt-trigger-btn" id="studio-ptt-btn">
+                  <span class="ptt-mic-dot"></span>
+                  <span id="ptt-btn-label">Simulate Push-to-Talk (<kbd>Space</kbd>)</span>
+                </button>
+                <span class="ptt-hint">Hold <kbd>Spacebar</kbd> anywhere on this page to test</span>
+              </div>
+            </div>
+
+            <!-- Center Arrow / Duck Transformer -->
+            <div class="studio-divider-duck">
+              <div class="divider-duck-orb" id="studio-duck-orb"></div>
+              <div class="divider-arrow">→</div>
+            </div>
+
+            <!-- Right Pane: Clean Pasted Output at Cursor -->
+            <div class="studio-pane pane-clean">
+              <div class="pane-header">
+                <span class="pane-label" id="clean-target-app">2. PASTED INTO SLACK AT CURSOR</span>
+                <span class="pane-badge-gold" id="clean-mode-badge">Smart Polish Active</span>
+              </div>
+              <div class="clean-output-box" id="live-clean-box" contenteditable="true" spellcheck="false">
+                <!-- Populated dynamically -->
+              </div>
+              <div class="pane-footer">
+                <div class="saved-metric">
+                  <span>Clipboard preserved automatically</span>
+                  <span class="metric-pill" id="time-saved-pill">Saved 24 sec on this message</span>
+                </div>
+                <button class="copy-clean-btn" id="copy-clean-output">Copy Output</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Telemetry Proof Strip -->
+        <div class="telemetry-strip">
+          <div class="telemetry-item">
+            <span class="telemetry-num">158 <small>WPM</small></span>
+            <span class="telemetry-label">Natural speaking speed vs. 42 WPM typing</span>
+          </div>
+          <div class="telemetry-divider"></div>
+          <div class="telemetry-item">
+            <span class="telemetry-num">0.3<small>s</small></span>
+            <span class="telemetry-label">End-to-end Groq LPU transcription + LLM polish</span>
+          </div>
+          <div class="telemetry-divider"></div>
+          <div class="telemetry-item">
+            <span class="telemetry-num">4.2 <small>hrs</small></span>
+            <span class="telemetry-label">Average keyboard time saved every single week</span>
+          </div>
+          <div class="telemetry-divider"></div>
+          <div class="telemetry-item">
+            <span class="telemetry-num">100<small>%</small></span>
+            <span class="telemetry-label">Clipboard restored right after auto-paste</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SCROLL-SCRUBBED HARDWARE / ZERO FOCUS STEALING SECTION -->
+    <section class="keynote-scrub-section" id="scrub-hardware">
+      <div class="container">
+        <div class="section-header-block">
+          <span class="section-kicker">ZERO CONTEXT SWITCHING</span>
+          <h2 class="section-display" data-split-reveal>
+            Lives above your dock.<br />Never steals your window focus.
+          </h2>
+          <p class="section-sub">
+            Other voice tools force you to copy-paste from a separate window or break your active IDE cursor. Speakly's 46-pixel floating pill stays completely non-activating (`setFocusable(false)`), injecting polished text via native OS keystrokes (`⌘V` / `Ctrl+V`) while restoring your previous clipboard in 600ms.
+          </p>
+        </div>
+
+        <div class="hardware-stage" id="hardware-scrub-stage">
+          <!-- Interactive App Context Switcher -->
+          <div class="context-target-bar">
+            <span class="context-bar-label">Target active window:</span>
+            <button class="context-target-btn active" data-target-window="cursor">Cursor IDE</button>
+            <button class="context-target-btn" data-target-window="slack">Slack Thread</button>
+            <button class="context-target-btn" data-target-window="gmail">Apple Mail / Gmail</button>
+            <button class="context-target-btn" data-target-window="linear">Linear Issue</button>
+          </div>
+
+          <div class="macos-screen-frame">
+            <div class="macos-menubar">
+              <div class="menubar-left">
+                <span></span>
+                <strong id="menubar-app-name">Cursor</strong>
+                <span>File</span>
+                <span>Edit</span>
+                <span>Selection</span>
+                <span>View</span>
+              </div>
+              <div class="menubar-right">
+                <span class="menubar-duck-tray">🦆 Speakly Ready (Right ⌘)</span>
+                <span>Wi-Fi</span>
+                <span>100%</span>
+                <span>Thu 9:41 AM</span>
+              </div>
+            </div>
+
+            <div class="macos-desktop-canvas" id="desktop-target-canvas">
+              <!-- Active Window Content rendered by JS -->
+              <div class="target-app-window" id="target-window-content"></div>
+
+              <!-- Floating Non-Activating Rubber Ducky Pill inside Screen -->
+              <div class="inscreen-duck-pill" id="inscreen-pill">
+                <div class="inscreen-duck-svg" id="inscreen-duck-icon"></div>
+                <div class="inscreen-pill-waves">
+                  <span></span><span></span><span></span><span></span><span></span>
+                </div>
+                <span class="inscreen-pill-label" id="inscreen-pill-text">Listening…</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3-Step Physical Hotkey Timeline -->
+          <div class="hotkey-steps-grid">
+            <div class="hotkey-step-card active" data-step="1">
+              <div class="step-index">01</div>
+              <h3>Hold <kbd>Right ⌘</kbd> or <kbd>Right Ctrl</kbd></h3>
+              <p>Keep your cursor inside your code editor, email client, or chat box. The Rubber Ducky wakes with headphones on and streams 16kHz PCM audio.</p>
+            </div>
+            <div class="hotkey-step-card" data-step="2">
+              <div class="step-index">02</div>
+              <h3>Change your mind mid-sentence</h3>
+              <p>Say <em>"Let's meet Tuesday at 2pm—wait no, make it Thursday at 3:30pm."</em> Speakly's LLM context layer resolves self-corrections before pasting.</p>
+            </div>
+            <div class="hotkey-step-card" data-step="3">
+              <div class="step-index">03</div>
+              <h3>Release to paste &amp; restore clipboard</h3>
+              <p>Within 300ms of releasing the key, clean text lands at your cursor and whatever link or image was on your clipboard is safely put back.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STICKY CARD STACK SECTION (cinematic-scroll-storytelling): 5 AI FORMATTING MODES -->
+    <section class="sticky-stack-section" data-sticky-stack>
+      <div class="container">
+        <div class="section-header-block">
+          <span class="section-kicker">5 BUILT-IN AI MODES + CUSTOM PROMPTS</span>
+          <h2 class="section-display" data-split-reveal>
+            One voice.<br />Five distinct writing brains.
+          </h2>
+          <p class="section-sub">
+            Switch modes with a single click or build your own custom system prompt. Every mode injects your Personal Dictionary so company names, acronyms, and teammates are spelled right on the first try.
+          </p>
+        </div>
+
+        <div class="sticky-cards-container">
+          <!-- Card 1: Smart Polish -->
+          <article class="sticky-mode-card" style="--card-index: 0;">
+            <div class="mode-card-meta">
+              <span class="mode-tag">MODE 01 · DEFAULT</span>
+              <span class="mode-engine">Whisper + Llama 3.3 70B</span>
+            </div>
+            <div class="mode-card-grid">
+              <div class="mode-card-copy">
+                <h3>✨ Smart Polish</h3>
+                <p>Strips out "um", "uh", false starts, and mid-sentence backtracking while keeping your exact tone and vocabulary intact.</p>
+                <ul class="mode-check-list">
+                  <li>Resolves time &amp; number corrections automatically</li>
+                  <li>Fixes punctuation and capitalization without sounding robotic</li>
+                  <li>Ideal for Slack, iMessage, and daily communication</li>
+                </ul>
+              </div>
+              <div class="mode-card-compare">
+                <div class="compare-bubble raw">
+                  <span class="bubble-tag">SPOKEN</span>
+                  <p>"Hey Sarah um can we push the design review to 2pm wait no actually 3:30pm because I'm still finishing the Figma tokens"</p>
+                </div>
+                <div class="compare-bubble clean">
+                  <span class="bubble-tag gold">PASTED BY DUCKY</span>
+                  <p>"Hey Sarah, can we push the design review to 3:30 PM? I'm still finishing the Figma tokens."</p>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 2: Professional Email -->
+          <article class="sticky-mode-card" style="--card-index: 1;">
+            <div class="mode-card-meta">
+              <span class="mode-tag">MODE 02 · EXECUTIVE</span>
+              <span class="mode-engine">Structured Greeting &amp; Sign-off</span>
+            </div>
+            <div class="mode-card-grid">
+              <div class="mode-card-copy">
+                <h3>✉️ Professional Email</h3>
+                <p>Speak a stream-of-consciousness update in 8 seconds and get a structured, warm, ready-to-send email with clear paragraphs.</p>
+                <ul class="mode-check-list">
+                  <li>Turns casual spoken thoughts into client-ready prose</li>
+                  <li>Preserves every specific date, metric, and deliverable</li>
+                  <li>Zero cliché AI openings like "I hope this email finds you well"</li>
+                </ul>
+              </div>
+              <div class="mode-card-compare">
+                <div class="compare-bubble raw">
+                  <span class="bubble-tag">SPOKEN</span>
+                  <p>"Tell Marcus we shipped the v2.4 macOS notarized build this morning, latency is down to 290 milliseconds, ask him if his team can test before Friday"</p>
+                </div>
+                <div class="compare-bubble clean">
+                  <span class="bubble-tag gold">PASTED BY DUCKY</span>
+                  <p>"Hi Marcus,<br><br>We shipped the notarized macOS v2.4 build this morning, bringing end-to-end latency down to 290ms.<br><br>Could your team run a quick test pass before Friday?<br><br>Best,"</p>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 3: Actionable Notes -->
+          <article class="sticky-mode-card" style="--card-index: 2;">
+            <div class="mode-card-meta">
+              <span class="mode-tag">MODE 03 · STRUCTURED LISTS</span>
+              <span class="mode-engine">Markdown Bullet Formatter</span>
+            </div>
+            <div class="mode-card-grid">
+              <div class="mode-card-copy">
+                <h3>📋 Actionable Notes</h3>
+                <p>Brain-dump after a call or standup. Speakly organizes your spoken recap into clean Markdown bullet points with owners and deadlines.</p>
+                <ul class="mode-check-list">
+                  <li>Ready for Notion, Obsidian, Linear, or GitHub Issues</li>
+                  <li>Groups rambling thoughts into scannable action items</li>
+                  <li>Automatic bolding on key deliverables</li>
+                </ul>
+              </div>
+              <div class="mode-card-compare">
+                <div class="compare-bubble raw">
+                  <span class="bubble-tag">SPOKEN</span>
+                  <p>"Okay post-call notes first we need to lock the Supabase RLS policies today second Alex is updating the Groq fallback logic and third launch video goes live Thursday"</p>
+                </div>
+                <div class="compare-bubble clean">
+                  <span class="bubble-tag gold">PASTED BY DUCKY</span>
+                  <p>• <strong>Supabase Security:</strong> Lock RLS policies today<br>• <strong>Engine Fallback:</strong> Alex updating Groq fallback logic<br>• <strong>Marketing Launch:</strong> 30s launch video goes live Thursday</p>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <!-- Card 4: AI Prompt / Dev -->
+          <article class="sticky-mode-card" style="--card-index: 3;">
+            <div class="mode-card-meta">
+              <span class="mode-tag">MODE 04 · CURSOR &amp; CLAUDE CODE</span>
+              <span class="mode-engine">Technical Spec Structuring</span>
+            </div>
+            <div class="mode-card-grid">
+              <div class="mode-card-copy">
+                <h3>⌨️ AI Prompt / Dev</h3>
+                <p>Built for engineers prompting Cursor, Claude Code, or Antigravity. Speak your architectural intent out loud at 160 WPM instead of typing walls of context.</p>
+                <ul class="mode-check-list">
+                  <li>Recognizes file names, hooks, SQL tables, and CLI flags</li>
+                  <li>Structures spoken requirements into Goal, Constraints, and Edge Cases</li>
+                  <li>Pairs with Personal Dictionary for custom repo identifiers</li>
+                </ul>
+              </div>
+              <div class="mode-card-compare">
+                <div class="compare-bubble raw">
+                  <span class="bubble-tag">SPOKEN</span>
+                  <p>"Refactor main dot js so globalShortcut register uses Right Command on darwin and Right Control on win32 and make sure clipboard restore waits 600ms"</p>
+                </div>
+                <div class="compare-bubble clean">
+                  <span class="bubble-tag gold">PASTED BY DUCKY</span>
+                  <p>"Refactor <code>main.js</code> hotkey registration:<br>1. Bind <code>Right Command</code> on <code>darwin</code> and <code>Right Control</code> on <code>win32</code>.<br>2. Preserve clipboard contents and restore 600ms after native paste."</p>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ASYMMETRIC BENTO ARCHITECTURE: GROQ LPU VS OPENAI + PERSONAL DICTIONARY -->
+    <section class="architecture-bento-section">
+      <div class="container">
+        <div class="section-header-block">
+          <span class="section-kicker">DUAL-ENGINE ARCHITECTURE</span>
+          <h2 class="section-display" data-split-reveal>
+            Powered by Groq LPU silicon<br />and OpenAI Cloud.
+          </h2>
+        </div>
+
+        <div class="bento-grid-asymmetric">
+          <!-- Large Card: Groq LPU vs OpenAI Speed Benchmark -->
+          <div class="bento-card bento-span-7">
+            <div class="bento-eyebrow">ULTRA-LOW LATENCY INFERENCE</div>
+            <h3>0.3 seconds from key release to pasted text.</h3>
+            <p>Choose between <strong>Groq LPU Turbo</strong> (`whisper-large-v3-turbo` + `llama-3.3-70b-versatile`) for instant sub-second turnaround at 1/8th the API cost, or <strong>OpenAI Cloud</strong> (`whisper-1` + `gpt-4o-mini`) for 99+ global languages.</p>
+
+            <div class="latency-bars-widget">
+              <div class="latency-row">
+                <div class="latency-meta">
+                  <strong>🦆 Speakly + Groq LPU Turbo</strong>
+                  <span class="latency-time gold">0.29s total</span>
+                </div>
+                <div class="latency-track">
+                  <div class="latency-fill fill-groq" style="width: 14%;"></div>
+                </div>
+              </div>
+              <div class="latency-row">
+                <div class="latency-meta">
+                  <span>🦆 Speakly + OpenAI Cloud</span>
+                  <span class="latency-time">0.78s total</span>
+                </div>
+                <div class="latency-track">
+                  <div class="latency-fill fill-openai" style="width: 36%;"></div>
+                </div>
+              </div>
+              <div class="latency-row">
+                <div class="latency-meta">
+                  <span>Traditional OS Dictation + Manual Fixing</span>
+                  <span class="latency-time muted">4.80s+</span>
+                </div>
+                <div class="latency-track">
+                  <div class="latency-fill fill-legacy" style="width: 94%;"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Card: Interactive Live Personal Dictionary -->
+          <div class="bento-card bento-span-5">
+            <div class="bento-eyebrow">CUSTOM VOCABULARY INJECTION</div>
+            <h3>Personal Dictionary that never misspells a teammate.</h3>
+            <p>Add your product names, internal codenames, or technical terms once. Speakly injects them into both Whisper acoustic hints and the LLM polish pass.</p>
+
+            <div class="mini-dict-interactive">
+              <div class="dict-pills-list" id="landing-dict-pills">
+                <span class="dict-vocab-tag">Speakly</span>
+                <span class="dict-vocab-tag">Supabase RLS</span>
+                <span class="dict-vocab-tag">Groq LPU</span>
+                <span class="dict-vocab-tag">Antigravity</span>
+                <span class="dict-vocab-tag">Xsander</span>
+              </div>
+              <form class="dict-quick-form" id="landing-dict-form">
+                <input type="text" id="landing-dict-input" placeholder="Add a custom word (e.g. Kubernetes)..." maxlength="32" />
+                <button type="submit">+ Add</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- EMBEDDED 30s VIDEO SHOWCASE PREVIEW ON LANDING PAGE -->
+    <section class="landing-films-preview">
+      <div class="container">
+        <div class="films-header-row">
+          <div>
+            <span class="section-kicker">PRODUCTION LAUNCH FILMS</span>
+            <h2 class="section-display" data-split-reveal>See Rubber Ducky AI in action.</h2>
+          </div>
+          <button class="btn-secondary-glass" data-open-view="films">
+            Open Full Ad &amp; Video Studio →
+          </button>
+        </div>
+
+        <div class="dual-video-grid">
+          <!-- Video 1: 30s Remotion Launch Film -->
+          <div class="film-showcase-card">
+            <div class="film-card-header">
+              <div>
+                <span class="film-badge">STYLE #2 · REMOTION 30s COMMERCIAL</span>
+                <h3>Speakly Launch Film (1920×1080 · 30s)</h3>
+              </div>
+              <a href="../showcase/videos/02-remotion-30s.mp4" download class="film-dl-link">Download MP4</a>
+            </div>
+            <div class="video-frame-wrapper">
+              <video controls preload="metadata" loop playsinline src="../showcase/videos/02-remotion-30s.mp4"></video>
+            </div>
+          </div>
+
+          <!-- Video 2: 30s iMessage Ad Creative -->
+          <div class="film-showcase-card">
+            <div class="film-card-header">
+              <div>
+                <span class="film-badge">STYLE #3 · AD-CREATIVE iMESSAGE 30s AD</span>
+                <h3>"Why Do You Reply So Fast?" (1920×1080 · 30s)</h3>
+              </div>
+              <a href="../showcase/videos/03-ad-creative-30s.mp4" download class="film-dl-link">Download MP4</a>
+            </div>
+            <div class="video-frame-wrapper">
+              <video controls preload="metadata" loop playsinline src="../showcase/videos/03-ad-creative-30s.mp4"></video>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- =========================================================================
+       VIEW 1B: INTERACTIVE RUBBER DUCKY BRANDING KIT & APP ICON RATING STUDIO
+       Built with brand-identity + brand-guidelines + svg-logo-designer + logo-generator
+       ========================================================================= -->
+  <section id="view-brandkit" class="page-view" hidden>
+    <div class="container brandkit-view-container">
+      <div class="section-header-block">
+        <span class="section-kicker">RUBBER DUCKY BRAND IDENTITY &amp; ICON STUDIO</span>
+        <h2 class="section-display">Rate 6 Rubber Ducky Branding Kits &amp; Home Screen Icons</h2>
+        <p class="section-sub">
+          Built using our newly installed <code>brand-identity</code>, <code>brand-guidelines</code>, <code>svg-logo-designer</code>, and <code>logo-generator</code> skills. Preview how each Rubber Ducky icon looks on your macOS Dock / Home Screen, test the color palettes live across the UI, and rate your favorites from 1 to 5 stars.
+        </p>
+      </div>
+
+      <!-- BEFORE vs AFTER APPLICATION ICON FIX SHOWCASE -->
+      <div class="icon-fix-comparison-card">
+        <div class="icon-fix-copy">
+          <span class="bento-eyebrow">FIXED HOME SCREEN &amp; DOCK APPLICATION ICON</span>
+          <h3>No more overlapping colors or buried eyes.</h3>
+          <p>
+            Previously, the PNG icon generator in <code>app/src/main/tray-icons.js</code> used a depth-alpha rejection check (<code>if (alpha &gt; rgba[idx + 3])</code>) that blocked later layers from drawing over opaque yellow pixels—erasing the duck's eye and leaving a floating orange beak oval. And in the dashboard sidebar, the yellow duck SVG was placed on a yellow gradient box.
+          </p>
+          <ul class="mode-check-list">
+            <li>Replaced broken alpha comparison with true <strong>Porter-Duff Source-Over alpha compositing</strong></li>
+            <li>Ordered Painter's layers cleanly: <em>Obsidian Squircle → Acoustic Ripple → Orange Beak → Plump Body → Head → Sculpted Wing → Rosy Cheek → Eye + Double Sparkle → Studio Headphones</em></li>
+            <li>Placed the Home Screen &amp; Sidebar Rubber Ducky inside a high-contrast <strong>Obsidian Slate Squircle (`#0F121C`)</strong> with a warm golden rim so yellow and orange pop cleanly</li>
+          </ul>
+        </div>
+
+        <div class="icon-fix-visuals">
+          <div class="icon-compare-box broken">
+            <span class="compare-label-pill bad">BEFORE (Overlapping / Broken Z-Order)</span>
+            <div class="broken-icon-simulation" aria-label="Previous broken icon simulation">
+              <svg viewBox="0 0 120 120" width="110" height="110">
+                <rect x="6" y="6" width="108" height="108" rx="25" fill="#141820"/>
+                <!-- Disconnected orange oval + headless yellow blob with no eye -->
+                <ellipse cx="22" cy="50" rx="10.5" ry="5.6" fill="#FF6B00"/>
+                <ellipse cx="89" cy="63" rx="16" ry="10.5" fill="#FFD000"/>
+                <ellipse cx="63" cy="73" rx="33" ry="24.5" fill="#FFD000"/>
+                <ellipse cx="63" cy="73" rx="16.5" ry="11.2" fill="#F5B800"/>
+              </svg>
+            </div>
+            <p class="compare-caption">Eye erased by head circle; beak floating; yellow-on-yellow in sidebar</p>
+          </div>
+
+          <div class="icon-compare-arrow">→</div>
+
+          <div class="icon-compare-box fixed">
+            <span class="compare-label-pill good">FIXED NOW (Clean Layering &amp; Contrast)</span>
+            <img src="../app/assets/icon.png" alt="Fixed Speakly Rubber Ducky App Icon" width="110" height="110" class="fixed-icon-img" />
+            <p class="compare-caption">Crisp Porter-Duff compositing, expressive eye, studio headphones &amp; dark squircle</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIVE HOME SCREEN / DOCK PREVIEW BAR -->
+      <div class="dock-preview-stage">
+        <div class="dock-stage-header">
+          <span class="pane-label">LIVE HOME SCREEN &amp; MACOS DOCK ICON PREVIEW (CLICK ANY OPTION TO INSPECT)</span>
+          <span class="pane-badge-gold" id="active-kit-indicator">Currently Active: Option 04 — LPU Cyber-Matrix</span>
+        </div>
+        <div class="macos-dock-shelf" id="brandkit-dock-shelf">
+          <!-- Populated dynamically by app.js with all 6 Rubber Ducky App Icons -->
+        </div>
+      </div>
+
+      <!-- 6 BRANDING KIT OPTIONS GRID WITH INTERACTIVE 5-STAR RATING -->
+      <div class="brandkit-options-grid" id="brandkit-cards-grid">
+        <!-- Populated dynamically by app.js -->
+      </div>
+
+      <!-- RATING SUMMARY BAR -->
+      <div class="brandkit-Leaderboard-bar">
+        <div>
+          <h4>Your Branding Kit Ratings Summary</h4>
+          <p id="brandkit-rating-summary-text">Click the stars (★) on any option above to rate it, or click "Apply Theme Live" to preview its palette across this website.</p>
+        </div>
+        <button class="btn-primary-duck" id="copy-ratings-btn">Copy My Ratings Summary</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       VIEW 2: INTERACTIVE SPEAKLY DESKTOP APP REPLICA ("PLAYGROUND")
+       Let users experience the actual Speakly Dashboard right inside the website
+       ========================================================================= -->
+  <section id="view-playground" class="page-view" hidden>
+    <div class="container playground-container">
+      <div class="playground-intro-bar">
+        <div>
+          <span class="section-kicker">INTERACTIVE PRODUCT REPLICA</span>
+          <h2>Test the Speakly Desktop Dashboard in your browser.</h2>
+        </div>
+        <p class="playground-hint">Click through tabs, add dictionary words, switch AI engines, or run a live dictation simulation.</p>
+      </div>
+
+      <!-- Full Desktop App Window Replica -->
+      <div class="desktop-replica-window">
+        <!-- Sidebar -->
+        <aside class="replica-sidebar">
+          <div class="replica-brand">
+            <div class="replica-duck-logo" id="replica-sidebar-duck"></div>
+            <div>
+              <div class="replica-title">Speakly</div>
+              <div class="replica-subtitle">Rubber Ducky AI v2.0</div>
+            </div>
+          </div>
+
+          <nav class="replica-nav">
+            <button class="replica-nav-btn active" data-replica-tab="home">
+              <span>🏠</span> Overview &amp; Live Log
+            </button>
+            <button class="replica-nav-btn" data-replica-tab="modes">
+              <span>✨</span> AI Formatting Modes
+            </button>
+            <button class="replica-nav-btn" data-replica-tab="dictionary">
+              <span>📖</span> Personal Dictionary
+            </button>
+            <button class="replica-nav-btn" data-replica-tab="settings">
+              <span>⚙️</span> Engine &amp; Hotkeys
+            </button>
+          </nav>
+
+          <div class="replica-hotkey-box">
+            <div class="hk-title">PUSH-TO-TALK HOTKEY</div>
+            <div class="hk-key" id="replica-active-hotkey">Right ⌘ Command</div>
+            <div class="hk-sub">Hands-free: ⌘ + Shift + Space</div>
+          </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <div class="replica-main">
+          <!-- TAB 1: HOME / OVERVIEW -->
+          <div class="replica-panel active" id="replica-tab-home">
+            <div class="replica-panel-header">
+              <div>
+                <h3>Good afternoon, Xsander 👋</h3>
+                <p>Hold <kbd>Spacebar</kbd> or click "Run Live Dictation" to log a new transcription.</p>
+              </div>
+              <button class="btn-primary-duck" id="replica-trigger-dictation">
+                🎙️ Run Live Dictation
+              </button>
+            </div>
+
+            <div class="replica-stats-grid">
+              <div class="replica-stat-card">
+                <span class="r-stat-label">WORDS DICTATED</span>
+                <strong class="r-stat-val" id="rep-stat-words">14,820</strong>
+                <span class="r-stat-sub">+340 today</span>
+              </div>
+              <div class="replica-stat-card">
+                <span class="r-stat-label">AVERAGE SPEED</span>
+                <strong class="r-stat-val gold">158 WPM</strong>
+                <span class="r-stat-sub">3.7× faster than typing</span>
+              </div>
+              <div class="replica-stat-card">
+                <span class="r-stat-label">TIME SAVED</span>
+                <strong class="r-stat-val" id="rep-stat-saved">4.2 hrs</strong>
+                <span class="r-stat-sub">This week</span>
+              </div>
+              <div class="replica-stat-card">
+                <span class="r-stat-label">ACTIVE ENGINE</span>
+                <strong class="r-stat-val" id="rep-stat-engine">Groq LPU</strong>
+                <span class="r-stat-sub">0.29s avg latency</span>
+              </div>
+            </div>
+
+            <h4 class="replica-section-title">Recent Dictation History</h4>
+            <div class="replica-history-list" id="replica-history-feed">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- TAB 2: AI MODES -->
+          <div class="replica-panel" id="replica-tab-modes" hidden>
+            <div class="replica-panel-header">
+              <div>
+                <h3>AI Formatting Modes</h3>
+                <p>Choose how your Rubber Ducky processes raw speech before pasting at your cursor.</p>
+              </div>
+            </div>
+
+            <div class="replica-modes-grid" id="replica-modes-selector">
+              <div class="rep-mode-item active" data-rep-mode="smart_polish">
+                <div class="rep-mode-top">
+                  <strong>✨ Smart Polish</strong>
+                  <span class="rep-badge">Active</span>
+                </div>
+                <p>Removes filler words ("um", "like") and resolves mid-sentence self-corrections automatically.</p>
+              </div>
+              <div class="rep-mode-item" data-rep-mode="verbatim">
+                <div class="rep-mode-top">
+                  <strong>⚡ Fast Verbatim</strong>
+                  <span class="rep-badge">Whisper Only</span>
+                </div>
+                <p>Pure acoustic transcription with clean punctuation. Skips LLM rewrite for 0.18s speed.</p>
+              </div>
+              <div class="rep-mode-item" data-rep-mode="email">
+                <div class="rep-mode-top">
+                  <strong>✉️ Professional Email</strong>
+                  <span class="rep-badge">Executive</span>
+                </div>
+                <p>Structures casual spoken thoughts into clear paragraphs with greeting and sign-off.</p>
+              </div>
+              <div class="rep-mode-item" data-rep-mode="notes">
+                <div class="rep-mode-top">
+                  <strong>📋 Actionable Notes</strong>
+                  <span class="rep-badge">Markdown</span>
+                </div>
+                <p>Converts voice brain-dumps into organized Markdown bullet lists.</p>
+              </div>
+              <div class="rep-mode-item" data-rep-mode="code">
+                <div class="rep-mode-top">
+                  <strong>⌨️ AI Prompt / Dev</strong>
+                  <span class="rep-badge">Technical</span>
+                </div>
+                <p>Formats spoken instructions into structured prompts for Cursor, Claude Code, and terminals.</p>
+              </div>
+            </div>
+
+            <div class="custom-prompt-card">
+              <label for="custom-system-prompt">Custom Mode System Prompt (Live Editable)</label>
+              <textarea id="custom-system-prompt" rows="3">Rewrite the dictated transcript into concise changelog release notes with [Added], [Fixed], and [Improved] tags. Never invent features.</textarea>
+            </div>
+          </div>
+
+          <!-- TAB 3: PERSONAL DICTIONARY -->
+          <div class="replica-panel" id="replica-tab-dictionary" hidden>
+            <div class="replica-panel-header">
+              <div>
+                <h3>Personal Dictionary</h3>
+                <p>Words added here are injected into Whisper and Llama 3.3 70B so custom jargon is never autocorrected away.</p>
+              </div>
+            </div>
+
+            <form class="rep-dict-add-bar" id="rep-dict-form">
+              <input type="text" id="rep-dict-input" placeholder="Enter a name, acronym, or technical term (e.g. PostgreSQL, Xsander, Speakly)..." required />
+              <button type="submit" class="btn-primary-duck">+ Add to Dictionary</button>
+            </form>
+
+            <div class="rep-dict-tags-cloud" id="rep-dict-cloud">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+
+          <!-- TAB 4: SETTINGS & ENGINE -->
+          <div class="replica-panel" id="replica-tab-settings" hidden>
+            <div class="replica-panel-header">
+              <div>
+                <h3>Cloud Engine &amp; Hotkey Preferences</h3>
+                <p>Configure your inference provider, push-to-talk trigger, and clipboard behavior.</p>
+              </div>
+            </div>
+
+            <div class="rep-settings-list">
+              <div class="rep-setting-row">
+                <div>
+                  <strong>AI Inference Provider</strong>
+                  <p>Groq LPU delivers ~0.3s latency at 1/8th cost; OpenAI supports 99+ languages.</p>
+                </div>
+                <select id="rep-engine-select" class="rep-select">
+                  <option value="Groq LPU">⚡ Groq LPU Turbo (Whisper v3 Turbo + Llama 3.3 70B)</option>
+                  <option value="OpenAI Cloud">🌐 OpenAI Cloud (Whisper-1 + GPT-4o-mini)</option>
+                </select>
+              </div>
+
+              <div class="rep-setting-row">
+                <div>
+                  <strong>Push-to-Talk Hotkey</strong>
+                  <p>Hold down to listen, release to paste at cursor.</p>
+                </div>
+                <select id="rep-hotkey-select" class="rep-select">
+                  <option value="Right ⌘ Command">Right ⌘ Command (macOS Recommended)</option>
+                  <option value="Right Option ⌥">Right Option ⌥</option>
+                  <option value="Right Control">Right Control (Windows Default)</option>
+                  <option value="Fn / Globe Key">Fn / Globe Key</option>
+                </select>
+              </div>
+
+              <div class="rep-setting-row">
+                <div>
+                  <strong>Automatic Clipboard Restoration</strong>
+                  <p>Saves your current clipboard before pasting and restores it 600ms later.</p>
+                </div>
+                <input type="checkbox" checked class="rep-toggle" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       VIEW 3: AD & LAUNCH FILM STUDIO (All 6 Rendered Videos)
+       ========================================================================= -->
+  <section id="view-films" class="page-view" hidden>
+    <div class="container films-view-container">
+      <div class="section-header-block">
+        <span class="section-kicker">SPEAKLY VIDEO PRODUCTION SUITE</span>
+        <h2 class="section-display">30-Second Commercials &amp; 4-Skill Comparison</h2>
+        <p class="section-sub">
+          Watch the two flagship 30-second commercials built with <code>remotion-best-practices</code> and <code>ad-creative</code>, plus the 4 original 5-second skill benchmarks.
+        </p>
+      </div>
+
+      <!-- Featured 30-Second Ads -->
+      <div class="dual-video-grid featured-30s-grid">
+        <div class="film-showcase-card highlight-gold">
+          <div class="film-card-header">
+            <div>
+              <span class="film-badge">FLAGSHIP #1 · REMOTION-BEST-PRACTICES (30s)</span>
+              <h3>Speakly 30s Product Launch Commercial</h3>
+              <p class="film-desc">6 spring-driven acts: Keyboard bottleneck hook → 3D Mascot reveal → Live Slack self-correction → 5 AI Modes → 158 WPM vs 42 WPM chart → End card.</p>
+            </div>
+            <a href="../showcase/videos/02-remotion-30s.mp4" download class="film-dl-link">⬇ MP4 (8.1 MB)</a>
+          </div>
+          <div class="video-frame-wrapper">
+            <video controls preload="metadata" playsinline src="../showcase/videos/02-remotion-30s.mp4"></video>
+          </div>
+        </div>
+
+        <div class="film-showcase-card highlight-gold">
+          <div class="film-card-header">
+            <div>
+              <span class="film-badge">FLAGSHIP #2 · AD-CREATIVE iMESSAGE REVEAL (30s)</span>
+              <h3>"How Did You Type That Whole Spec in 4 Seconds?"</h3>
+              <p class="film-desc">Authentic iOS dark-mode iMessage story with live Mid-Sentence Self-Correction inside the composer bar, Groq 0.3s proof, and `DUCKYPRO` promo reveal.</p>
+            </div>
+            <a href="../showcase/videos/03-ad-creative-30s.mp4" download class="film-dl-link">⬇ MP4 (3.3 MB)</a>
+          </div>
+          <div class="video-frame-wrapper">
+            <video controls preload="metadata" playsinline src="../showcase/videos/03-ad-creative-30s.mp4"></video>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4 Original 5-Second Skill Benchmarks -->
+      <h3 class="sub-gallery-heading">Original 4 Video Skills Comparison (5-Second Spots)</h3>
+      <div class="quad-video-grid">
+        <div class="mini-film-card">
+          <span class="mini-film-tag">01 · hyperframes</span>
+          <h4>HTML/GSAP Timeline</h4>
+          <video controls preload="metadata" loop muted playsinline src="../showcase/videos/01-hyperframes-launch.mp4"></video>
+        </div>
+        <div class="mini-film-card">
+          <span class="mini-film-tag">02 · remotion-best-practices</span>
+          <h4>Spring Physics UI</h4>
+          <video controls preload="metadata" loop muted playsinline src="../showcase/videos/02-remotion-best-practices.mp4"></video>
+        </div>
+        <div class="mini-film-card">
+          <span class="mini-film-tag">03 · ad-creative</span>
+          <h4>iMessage Thread Hook</h4>
+          <video controls preload="metadata" loop muted playsinline src="../showcase/videos/03-ad-creative-imessage.mp4"></video>
+        </div>
+        <div class="mini-film-card">
+          <span class="mini-film-tag">04 · ai-video-generation</span>
+          <h4>3D Acoustic Wire-Glow</h4>
+          <video controls preload="metadata" loop muted playsinline src="../showcase/videos/04-ai-video-wireglow.mp4"></video>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       VIEW 4: PRICING, BYOK CALCULATOR & TECHNICAL SPECIFICATIONS
+       ========================================================================= -->
+  <section id="view-pricing" class="page-view" hidden>
+    <div class="container pricing-view-container">
+      <div class="section-header-block">
+        <span class="section-kicker">EARLY ACCESS PRICING</span>
+        <h2 class="section-display">Zero-setup voice intelligence.<br />Straight to Early Access.</h2>
+        <p class="section-sub">
+          Speakly transforms rambling speech into clean, structured prose at 160 WPM. Instant sub-second Groq LPU processing with zero API keys to configure.
+        </p>
+      </div>
+
+      <div class="pricing-cards-grid" style="max-width: 580px; margin: 0 auto;">
+        <!-- Single Focused Early Access Tier -->
+        <div class="pricing-card featured-pro" style="width: 100%;">
+          <div class="pricing-tier-badge gold">EARLY ACCESS EDITION</div>
+          <h3>Speakly Pro</h3>
+          <div class="pricing-amount">
+            <span class="price-big">$10</span>
+            <span class="price-period">/ month · 14-day free trial</span>
+          </div>
+          <p class="pricing-desc">Full access to the non-focus-stealing Rubber Ducky assistant across all your apps on macOS &amp; Windows.</p>
+          <ul class="pricing-features">
+            <li>✓ Unlimited sub-second push-to-talk dictation on macOS &amp; Windows</li>
+            <li>✓ Automatic removal of filler words ("um", "uh") &amp; self-corrections</li>
+            <li>✓ All 5 AI Formatting Modes (AI Prompt / Dev, Email, Notes, Verbatim, Smart)</li>
+            <li>✓ Personal Dictionary for technical terms, codenames &amp; acronyms</li>
+            <li>✓ Supabase Cloud Sync for your dictionary and preferences</li>
+            <li>✓ Direct in-app feedback button with 24h founder response</li>
+          </ul>
+          <button class="btn-primary-duck full-width" data-open-modal="download">
+            Start 14-Day Free Trial
+          </button>
+        </div>
+      </div>
+
+      <!-- Technical Specs Table -->
+      <div class="specs-table-card">
+        <h3>Technical Architecture &amp; System Specifications</h3>
+        <div class="specs-grid">
+          <div class="spec-row">
+            <span class="spec-key">Supported Platforms</span>
+            <span class="spec-val">macOS 13+ (Apple Silicon M1–M4 &amp; Intel) · Windows 10/11 (64-bit)</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">Acoustic Capture</span>
+            <span class="spec-val">16kHz Mono PCM (`navigator.mediaDevices`) with 60fps real-time frequency analysis</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">Primary Fast Engine</span>
+            <span class="spec-val">Groq LPU (`whisper-large-v3-turbo` + `llama-3.3-70b-versatile`) · ~290ms median</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">Multilingual Engine</span>
+            <span class="spec-val">OpenAI Cloud (`whisper-1` + `gpt-4o-mini`) · 99+ languages supported</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">Window Focus Handling</span>
+            <span class="spec-val">Non-focus-stealing Electron overlay (`alwaysOnTop: screen-saver`, `focusable: false`)</span>
+          </div>
+          <div class="spec-row">
+            <span class="spec-key">Clipboard Safety</span>
+            <span class="spec-val">Snapshots prior clipboard state before native keystroke paste and restores after 600ms</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       APPLE SHEET MODAL: DOWNLOAD / PROMO CODE CLAIM
+       Follows apple-design spring sheet rules
+       ========================================================================= -->
+  <div class="apple-modal-backdrop" id="download-modal" hidden>
+    <div class="apple-sheet-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <button class="modal-close-btn" id="close-modal-btn" aria-label="Close">✕</button>
+      <div class="modal-duck-hero" id="modal-duck-svg"></div>
+      <span class="section-kicker">DIRECT DOWNLOAD · EARLY ACCESS</span>
+      <h3 id="modal-title">Download Speakly for Desktop</h3>
+      <p>Choose your operating system below. One-click installer with zero configuration needed.</p>
+
+      <div class="modal-dl-grid">
+        <a href="../app/dist/Speakly-1.0.0-mac-arm64.dmg" download="Speakly-1.0.0-mac-arm64.dmg" class="modal-os-card" id="dl-mac-btn">
+          <strong> macOS (.dmg)</strong>
+          <span>Apple Silicon (M1–M4) &amp; Intel · 106 MB</span>
+        </a>
+        <a href="../app/dist/Speakly-Setup-1.0.0-win.exe" download="Speakly-Setup-1.0.0-win.exe" class="modal-os-card" id="dl-win-btn">
+          <strong>⊞ Windows Installer (.exe)</strong>
+          <span>Windows 10 &amp; 11 (64-bit) · 89 MB</span>
+        </a>
+      </div>
+
+      <div style="text-align: center; margin-top: 18px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
+        <a href="setup-guide.html" target="_blank" style="color: #facc15; font-size: 13px; text-decoration: none; font-weight: 600;">📖 macOS Setup Guide (2 min) →</a>
+        <a href="setup-guide-windows.html" target="_blank" style="color: #38bdf8; font-size: 13px; text-decoration: none; font-weight: 600;">📖 Windows Handleiding (2 min) →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       FOOTER
+       ========================================================================= -->
+  <footer class="apple-footer">
+    <div class="container footer-inner">
+      <div class="footer-left">
+        <span class="footer-brand">🦆 Speakly — Rubber Ducky AI</span>
+        <span class="footer-copy">Built with Apple HIG Physics (`apple-design`), Anti-Slop Art Direction (`design-taste-frontend`), GSAP + Lenis (`cinematic-scroll-storytelling`), and Conversion Copy (`copywriting`).</span>
+      </div>
+      <div class="footer-links">
+        <button class="footer-link-btn" data-open-view="landing">Overview</button>
+        <button class="footer-link-btn" data-open-view="playground">Live Web App</button>
+        <button class="footer-link-btn" data-open-view="films">30s Launch Films</button>
+        <button class="footer-link-btn" data-open-view="pricing">Pricing &amp; Specs</button>
+        <a href="setup-guide.html" target="_blank" class="footer-link-btn" style="text-decoration: none;">Setup Guide</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- GSAP + ScrollTrigger + Lenis Smooth Scroll (via lightweight CDN) -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

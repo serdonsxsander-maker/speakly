@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&family=JetBrains+Mono:wght@600;700&display=swap');
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #0c0d12;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: #f1f5f9;
+      }
+      #stage {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        background: radial-gradient(circle at 68% 35%, #1d233a 0%, #0c0d12 76%);
+        display: grid;
+        grid-template-columns: 1fr 680px;
+        align-items: center;
+        padding: 0 96px;
+        gap: 56px;
+      }
+
+      /* Left Strategy & Live Proof Column */
+      .left-col {
+        display: flex;
+        flex-direction: column;
+        gap: 26px;
+      }
+      .brand-row {
+        display: inline-flex;
+        align-self: flex-start;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 26px 12px 14px;
+        background: rgba(22, 25, 36, 0.94);
+        border: 2px solid rgba(255, 208, 0, 0.5);
+        border-radius: 999px;
+      }
+      .brand-row svg { width: 46px; height: 46px; }
+      .brand-title { font-size: 26px; font-weight: 900; }
+      .brand-sub { font-size: 18px; font-weight: 700; color: #FFD000; padding-left: 14px; border-left: 2px solid #2a3044; }
+      .ad-headline {
+        font-size: 62px;
+        font-weight: 900;
+        line-height: 1.06;
+        letter-spacing: -0.03em;
+      }
+      .ad-headline span { color: #FFD000; }
+
+      .beat-card {
+        background: #161924;
+        border: 2px solid #2a3044;
+        border-left: 6px solid #FFD000;
+        border-radius: 22px;
+        padding: 26px 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+      }
+      .beat-eyebrow {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 16px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #FFD000;
+      }
+      .beat-text {
+        font-size: 22px;
+        color: #e2e8f0;
+        line-height: 1.45;
+        font-weight: 600;
+      }
+
+      /* Live Floating Speakly Pill Preview on Left */
+      .live-hud-preview {
+        background: #11131b;
+        border: 2px solid #2a3044;
+        border-radius: 24px;
+        padding: 22px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+      .mini-pill {
+        display: inline-flex;
+        align-items: center;
+        height: 68px;
+        padding: 0 26px 0 14px;
+        gap: 16px;
+        border-radius: 999px;
+        background: rgba(22, 24, 30, 0.96);
+        border: 2.5px solid #FFD000;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.6), 0 0 24px rgba(255, 208, 0, 0.35);
+      }
+      .mini-pill svg { width: 48px; height: 48px; }
+      .mini-pill-title { font-size: 21px; font-weight: 900; color: #FFD000; }
+      .mini-pill-sub { font-size: 15px; color: #94a3b8; font-weight: 600; }
+
+      .promo-strip {
+        display: inline-flex;
+        align-self: flex-start;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 30px;
+        border-radius: 16px;
+        background: rgba(52, 211, 153, 0.14);
+        border: 2px solid #34d399;
+        font-size: 22px;
+        font-weight: 800;
+        color: #34d399;
+      }
+
+      /* Right iPhone 16 Pro iMessage Shell */
+      .iphone-shell {
+        width: 620px;
+        height: 960px;
+        background: #000000;
+        border: 7px solid #2a3044;
+        border-radius: 58px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 40px 100px rgba(0,0,0,0.88), 0 0 55px rgba(255, 208, 0, 0.2);
+        position: relative;
+      }
+      .imsg-header {
+        background: #141416;
+        padding: 22px 26px 16px;
+        border-bottom: 1px solid #27272a;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+        z-index: 10;
+      }
+      .peer-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f59e0b, #ea580c);
+        display: grid;
+        place-items: center;
+        font-size: 20px;
+        font-weight: 800;
+      }
+      .peer-name { font-size: 18px; font-weight: 700; color: #f4f4f5; }
+
+      .imsg-viewport {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+        padding: 20px 22px;
+      }
+      .imsg-thread {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        transition: transform 0.2s ease-out;
+      }
+      .bubble {
+        max-width: 82%;
+        padding: 13px 18px;
+        border-radius: 20px;
+        font-size: 19.5px;
+        line-height: 1.34;
+        font-weight: 500;
+        display: none;
+      }
+      .bubble.sent {
+        align-self: flex-end;
+        background: #0A84FF;
+        color: #ffffff;
+        border-bottom-right-radius: 6px;
+      }
+      .bubble.recv {
+        align-self: flex-start;
+        background: #262629;
+        color: #f4f4f5;
+        border-bottom-left-radius: 6px;
+      }
+      .typing-dots {
+        align-self: flex-start;
+        background: #262629;
+        padding: 14px 20px;
+        border-radius: 20px;
+        display: none;
+        gap: 6px;
+        align-items: center;
+      }
+      .dot {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: #71717a;
+      }
+
+      /* Attachment Cards inside iMessage */
+      .attachment-card {
+        align-self: flex-end;
+        width: 86%;
+        background: #161924;
+        border: 2px solid #FFD000;
+        border-radius: 20px;
+        padding: 16px 18px;
+        display: none;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .att-row { display: flex; align-items: center; gap: 12px; }
+      .att-row svg { width: 38px; height: 38px; flex-shrink: 0; }
+      .att-stat { font-size: 24px; font-weight: 900; color: #FFD000; }
+      .att-sub { font-size: 15px; color: #94a3b8; font-weight: 600; }
+      .code-link { text-decoration: underline; font-weight: 800; color: #FFD000; }
+
+      /* Composer Bar at Bottom of iPhone */
+      .composer-bar {
+        background: #141416;
+        border-top: 1px solid #27272a;
+        padding: 14px 18px 22px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .composer-plus {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #27272a;
+        color: #a1a1aa;
+        display: grid;
+        place-items: center;
+        font-size: 22px;
+        font-weight: 600;
+      }
+      .composer-input {
+        flex: 1;
+        min-height: 40px;
+        border-radius: 20px;
+        background: #09090b;
+        border: 1.5px solid #27272a;
+        padding: 9px 16px;
+        font-size: 17px;
+        color: #f4f4f5;
+        display: flex;
+        align-items: center;
+      }
+      .composer-send {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: #0A84FF;
+        color: #fff;
+        display: grid;
+        place-items: center;
+        font-size: 17px;
+        font-weight: 900;
+      }
+
+      /* End Card Slate Overlay inside iPhone */
+      .end-slate {
+        position: absolute;
+        inset: 0;
+        background: #0c0d12;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 40px;
+        text-align: center;
+        gap: 22px;
+        opacity: 0;
+        z-index: 25;
+      }
+      .end-slate svg { width: 148px; height: 148px; }
+      .end-slate h2 { font-size: 58px; font-weight: 900; color: #ffffff; letter-spacing: -0.02em; }
+      .end-slate p { font-size: 23px; color: #94a3b8; font-weight: 600; line-height: 1.4; }
+      .end-code-pill {
+        padding: 18px 38px;
+        background: #FFD000;
+        color: #0c0d12;
+        border-radius: 999px;
+        font-size: 25px;
+        font-weight: 900;
+        box-shadow: 0 14px 35px rgba(255, 208, 0, 0.4);
+      }
+
+      .timeline-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        height: 8px;
+        background: linear-gradient(90deg, #0A84FF, #FFD000, #34d399);
+        z-index: 40;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage">
+      <!-- Left Marketing & Proof Column -->
+      <div class="left-col">
+        <div class="brand-row">
+          <svg viewBox="0 0 100 100" fill="none">
+            <ellipse cx="50" cy="62" rx="32" ry="24" fill="#FFD000" />
+            <path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000" />
+            <path d="M38 58 Q48 50 62 60 Q52 74 38 70 Z" fill="#F5B800" />
+            <circle cx="36" cy="36" r="21" fill="#FFD000" />
+            <path d="M18 36 Q8 38 12 44 Q22 46 26 42 Z" fill="#FF6B00" />
+            <ellipse cx="33" cy="32" rx="4" ry="5.5" fill="#1E293B" />
+            <circle cx="31.5" cy="30" r="1.8" fill="#FFFFFF" />
+          </svg>
+          <span class="brand-title">Speakly</span>
+          <span class="brand-sub">30s iMessage Reveal Ad (`ad-creative`)</span>
+        </div>
+
+        <h1 class="ad-headline">12-Bubble Story Arc &amp;<br/><span>Live Composer Drive</span></h1>
+
+        <div class="beat-card">
+          <div class="beat-eyebrow" id="beat-label">BEAT 1 (0:00 - 0:06) · HOOK ATTACHMENT &amp; CURIOSITY</div>
+          <div class="beat-text" id="beat-desc">
+            Opens with a verifiable Speakly productivity stat screenshot (`158 WPM · 4.2 hrs saved`) before naming the brand, triggering peer curiosity ("what app is that??").
+          </div>
+        </div>
+
+        <div class="live-hud-preview">
+          <div>
+            <div style="font-size:15px; font-weight:800; text-transform:uppercase; color:#94a3b8; letter-spacing:0.08em;">Synchronized Speakly Mascot State</div>
+            <div style="font-size:21px; font-weight:700; color:#f1f5f9; margin-top:4px;" id="left-hud-caption">Hold Right ⌘ to Dictate Replies</div>
+          </div>
+          <div class="mini-pill" id="left-mini-pill">
+            <div id="left-duck-mount"></div>
+            <div>
+              <div class="mini-pill-title" id="left-pill-title">Listening…</div>
+              <div class="mini-pill-sub" id="left-pill-sub">Groq LPU 0.3s</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="promo-strip">
+          <span>🐥 Conversational Offer + Slate Reinforcement:</span>
+          <span style="color:#FFD000;">DUCKYPRO</span>
+        </div>
+      </div>
+
+      <!-- Right iPhone 9:16 iMessage Thread -->
+      <div class="iphone-shell">
+        <div class="imsg-header">
+          <div class="peer-avatar">AL</div>
+          <div class="peer-name">Alex (Product Lead)</div>
+        </div>
+
+        <div class="imsg-viewport">
+          <div class="imsg-thread" id="thread-box">
+            <!-- b1 (0.4s): Hook Screenshot Attachment -->
+            <div class="attachment-card" id="b1">
+              <div class="att-row">
+                <svg viewBox="0 0 100 100" fill="none">
+                  <ellipse cx="50" cy="62" rx="32" ry="24" fill="#FFD000" />
+                  <path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000" />
+                  <path d="M38 58 Q48 50 62 60 Q52 74 38 70 Z" fill="#F5B800" />
+                  <circle cx="36" cy="36" r="21" fill="#FFD000" />
+                  <path d="M18 36 Q8 38 12 44 Q22 46 26 42 Z" fill="#FF6B00" />
+                  <ellipse cx="33" cy="32" rx="4" ry="5.5" fill="#1E293B" />
+                  <circle cx="31.5" cy="30" r="1.8" fill="#FFFFFF" />
+                </svg>
+                <div>
+                  <div class="att-stat">158 WPM · 4.2 hrs saved</div>
+                  <div class="att-sub">Speakly Weekly Dictation Report</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bubble recv" id="b2">bro wait 158 wpm?? 😭</div>
+            <div class="bubble recv" id="b3">how did you write that whole Q4 launch doc in 4 minutes</div>
+            <div class="bubble recv" id="b4">what app is that??</div>
+
+            <!-- b5 (7.2s): Late Brand Reveal -->
+            <div class="bubble sent" id="b5">it's called Speakly — little yellow rubber duck on my Mac</div>
+            <div class="bubble sent" id="b6">i just hold Right ⌘ and talk, it pastes right into Notion, Slack, or VS Code</div>
+
+            <!-- b7 (12.8s): Objection handling -->
+            <div class="bubble recv" id="b7">wait doesn't voice typing mess up when you say "um" or change your mind mid sentence?</div>
+
+            <!-- b8 (15.8s): Smart Polish proof -->
+            <div class="bubble sent" id="b8">nah it has Smart Polish mode — strips out "um" and self-corrections automatically</div>
+
+            <!-- b9 (18.2s): HUD + Groq LPU attachment -->
+            <div class="attachment-card" id="b9" style="border-color:#34d399;">
+              <div class="att-row">
+                <svg viewBox="0 0 100 100" fill="none">
+                  <ellipse cx="50" cy="62" rx="32" ry="24" fill="#FFD000" />
+                  <path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000" />
+                  <path d="M38 58 Q48 50 62 60 Q52 74 38 70 Z" fill="#F5B800" />
+                  <circle cx="36" cy="36" r="21" fill="#FFD000" />
+                  <path d="M18 36 Q8 38 12 44 Q22 46 26 42 Z" fill="#FF6B00" />
+                  <path d="M28 33 Q34 26 40 33" stroke="#0F172A" stroke-width="3.2" stroke-linecap="round" fill="none" />
+                  <ellipse cx="26" cy="38" rx="4" ry="2.2" fill="#FF8A8A" />
+                </svg>
+                <div>
+                  <div class="att-stat" style="color:#34d399;">Pasted! ✨ (0.3s Groq LPU)</div>
+                  <div class="att-sub">"Move review to 2pm wait no 3:30pm" → "3:30 PM"</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="bubble recv" id="b10">ok wait that's insane. does it work on Windows too?</div>
+            <div class="bubble sent" id="b11">yep Mac + Windows. use code <span class="code-link">DUCKYPRO</span> — first month is free</div>
+            <div class="bubble recv" id="b12">bet downloading rn 🐥</div>
+
+            <!-- Typing indicator -->
+            <div class="typing-dots" id="typing-dots">
+              <div class="dot"></div>
+              <div class="dot"></div>
+              <div class="dot"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="composer-bar">
+          <div class="composer-plus">+</div>
+          <div class="composer-input" id="composer-text">iMessage</div>
+          <div class="composer-send">↑</div>
+        </div>
+
+        <!-- Static Brand End Card Slate (26.0s - 30.0s) -->
+        <div class="end-slate" id="end-slate">
+          <svg viewBox="0 0 100 100" fill="none">
+            <ellipse cx="50" cy="62" rx="32" ry="24" fill="#FFD000" />
+            <path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000" />
+            <path d="M38 58 Q48 50 62 60 Q52 74 38 70 Z" fill="#F5B800" />
+            <circle cx="36" cy="36" r="21" fill="#FFD000" />
+            <path d="M18 36 Q8 38 12 44 Q22 46 26 42 Z" fill="#FF6B00" />
+            <path d="M28 33 Q34 26 40 33" stroke="#0F172A" stroke-width="3.2" stroke-linecap="round" fill="none" />
+            <ellipse cx="26" cy="38" rx="4" ry="2.2" fill="#FF8A8A" />
+            <path d="M36 4 L38 10 L44 12 L38 14 L36 20 L34 14 L28 12 L34 10 Z" fill="#FBBF24" />
+          </svg>
+          <h2>Speakly</h2>
+          <p>AI Voice-to-Text with Rubber Ducky<br/>macOS &amp; Windows · Groq + OpenAI</p>
+          <div class="end-code-pill">Use Code: DUCKYPRO</div>
+        </div>
+      </div>
+
+      <div class="timeline-bar" id="timeline-bar" style="width: 0%;"></div>
+    </div>
+
+    <script>
+      const DUCK_LISTEN = `<svg viewBox="0 0 100 100" fill="none"><ellipse cx="50" cy="62" rx="32" ry="24" fill="#FFD000"/><path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000"/><path d="M38 58 Q48 50 62 60 Q52 74 38 70 Z" fill="#F5B800"/><circle cx="36" cy="36" r="21" fill="#FFD000"/><path d="M18 36 Q8 38 12 44 Q22 46 26 42 Z" fill="#FF6B00"/><ellipse cx="33" cy="32" rx="4" ry="5.5" fill="#1E293B"/><circle cx="31.5" cy="30" r="1.8" fill="#FFFFFF"/><path d="M23 28 C23 15, 48 15, 49 28" stroke="#3B82F6" stroke-width="3.5" stroke-linecap="round"/><rect x="19" y="27" width="6" height="12" rx="3" fill="#2563EB"/><rect x="46" y="27" width="6" height="12" rx="3" fill="#2563EB"/></svg>`;
+      const DUCK_PASTED = `<svg viewBox="0 0 100 100" fill="none"><ellipse cx="50" cy="62" rx="32" ry="24" fill="#FFD000"/><path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000"/><path d="M38 58 Q48 50 62 60 Q52 74 38 70 Z" fill="#F5B800"/><circle cx="36" cy="36" r="21" fill="#FFD000"/><path d="M18 36 Q8 38 12 44 Q22 46 26 42 Z" fill="#FF6B00"/><path d="M28 33 Q34 26 40 33" stroke="#0F172A" stroke-width="3.2" stroke-linecap="round" fill="none"/><ellipse cx="26" cy="38" rx="4" ry="2.2" fill="#FF8A8A"/></svg>`;
+
+      const BUBBLES = [
+        { id: 'b1', t: 0.4, display: 'flex', scroll: 0 },
+        { id: 'b2', t: 2.0, display: 'block', scroll: 0 },
+        { id: 'b3', t: 3.2, display: 'block', scroll: 0 },
+        { id: 'b4', t: 4.6, display: 'block', scroll: 0 },
+        { id: 'b5', t: 7.2, display: 'block', scroll: 0, composeStart: 5.2, text: "it's called Speakly — little yellow rubber duck on my Mac" },
+        { id: 'b6', t: 10.2, display: 'block', scroll: -60, composeStart: 8.0, text: "i just hold Right ⌘ and talk, it pastes right into Notion, Slack, or VS Code" },
+        { id: 'b7', t: 12.8, display: 'block', scroll: -150 },
+        { id: 'b8', t: 16.0, display: 'block', scroll: -240, composeStart: 13.8, text: "nah it has Smart Polish mode — strips out \"um\" and self-corrections automatically" },
+        { id: 'b9', t: 18.2, display: 'flex', scroll: -340 },
+        { id: 'b10', t: 20.6, display: 'block', scroll: -410 },
+        { id: 'b11', t: 23.4, display: 'block', scroll: -490, composeStart: 21.3, text: "yep Mac + Windows. use code DUCKYPRO — first month is free" },
+        { id: 'b12', t: 25.0, display: 'block', scroll: -540 },
+      ];
+
+      window.setVideoTime = function(t) {
+        document.getElementById('timeline-bar').style.width = `${(t / 30) * 100}%`;
+
+        let currentScroll = 0;
+        let composerStr = '';
+        let isComposing = false;
+
+        for (const b of BUBBLES) {
+          const el = document.getElementById(b.id);
+          if (t >= b.t) {
+            el.style.display = b.display;
+            currentScroll = b.scroll;
+          } else {
+            el.style.display = 'none';
+          }
+          if (b.composeStart && t >= b.composeStart && t < b.t) {
+            isComposing = true;
+            const p = (t - b.composeStart) / (b.t - b.composeStart);
+            const chars = Math.floor(p * b.text.length);
+            composerStr = b.text.slice(0, chars);
+          }
+        }
+
+        document.getElementById('thread-box').style.transform = `translateY(${currentScroll}px)`;
+
+        const compEl = document.getElementById('composer-text');
+        const leftPill = document.getElementById('left-mini-pill');
+        const leftDuck = document.getElementById('left-duck-mount');
+        const leftTitle = document.getElementById('left-pill-title');
+
+        if (isComposing) {
+          compEl.textContent = composerStr + '|';
+          compEl.style.color = '#ffffff';
+          leftDuck.innerHTML = DUCK_LISTEN;
+          leftPill.style.borderColor = '#FFD000';
+          leftTitle.textContent = 'Dictating…';
+          leftTitle.style.color = '#FFD000';
+        } else {
+          compEl.textContent = 'iMessage';
+          compEl.style.color = '#71717a';
+          leftDuck.innerHTML = DUCK_PASTED;
+          leftPill.style.borderColor = '#34d399';
+          leftTitle.textContent = 'Pasted! ✨';
+          leftTitle.style.color = '#34d399';
+        }
+
+        // Typing dots for peer before b7 and b10
+        const dots = document.getElementById('typing-dots');
+        if ((t >= 11.2 && t < 12.8) || (t >= 19.2 && t < 20.6)) {
+          dots.style.display = 'inline-flex';
+        } else {
+          dots.style.display = 'none';
+        }
+
+        // Update Left Strategy Beat Card
+        const bLbl = document.getElementById('beat-label');
+        const bDesc = document.getElementById('beat-desc');
+        if (t < 6.5) {
+          bLbl.textContent = 'BEAT 1 (0:00 - 0:06) · HOOK SCREENSHOT & PEER CURIOSITY';
+          bDesc.textContent = 'Opens with a verifiable Speakly productivity stat screenshot (158 WPM · 4.2 hrs saved) before naming the brand.';
+        } else if (t < 12.5) {
+          bLbl.textContent = 'BEAT 2 (0:06 - 0:12) · LATE BRAND REVEAL & PUSH-TO-TALK';
+          bDesc.textContent = 'Brand appears only after the peer asks ("what app is that??"), explaining the Right ⌘ Rubber Ducky workflow in natural texting voice.';
+        } else if (t < 20.0) {
+          bLbl.textContent = 'BEAT 3 (0:12 - 0:20) · OBJECTION HANDLING (SMART POLISH)';
+          bDesc.textContent = 'Handles the #1 voice-typing objection ("um" and mid-sentence restarts) with a live Smart Polish + Groq LPU 0.3s proof card.';
+        } else if (t < 26.0) {
+          bLbl.textContent = 'BEAT 4 (0:20 - 0:26) · CONVERSATIONAL PROMO CODE REVEAL';
+          bDesc.textContent = 'Delivers the promo code (DUCKYPRO) with iOS link-detection underline inside the chat before the closer ("bet downloading rn 🐥").';
+        } else {
+          bLbl.textContent = 'BEAT 5 (0:26 - 0:30) · 300MS CROSSFADE TO STATIC END SLATE';
+          bDesc.textContent = 'Crossfades cleanly to the static Speakly Rubber Ducky lockup and reinforces the DUCKYPRO offer.';
+        }
+
+        // 300ms crossfade to static end slate at 26.0s
+        const slate = document.getElementById('end-slate');
+        if (t >= 26.0) {
+          const alpha = Math.min(1, (t - 26.0) / 0.3);
+          slate.style.opacity = String(alpha);
+        } else {
+          slate.style.opacity = '0';
+        }
+      };
+      window.setVideoTime(0);
+    </script>
+  </body>
+</html>

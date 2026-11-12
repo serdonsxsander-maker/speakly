@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8">
+  <title>Speakly Windows Installatie &amp; Handleiding</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Stap-voor-stap installatiehandleiding voor Speakly AI Voice Dictation op Windows 10 en 11.">
+  <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: #141417;
+      --card-border: #27272a;
+      --accent: #facc15;
+      --accent-glow: rgba(250, 204, 21, 0.2);
+      --text-main: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --text-sub: #71717a;
+      --green: #22c55e;
+      --green-glow: rgba(34, 197, 94, 0.15);
+      --blue: #38bdf8;
+      --kbd-bg: #1f1f23;
+      --kbd-border: #3f3f46;
+      --code-bg: #18181b;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      padding: 40px 20px 80px;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent-glow);
+      color: var(--accent);
+      border: 1px solid rgba(250, 204, 21, 0.3);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 4px 14px;
+      border-radius: 9999px;
+      margin-bottom: 16px;
+      letter-spacing: 0.02em;
+    }
+
+    h1 {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+      color: #ffffff;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 16px;
+      max-width: 580px;
+      margin: 0 auto;
+    }
+
+    .highlights-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 600px) {
+      .highlights-grid { grid-template-columns: 1fr; }
+    }
+
+    .highlight-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .highlight-icon {
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+
+    .highlight-title {
+      font-weight: 700;
+      font-size: 15px;
+      color: #ffffff;
+    }
+
+    .highlight-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .step-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+
+    .step-num {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #000;
+      font-weight: 800;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .step-desc {
+      color: var(--text-muted);
+      font-size: 14.5px;
+      margin-bottom: 16px;
+    }
+
+    .callout {
+      background: rgba(255, 255, 255, 0.03);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 10px 10px 0;
+      padding: 12px 16px;
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin: 16px 0;
+    }
+
+    .callout.tip {
+      border-left-color: var(--green);
+      background: var(--green-glow);
+      color: #dcfce7;
+    }
+
+    .callout.warn {
+      border-left-color: #f97316;
+      background: rgba(249, 115, 22, 0.1);
+      color: #ffedd5;
+    }
+
+    .checklist {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .checklist li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text-main);
+    }
+
+    .check-box {
+      width: 20px;
+      height: 20px;
+      border-radius: 6px;
+      border: 1.5px solid var(--card-border);
+      background: #18181b;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: transparent;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+      font-size: 12px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .check-box.checked {
+      background: var(--green);
+      border-color: var(--green);
+      color: #000000;
+    }
+
+    kbd {
+      background: var(--kbd-bg);
+      border: 1px solid var(--kbd-border);
+      border-bottom: 2px solid var(--kbd-border);
+      border-radius: 6px;
+      padding: 2px 7px;
+      font-size: 12.5px;
+      font-family: inherit;
+      color: #ffffff;
+      font-weight: 600;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      display: inline-block;
+    }
+
+    .faq-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 48px 0 20px;
+    }
+
+    .faq-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 18px 22px;
+      margin-bottom: 12px;
+    }
+
+    .faq-q {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .faq-a {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    footer {
+      text-align: center;
+      color: var(--text-sub);
+      font-size: 12.5px;
+      margin-top: 60px;
+      padding-top: 24px;
+      border-top: 1px solid var(--card-border);
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge">🐥 Speakly AI · Windows 10 &amp; 11 Setup</div>
+      <h1>Speakly Installatiegids voor Windows</h1>
+      <p>Stap-voor-stap handleiding om Speakly in 2 minuten te installeren op elke Windows-laptop.</p>
+    </header>
+
+    <div class="highlights-grid">
+      <div class="highlight-card">
+        <div class="highlight-icon">🌐</div>
+        <div class="highlight-title">Werkt op Elk Wi-Fi Netwerk</div>
+        <div class="highlight-desc">Geen lokaal netwerk nodig. Werkt via veilige cloud-verbindingen thuis, op kantoor, op school of via een mobiele hotspot.</div>
+      </div>
+      <div class="highlight-card">
+        <div class="highlight-icon">⚡</div>
+        <div class="highlight-title">Blijft Altijd Actief</div>
+        <div class="highlight-desc">Je hoeft Speakly maar één keer in te stellen. Na het dichtklappen of herstarten van de laptop start Speakly automatisch weer op.</div>
+      </div>
+    </div>
+
+    <!-- Stap 1 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <h2 class="step-title">Download het Installatiebestand</h2>
+      </div>
+      <p class="step-desc">
+        Download of kopieer het installatiebestand naar je Windows-laptop:
+      </p>
+      <div style="background: rgba(255,255,255,0.03); padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08); font-family: monospace; font-size: 14px; color: var(--accent);">
+        📁 Speakly-Setup-1.0.0.exe
+      </div>
+      <p style="color: var(--text-muted); font-size: 13px; margin-top: 10px;">
+        Plaats dit bestand in je map <strong>Downloads</strong> of op het <strong>Bureaublad</strong>.
+      </p>
+    </div>
+
+    <!-- Stap 2 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-num">2</div>
+        <h2 class="step-title">Microsoft Defender SmartScreen Bevestigen</h2>
+      </div>
+      <p class="step-desc">
+        Omdat Speakly een interne testerversie is zonder commercieel Microsoft-certificaat, toont Windows eenmalig een blauw beveiligingsvenster:
+      </p>
+
+      <div style="background: rgba(0, 120, 215, 0.15); border: 1px solid rgba(0, 120, 215, 0.4); border-radius: 12px; padding: 18px; margin: 16px 0;">
+        <strong style="color: #60a5fa; font-size: 14px;">Windows heeft uw pc beschermd</strong>
+        <p style="color: var(--text-muted); font-size: 13px; margin-top: 6px;">
+          Microsoft Defender SmartScreen heeft het starten van een onbekende app voorkomen.
+        </p>
+      </div>
+
+      <div class="callout warn">
+        <strong>Wat je moet doen:</strong><br>
+        1. Klik op de link <strong>"Meer informatie"</strong> (More info).<br>
+        2. Klik rechtsonder op de knop <strong>"Toch uitvoeren"</strong> (Run anyway).
+      </div>
+    </div>
+
+    <!-- Stap 3 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-num">3</div>
+        <h2 class="step-title">De Installatiewizard Voltooien</h2>
+      </div>
+      <p class="step-desc">
+        Het installatieprogramma opent nu automatisch:
+      </p>
+      <ol style="margin-left: 20px; color: var(--text-muted); font-size: 14px; display: flex; flex-direction: column; gap: 8px;">
+        <li>Klik op <strong>Volgende</strong> (Next) in het welkomstscherm.</li>
+        <li>Kies de installatiemap (standaard is perfect: <code>C:\Users\&lt;Naam&gt;\AppData\Local\Programs\Speakly</code>).</li>
+        <li>Zorg dat het vinkje voor <strong>"Snelkoppeling op het bureaublad maken"</strong> aan staat.</li>
+        <li>Klik op <strong>Installeren</strong> en tenslotte op <strong>Voltooien</strong>.</li>
+      </ol>
+      <div class="callout tip">
+        <strong>✓ Tip:</strong> Vink op het laatste scherm <em>"Speakly starten"</em> aan zodat het programma direct opent.
+      </div>
+    </div>
+
+    <!-- Stap 4 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-num">4</div>
+        <h2 class="step-title">Eerste Keer Inloggen &amp; Microfoon Toestaan</h2>
+      </div>
+      <p class="step-desc">
+        Wanneer Speakly opent, verschijnt het Setup-venster:
+      </p>
+      <div style="display: flex; flex-direction: column; gap: 12px; margin: 16px 0;">
+        <div style="background: rgba(255,255,255,0.03); padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+          <strong style="color: #ffffff; font-size: 14px;">1. Account Koppelen</strong>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Klik op <strong>Sign in with Google</strong> of voer je e-mailadres en wachtwoord in.</p>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+          <strong style="color: #ffffff; font-size: 14px;">2. Microfoontoegang</strong>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Klik op <strong>Allow Microphone</strong>. Als Windows een pop-up toont, klik op <strong>Toestaan</strong>.</p>
+        </div>
+      </div>
+      <div class="callout tip">
+        <strong>Geen ingewikkelde rechten op Windows:</strong> In tegenstelling tot macOS heeft Windows geen "Toegankelijkheid"-menu nodig. Toetsinvoer en automatisch plakken werken op Windows direct out-of-the-box!
+      </div>
+    </div>
+
+    <!-- Stap 5 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-num">5</div>
+        <h2 class="step-title">Hoe Je Overal Dicteert</h2>
+      </div>
+      <p class="step-desc">
+        Speakly draait nu geruisloos in het <strong>Systeemvak van Windows</strong> (rechtsonder naast de klok, bij het gele eendje 🐥).
+      </p>
+
+      <div style="background: #18181b; border: 1px solid #27272a; border-radius: 14px; padding: 22px; text-align: center; margin: 20px 0;">
+        <div style="font-size: 13px; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Standaard Windows Sneltoets</div>
+        <div style="font-size: 22px; font-weight: 700; color: #ffffff; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px;">
+          Houd <kbd>Right Alt</kbd> of <kbd>Right Ctrl</kbd> ingedrukt
+        </div>
+        <p style="color: var(--text-muted); font-size: 14px; line-height: 1.7; text-align: left;">
+          1. <strong>Klik met je cursor</strong> in een willekeurig tekstveld (Word, WhatsApp, Teams, Google Chrome, Notion, etc.).<br>
+          2. <strong>Houd de sneltoets ingedrukt.</strong> Het zwevende Speakly-eendje verschijnt op je scherm.<br>
+          3. <strong>Praat natuurlijk</strong> in het Nederlands of Engels.<br>
+          4. <strong>Laat de toets los.</strong> Binnen 0.3 seconden plakt Speakly de opgeschoonde, foutloze tekst exact waar je cursor knippert!
+        </p>
+      </div>
+
+      <div class="callout tip">
+        <strong>Sneltoets aanpassen?</strong> Klik op het gele eendje rechtsonder in het systeemvak → <strong>Settings</strong> → Kies bij <em>Hold Key</em> je favoriete knop (bv. <kbd>Right Alt</kbd>, <kbd>Right Win</kbd>, <kbd>F8</kbd> of <kbd>Ctrl + Shift + Spatie</kbd>).
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <h2 class="faq-title">Veelgestelde Vragen (FAQ)</h2>
+
+    <div class="faq-item">
+      <div class="faq-q">Moet ik dit opnieuw instellen als ik mijn laptop dichtklap of herstart?</div>
+      <div class="faq-a">
+        <strong>Nee, nooit meer.</strong> Speakly onthoudt je inloggegevens en instellingen permanent in je Windows-gebruikersprofiel. De optie <em>"Launch Speakly Automatically at Login"</em> staat standaard aan, waardoor Speakly bij elke Windows-start automatisch gereed staat in het systeemvak.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Werkt dit op andere Wi-Fi netwerken dan die van de ontwikkelaar?</div>
+      <div class="faq-a">
+        <strong>Ja, overal ter wereld.</strong> Speakly stuurt de audio veilig versleuteld via HTTPS naar de cloud (Groq LPU en Supabase). Het werkt op elke thuis-Wi-Fi, kantoor-Wi-Fi, universiteitsnetwerk, hotel of 4G/5G hotspot vanaf je telefoon.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Wat als Windows Defender het bestand blijft blokkeren?</div>
+      <div class="faq-a">
+        Klik op <em>"Meer informatie"</em> en daarna op <em>"Toch uitvoeren"</em>. Als je een antivirusprogramma van derden gebruikt (zoals Norton, McAfee of Avast), klik je op "Toestaan" of "Uitzondering toevoegen". Dit gebeurt alleen tijdens de testfase omdat de app nog geen commercieel Microsoft-certificaat van €400/jaar heeft.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Waar vind ik het Dashboard terug als het venster gesloten is?</div>
+      <div class="faq-a">
+        Kijk rechtsonder op je taakbalk bij de klok. Als je het gele eendje niet meteen ziet, klik dan op het kleine pijltje omhoog (<strong>^</strong>) van verborgen pictogrammen in het systeemvak. Klik op het eendje om het Speakly Dashboard te openen.
+      </div>
+    </div>
+
+    <footer>
+      Speakly Prototype · AI Voice Dictation voor Windows &amp; macOS
+    </footer>
+  </div>
+</body>
+</html>

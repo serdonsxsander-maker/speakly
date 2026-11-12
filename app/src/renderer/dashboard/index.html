@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' http://localhost:* http://127.0.0.1:* https://*.supabase.co https://api.groq.com https://api.openai.com https://huggingface.co; font-src 'self' data:;">
+  <title>Speakly — AI Voice with Rubber Ducky</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="window-dragbar" aria-hidden="true"></div>
+
+  <div class="app-layout">
+    <!-- Left Navigation Sidebar -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo" aria-hidden="true">
+          <!-- Yellow Rubber Ducky Mascot SVG on Dark Squircle Badge -->
+          <svg viewBox="0 0 100 100" fill="none">
+            <ellipse cx="52" cy="84" rx="28" ry="4" fill="#38BDF8" opacity="0.32" />
+            <ellipse cx="52" cy="64" rx="28" ry="20" fill="#FFD000" />
+            <path d="M76 54 C86 44, 90 48, 80 64 Z" fill="#FFD000" />
+            <path d="M40 60 Q50 52 64 62 Q54 74 40 70 Z" fill="#F59E0B" />
+            <path d="M18 39 Q8 41 12 47 Q22 49 26 45 Z" fill="#FF6B00" />
+            <circle cx="36" cy="39" r="19" fill="#FFD000" />
+            <ellipse cx="29" cy="44" rx="3.8" ry="2.2" fill="#FF8A8A" opacity="0.75" />
+            <ellipse cx="32" cy="35" rx="3.8" ry="5" fill="#0F172A" />
+            <circle cx="30.6" cy="33.2" r="1.6" fill="#FFFFFF" />
+            <path d="M22 36 C22 18, 50 18, 50 36" stroke="#3B82F6" stroke-width="4" stroke-linecap="round" fill="none" />
+            <rect x="38" y="31" width="7" height="13" rx="3.5" fill="#2563EB" />
+          </svg>
+        </div>
+        <div class="brand-meta">
+          <span class="brand-name">Speakly</span>
+          <span class="brand-tag">Rubber Ducky AI</span>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" aria-label="Primary sections">
+        <ul>
+          <li>
+            <button type="button" class="nav-btn is-active" data-tab="overview">
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <rect x="2.5" y="2.5" width="6.2" height="6.2" rx="1.6" stroke="currentColor" stroke-width="1.6"/>
+                <rect x="11.3" y="2.5" width="6.2" height="6.2" rx="1.6" stroke="currentColor" stroke-width="1.6"/>
+                <rect x="2.5" y="11.3" width="6.2" height="6.2" rx="1.6" stroke="currentColor" stroke-width="1.6"/>
+                <rect x="11.3" y="11.3" width="6.2" height="6.2" rx="1.6" stroke="currentColor" stroke-width="1.6"/>
+              </svg>
+              <span>Overview</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="nav-btn" data-tab="modes">
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M10 2.5l1.9 4.5 4.6 1.9-4.6 1.9L10 15.3l-1.9-4.5-4.6-1.9 4.6-1.9L10 2.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+                <path d="M15.5 13.5l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8.8-1.9z" fill="currentColor"/>
+              </svg>
+              <span>AI Modes</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="nav-btn" data-tab="dictionary">
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <path d="M4 3.5h9.5A2.5 2.5 0 0 1 16 6v10.5H6A2 2 0 0 1 4 14.5v-11z" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M4 14.5A2 2 0 0 1 6 12.5h10" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M7.5 7.5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+              <span>Dictionary</span>
+            </button>
+          </li>
+          <li>
+            <button type="button" class="nav-btn" data-tab="settings">
+              <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <circle cx="10" cy="10" r="2.7" stroke="currentColor" stroke-width="1.6"/>
+                <path d="M10 2.5v2M10 15.5v2M2.5 10h2M15.5 10h2M4.7 4.7l1.4 1.4M13.9 13.9l1.4 1.4M15.3 4.7l-1.4 1.4M6.1 13.9l-1.4 1.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+              <span>Settings</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Live Hotkey Status Card in Sidebar Footer -->
+      <div class="sidebar-status-card">
+        <div class="status-row">
+          <span id="live-status-pill" class="live-badge" data-status="ready">
+            <span class="live-dot" aria-hidden="true"></span>
+            <span id="live-status-text">Ready to Dictate</span>
+          </span>
+        </div>
+        <p class="hotkey-caption">
+          <span id="sidebar-trigger-verb">Hold</span>
+          <kbd id="sidebar-hotkey-kbd">Hotkey</kbd>
+        </p>
+        <p class="active-mode-caption">
+          Mode: <strong id="sidebar-mode-name">Smart Polish</strong>
+        </p>
+      </div>
+
+      <!-- Early-access feedback entry point -->
+      <button type="button" id="open-feedback-btn" class="feedback-trigger" aria-haspopup="dialog">
+        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M4 4.5h12a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H9l-3.5 3v-3H4A1.5 1.5 0 0 1 2.5 13V6A1.5 1.5 0 0 1 4 4.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M6.5 8.5h7M6.5 11h4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <span>Send feedback</span>
+      </button>
+    </aside>
+
+    <!-- Main Content Viewport -->
+    <main class="main-panel">
+      <div id="global-alert" class="alert-banner" hidden>
+        <span aria-hidden="true">⚠</span>
+        <span id="global-alert-text"></span>
+        <button type="button" id="dismiss-alert-btn" class="text-btn">Dismiss</button>
+      </div>
+
+      <!-- TAB 1: OVERVIEW -->
+      <section id="tab-overview" class="tab-view">
+        <header class="view-header">
+          <div>
+            <h1>Speakly: Your Voice Assistant</h1>
+            <p class="subtitle">Hold your hotkey, your rubber duck listens and thinks, then pastes clean text directly at your cursor.</p>
+          </div>
+          <button type="button" id="header-record-btn" class="btn btn-primary">
+            <svg viewBox="0 0 18 18" fill="none" aria-hidden="true">
+              <rect x="6.5" y="2" width="5" height="9" rx="2.5" stroke="currentColor" stroke-width="1.7"/>
+              <path d="M4 8.5a5 5 0 0 0 10 0M9 13.5V16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+            <span id="header-record-label">Start Dictation</span>
+          </button>
+        </header>
+
+        <!-- macOS Permissions Banner (Automatically hides once both permissions are granted or on Windows) -->
+        <section id="permissions-card" class="card permissions-card" aria-labelledby="perm-heading" hidden>
+          <div class="card-header-inline">
+            <div>
+              <h2 id="perm-heading">Finish macOS Setup for Seamless Auto-Paste</h2>
+              <p class="muted-text">macOS requires two quick one-time permissions so VoxFlow can hear your voice and paste directly at your cursor.</p>
+            </div>
+            <button type="button" id="refresh-perm-btn" class="btn btn-ghost btn-sm">Re-check Status</button>
+          </div>
+          <div class="perm-grid">
+            <div class="perm-item">
+              <div class="perm-info">
+                <span id="mic-perm-badge" class="perm-badge" data-ok="false">• Pending</span>
+                <div>
+                  <h3>1. Microphone Access</h3>
+                  <p>Required to capture clear audio when you hold your hotkey.</p>
+                </div>
+              </div>
+              <button type="button" id="grant-mic-btn" class="btn btn-secondary btn-sm">Allow Microphone</button>
+            </div>
+            <div class="perm-item">
+              <div class="perm-info">
+                <span id="acc-perm-badge" class="perm-badge" data-ok="false">• Action Needed</span>
+                <div>
+                  <h3>2. Accessibility &amp; Global Hotkey</h3>
+                  <p>Allows holding <code>Right ⌘</code> anywhere and pasting into external apps. (Until enabled, <code>⌘ + Shift + Space</code> still works!)</p>
+                </div>
+              </div>
+              <button type="button" id="grant-acc-btn" class="btn btn-secondary btn-sm">Open Accessibility</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- Productivity Metrics -->
+        <section class="stats-grid" aria-label="Dictation statistics">
+          <article class="stat-card">
+            <span class="stat-label">Words Dictated</span>
+            <strong id="stat-words" class="stat-value">0</strong>
+            <span class="stat-foot">Across <span id="stat-sessions">0</span> sessions</span>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Estimated Time Saved</span>
+            <strong id="stat-time-saved" class="stat-value">0 min</strong>
+            <span class="stat-foot">Compared to 42 WPM typing</span>
+          </article>
+          <article class="stat-card">
+            <span class="stat-label">Speaking Speed</span>
+            <strong id="stat-wpm" class="stat-value">— WPM</strong>
+            <span class="stat-foot">Average voice throughput</span>
+          </article>
+        </section>
+
+        <!-- Built-in Interactive Test Playground -->
+        <section class="card playground-card" aria-labelledby="playground-heading">
+          <div class="card-header-inline">
+            <div>
+              <h2 id="playground-heading">Quick Test Playground</h2>
+              <p class="muted-text">Click inside the box below, then hold <kbd id="playground-hotkey">your hotkey</kbd> and speak!</p>
+            </div>
+            <button type="button" id="clear-playground-btn" class="btn btn-ghost btn-sm">Clear</button>
+          </div>
+          <label for="playground-textarea" class="sr-only">Test dictation sandbox</label>
+          <textarea
+            id="playground-textarea"
+            class="playground-input"
+            rows="3"
+            placeholder="Click here and try saying: “Um hey Sarah, let's move our meeting from 2pm wait no 3:30pm tomorrow and review the Q4 launch plan…”"></textarea>
+        </section>
+
+        <!-- Recent Dictation History (Last 20) -->
+        <section class="card history-card" aria-labelledby="history-heading">
+          <div class="card-header-inline">
+            <h2 id="history-heading">Recent Dictations (Last 20)</h2>
+            <div class="history-controls">
+              <search>
+                <label for="history-search" class="sr-only">Search dictations</label>
+                <input type="search" id="history-search" class="input-sm" placeholder="Filter history…">
+              </search>
+              <button type="button" id="clear-history-btn" class="btn btn-ghost btn-sm">Clear All</button>
+            </div>
+          </div>
+          <ul id="history-list" class="history-list"></ul>
+          <div id="history-empty" class="empty-state">
+            <p>Your last 20 dictated snippets will appear here automatically—handy if you ever dictate without a text box focused.</p>
+          </div>
+        </section>
+      </section>
+
+      <!-- TAB 2: AI MODES -->
+      <section id="tab-modes" class="tab-view" hidden>
+        <header class="view-header">
+          <div>
+            <h1>AI Formatting Modes</h1>
+            <p class="subtitle">Choose how Speakly shapes your spoken words before pasting them at your cursor.</p>
+          </div>
+        </header>
+
+        <div id="modes-grid" class="modes-grid" role="radiogroup" aria-label="Active AI formatting mode"></div>
+      </section>
+
+      <!-- TAB 3: CUSTOM DICTIONARY -->
+      <section id="tab-dictionary" class="tab-view" hidden>
+        <header class="view-header">
+          <div>
+            <h1>Personal Dictionary</h1>
+            <p class="subtitle">Teach Speakly names, brands, industry terms, or acronyms so they are spelled accurately every time.</p>
+          </div>
+        </header>
+
+        <section class="card" aria-labelledby="add-word-heading">
+          <h2 id="add-word-heading">Add Vocabulary Term</h2>
+          <form id="dictionary-form" class="inline-form">
+            <label for="dict-input" class="sr-only">Word, name, or phrase</label>
+            <input
+              type="text"
+              id="dict-input"
+              placeholder="e.g. Acme Corp, PostgreSQL, ProductName, Alex Rivera"
+              required>
+            <button type="submit" class="btn btn-primary">Add Term</button>
+          </form>
+          <ul id="dictionary-tags" class="tag-cloud" aria-label="Saved vocabulary terms"></ul>
+        </section>
+      </section>
+
+      <!-- TAB 4: SETTINGS -->
+      <section id="tab-settings" class="tab-view" hidden>
+        <header class="view-header">
+          <div>
+            <h1>Settings &amp; AI Engine</h1>
+            <p class="subtitle">Configure your profile, speech engine, keyboard trigger, and desktop preferences.</p>
+          </div>
+        </header>
+
+        <!-- User Profile & Context -->
+        <section class="card settings-section" aria-labelledby="account-heading">
+          <div class="card-header-inline">
+            <div>
+              <h2 id="account-heading">User Profile</h2>
+              <p class="muted-text">Your name and email give Speakly personal context (such as signing emails with your real name).</p>
+            </div>
+            <span id="account-badge" class="perm-badge" data-ok="false">• Guest</span>
+          </div>
+
+          <!-- Always-visible Name & Last Name fields (left open if unknown) -->
+          <div class="two-col-fields" style="margin-bottom: 14px;">
+            <div class="field-group">
+              <label for="user-first-name-input">Name</label>
+              <input type="text" id="user-first-name-input" placeholder="Name" spellcheck="false">
+            </div>
+            <div class="field-group">
+              <label for="user-last-name-input">Last Name</label>
+              <input type="text" id="user-last-name-input" placeholder="Last name" spellcheck="false">
+            </div>
+          </div>
+
+          <div id="account-logged-out">
+            <button type="button" id="auth-google-btn" class="btn" style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px;background:#ffffff;color:#18181b;font-weight:600;padding:10px 16px;border-radius:10px;border:1px solid #e4e4e7;cursor:pointer;width:100%;">
+              <svg width="18" height="18" viewBox="0 0 18 18">
+                <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
+                <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+                <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.347 2.825.957 4.039l3.007-2.332z"/>
+                <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
+              </svg>
+              Continue with Google
+            </button>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+              <hr style="flex:1;border:0;border-top:1px solid rgba(255,255,255,0.1);">
+              <span style="font-size:11px;color:rgba(255,255,255,0.4);text-transform:uppercase;letter-spacing:0.05em;">or continue with email</span>
+              <hr style="flex:1;border:0;border-top:1px solid rgba(255,255,255,0.1);">
+            </div>
+            <div class="two-col-fields">
+              <div class="field-group">
+                <label for="auth-email-input">Email Address</label>
+                <input type="email" id="auth-email-input" placeholder="you@example.com" spellcheck="false">
+              </div>
+              <div class="field-group">
+                <label for="auth-password-input">Password</label>
+                <input type="password" id="auth-password-input" placeholder="••••••••">
+              </div>
+            </div>
+            <div class="field-group" style="margin-top: 8px;">
+              <label for="auth-referral-input">Partner / Promo Code <small style="color: rgba(255,255,255,0.4); font-weight: normal;">(optional, e.g. DUCK)</small></label>
+              <input type="text" id="auth-referral-input" placeholder="e.g. ALEX" spellcheck="false" style="text-transform: uppercase;">
+            </div>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 6px;">
+              <button type="button" id="auth-signin-btn" class="btn btn-primary">Log In</button>
+              <button type="button" id="auth-signup-btn" class="btn btn-secondary">Create Account</button>
+              <small id="auth-feedback" class="field-feedback"></small>
+            </div>
+          </div>
+
+          <div id="account-logged-in" hidden style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid rgba(148, 163, 184, 0.14);">
+            <div>
+              <span class="muted-text" style="font-size: 11.5px; display: block;">Signed in Email</span>
+              <strong id="account-user-email" style="font-size: 14px;">user@example.com</strong>
+            </div>
+            <button type="button" id="auth-logout-btn" class="btn btn-ghost btn-sm">Log Out</button>
+          </div>
+        </section>
+
+        <!-- AI Speech & Language Engine -->
+        <section class="card settings-section" aria-labelledby="engine-heading">
+          <h2 id="engine-heading">AI Speech &amp; Language Engine</h2>
+          <p class="muted-text">Select which speech model powers your dictation.</p>
+
+          <div class="choice-row">
+            <label class="choice-card">
+              <input type="radio" name="provider" value="local">
+              <div class="choice-body">
+                <div class="choice-top">
+                  <strong>🔒 Local On-Device</strong>
+                  <span class="pill-tag" style="background: rgba(16, 185, 129, 0.18); color: #10b981;">100% Private</span>
+                </div>
+                <ul style="margin: 6px 0 0; padding-left: 16px; font-size: 12.5px; color: var(--text-muted); line-height: 1.5;">
+                  <li>Good for privacy (audio stays 100% on your laptop)</li>
+                  <li>Slower (~2.5s) and less accurate on complex phrasing</li>
+                </ul>
+              </div>
+            </label>
+
+            <label class="choice-card">
+              <input type="radio" name="provider" value="groq">
+              <div class="choice-body">
+                <div class="choice-top">
+                  <strong>Groq LPU Turbo</strong>
+                  <span class="pill-tag pill-tag-fast">⚡ Instant (~0.6s)</span>
+                </div>
+                <ul style="margin: 6px 0 0; padding-left: 16px; font-size: 12.5px; color: var(--text-muted); line-height: 1.5;">
+                  <li>Good for ultra-fast everyday dictation</li>
+                  <li>High accuracy with 120B AI grammar &amp; filler cleanup</li>
+                </ul>
+              </div>
+            </label>
+
+            <label class="choice-card">
+              <input type="radio" name="provider" value="openai">
+              <div class="choice-body">
+                <div class="choice-top">
+                  <strong>OpenAI Cloud</strong>
+                  <span class="pill-tag">GPT-4o Audio</span>
+                </div>
+                <ul style="margin: 6px 0 0; padding-left: 16px; font-size: 12.5px; color: var(--text-muted); line-height: 1.5;">
+                  <li>Good for technical jargon &amp; multilingual speech</li>
+                  <li>Highest accuracy using GPT-4o Audio (~2s)</li>
+                </ul>
+              </div>
+            </label>
+          </div>
+        </section>
+
+        <!-- Keyboard Trigger -->
+        <section class="card settings-section" aria-labelledby="hotkey-heading">
+          <h2 id="hotkey-heading">Keyboard Shortcut &amp; Trigger Style</h2>
+
+          <div class="choice-row">
+            <label class="choice-card">
+              <input type="radio" name="triggerMode" value="hold">
+              <div class="choice-body">
+                <div class="choice-top">
+                  <strong>Hold to Speak (Push-to-Talk)</strong>
+                  <span class="pill-tag">Recommended</span>
+                </div>
+                <p>Hold down a single modifier key while talking; release to transcribe &amp; paste immediately.</p>
+              </div>
+            </label>
+
+            <label class="choice-card">
+              <input type="radio" name="triggerMode" value="toggle">
+              <div class="choice-body">
+                <div class="choice-top">
+                  <strong>Press to Toggle (Hands-Free)</strong>
+                </div>
+                <p>Press your shortcut once to start dictating long thoughts; press again to finish &amp; paste.</p>
+              </div>
+            </label>
+          </div>
+
+          <div class="two-col-fields">
+            <div class="field-group">
+              <label for="hold-key-select">Push-to-Talk Key (Select or Record below)</label>
+              <select id="hold-key-select"></select>
+            </div>
+
+            <div class="field-group">
+              <label>Custom Shortcut Recorder</label>
+              <button type="button" id="record-hotkey-btn" class="btn btn-secondary record-shortcut-btn">
+                <span id="record-hotkey-label">⌨️ Click &amp; Press Any Key…</span>
+              </button>
+            </div>
+          </div>
+          <small class="muted-text" style="font-size: 12px; margin-top: -6px;">
+            💡 <strong>Tip for Mac:</strong> <code>Right ⌥ Option</code> or <code>Right ⌃ Control</code> are the most ergonomic single-key hold buttons!
+          </small>
+        </section>
+
+        <!-- Privacy, Data Safety & GDPR Compliance -->
+        <section class="card settings-section" aria-labelledby="privacy-heading">
+          <div class="card-header-inline">
+            <div>
+              <h2 id="privacy-heading">Privacy, Data Safety &amp; GDPR</h2>
+              <p class="muted-text">Zero-retention architecture: your voice audio is processed in RAM and never written to server disk or database.</p>
+            </div>
+            <span class="pill-tag" style="background: rgba(16, 185, 129, 0.16); color: #10b981; font-weight: 600;">🛡️ GDPR Compliant</span>
+          </div>
+
+          <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin: 12px 0 16px;">
+            <div style="display: flex; gap: 16px; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 190px;">
+                <strong style="color: #10b981; font-size: 13px;">✓ Ephemeral RAM Processing</strong>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 4px 0 0; line-height: 1.4;">Audio is streamed into memory and discarded immediately after transcription. Zero audio bytes are permanently logged or saved.</p>
+              </div>
+              <div style="flex: 1; min-width: 190px;">
+                <strong style="color: #10b981; font-size: 13px;">✓ Zero AI Training</strong>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 4px 0 0; line-height: 1.4;">Commercial API agreements guarantee your voice and dictation text are never used to train or fine-tune frontier models.</p>
+              </div>
+              <div style="flex: 1; min-width: 190px;">
+                <strong style="color: #10b981; font-size: 13px;">✓ 100% On-Device Mode</strong>
+                <p style="font-size: 12px; color: var(--text-muted); margin: 4px 0 0; line-height: 1.4;">For confidential or privileged data, toggle the "Local On-Device" engine above — 0 bytes leave your machine.</p>
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 6px; border-top: 1px solid rgba(255, 255, 255, 0.06);">
+            <div>
+              <strong style="font-size: 13px;">Your Data Rights (GDPR Art. 17 &amp; 20)</strong>
+              <p style="font-size: 12px; color: var(--text-muted); margin: 2px 0 0;">Export your personal dictionary &amp; dictation history, or permanently erase all cloud and local data.</p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" id="gdpr-export-btn" class="btn btn-secondary btn-sm">📥 Export My Data (JSON)</button>
+              <button type="button" id="gdpr-delete-btn" class="btn btn-ghost btn-sm" style="color: #ef4444;">🗑️ Delete All My Data</button>
+            </div>
+          </div>
+          <small id="gdpr-feedback" class="field-feedback" style="margin-top: 8px;"></small>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL 1: First-Run Welcome & Setup Gate -->
+  <dialog id="onboarding-dialog" aria-labelledby="onboarding-title">
+    <div class="modal-card" style="max-width: 520px; position: relative;">
+      <button type="button" id="onb-close-btn" class="modal-close-btn" title="Close Setup Gate">✕</button>
+      <div class="modal-badge">Welcome to Speakly 🐥</div>
+      <h2 id="onboarding-title">Activate Speakly Voice Engine</h2>
+      <p class="muted-text">Please sign in and verify macOS permissions to unlock seamless AI voice dictation.</p>
+
+      <div id="onb-auth-section" style="margin-top: 16px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+        <h3 style="font-size: 14px; margin: 0 0 10px;">1. Connect Your Account</h3>
+        <div id="onb-auth-logged-out">
+          <button type="button" id="onb-google-btn" class="btn" style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;background:#ffffff;color:#18181b;font-weight:600;padding:9px 16px;border-radius:10px;border:1px solid #e4e4e7;cursor:pointer;width:100%;">
+            <svg width="18" height="18" viewBox="0 0 18 18">
+              <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
+              <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+              <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.347 2.825.957 4.039l3.007-2.332z"/>
+              <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
+            </svg>
+            Sign in with Google
+          </button>
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+            <hr style="flex:1;border:0;border-top:1px solid rgba(255,255,255,0.08);">
+            <span style="font-size:10px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.05em;">or continue with email</span>
+            <hr style="flex:1;border:0;border-top:1px solid rgba(255,255,255,0.08);">
+          </div>
+          <div class="two-col-fields" style="margin-bottom:8px;">
+            <div class="field-group">
+              <label for="onb-first-name-input">Name</label>
+              <input type="text" id="onb-first-name-input" placeholder="Name" spellcheck="false">
+            </div>
+            <div class="field-group">
+              <label for="onb-last-name-input">Last Name</label>
+              <input type="text" id="onb-last-name-input" placeholder="Last name" spellcheck="false">
+            </div>
+          </div>
+          <div class="two-col-fields" style="margin-bottom:8px;">
+            <div class="field-group">
+              <label for="onb-email-input">Email</label>
+              <input type="email" id="onb-email-input" placeholder="you@example.com" spellcheck="false">
+            </div>
+            <div class="field-group">
+              <label for="onb-password-input">Password</label>
+              <input type="password" id="onb-password-input" placeholder="••••••••">
+            </div>
+          </div>
+          <div class="field-group" style="margin-bottom:8px;">
+            <label for="onb-referral-input">Partner / Invite Code <small style="color: rgba(255,255,255,0.4); font-weight: normal;">(optional)</small></label>
+            <input type="text" id="onb-referral-input" placeholder="e.g. ALEX" spellcheck="false" style="text-transform: uppercase;">
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;margin-top:6px;">
+            <button type="button" id="onb-signin-btn" class="btn btn-primary btn-sm">Log In</button>
+            <button type="button" id="onb-signup-btn" class="btn btn-secondary btn-sm">Create Account</button>
+            <small id="onb-auth-feedback" class="field-feedback"></small>
+          </div>
+        </div>
+        <div id="onb-auth-logged-in" hidden style="display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="color:#22c55e;font-size:16px;">✓</span>
+            <div>
+              <strong id="onb-user-email" style="font-size:13px;">user@example.com</strong>
+              <div style="font-size:11px;color:#94a3b8;">Account connected &amp; ready</div>
+            </div>
+          </div>
+          <button type="button" id="onb-logout-btn" class="btn btn-ghost btn-sm">Switch Account</button>
+        </div>
+      </div>
+
+      <div id="onb-perms-section" style="margin-top: 14px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <h3 style="font-size: 14px; margin: 0;">2. Required Permissions</h3>
+          <button type="button" id="onb-refresh-btn" class="btn btn-ghost btn-sm" style="font-size: 11px; padding: 3px 8px;">🔄 Check Again</button>
+        </div>
+        <p class="muted-text" style="font-size: 12px; margin: 0 0 12px;">Speakly needs microphone and accessibility permissions to capture voice and paste at your cursor.</p>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong style="font-size: 13px;">1. Microphone</strong>
+              <div style="font-size: 11px; color: #94a3b8;">Captures spoken audio</div>
+            </div>
+            <button type="button" id="onb-grant-mic-btn" class="btn btn-secondary btn-sm">Allow Microphone</button>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong style="font-size: 13px;">2. Accessibility &amp; Keystroke Auto-Paste</strong>
+              <div style="font-size: 11px; color: #94a3b8;">Required for Right ⌘ hotkey and direct pasting</div>
+            </div>
+            <button type="button" id="onb-grant-acc-btn" class="btn btn-secondary btn-sm">Open Accessibility</button>
+          </div>
+        </div>
+
+        <p style="font-size: 11px; color: #71717a; margin: 12px 0 0; line-height: 1.4;">
+          💡 <em>Tip: If Speakly is already checked in System Settings, toggle it OFF and ON once to refresh macOS security token.</em>
+        </p>
+      </div>
+
+      <div class="modal-actions" style="margin-top: 20px; display: flex; flex-direction: column; gap: 8px;">
+        <button type="button" id="onb-finish-btn" class="btn btn-primary full-width" style="width: 100%; justify-content: center;" disabled>Sign In &amp; Grant Permissions to Continue</button>
+        <button type="button" id="onb-skip-btn" class="btn btn-ghost btn-sm" style="align-self: center; font-size: 11.5px; color: #71717a;">Skip to Dashboard</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- MODAL 2: Custom AI Mode Creator Dialog -->
+  <dialog id="custom-mode-dialog" closedby="any" aria-labelledby="custom-mode-title">
+    <div class="modal-card">
+      <h2 id="custom-mode-title">Create Custom AI Mode</h2>
+      <p class="muted-text">Tailor VoxFlow for any workflow—medical notes, legal memos, customer support replies, or translation.</p>
+
+      <form id="custom-mode-form" method="dialog">
+        <input type="hidden" id="cm-id">
+        <div class="two-col-fields">
+          <div class="field-group">
+            <label for="cm-name">Mode Name</label>
+            <input type="text" id="cm-name" placeholder="e.g. Patient Care Note" required autofocus>
+          </div>
+          <div class="field-group">
+            <label for="cm-badge">Short Pill Badge (≤12 chars)</label>
+            <input type="text" id="cm-badge" maxlength="12" placeholder="e.g. Care Note" required>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label for="cm-desc">Short Description</label>
+          <input type="text" id="cm-desc" placeholder="Formats spoken observations into structured SOAP clinical notes.">
+        </div>
+
+        <div class="field-group">
+          <label for="cm-prompt">AI Formatting Instructions</label>
+          <textarea
+            id="cm-prompt"
+            rows="4"
+            placeholder="e.g. Convert this spoken dictation into a concise Dutch clinical nursing note with clear bullet points for Observations and Follow-up. Output ONLY the formatted note."
+            required></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" value="cancel" formnovalidate class="btn btn-ghost">Cancel</button>
+          <button type="submit" value="save" class="btn btn-primary">Save AI Mode</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- MODAL 3: Early-Access Feedback -->
+  <dialog id="feedback-dialog" closedby="any" aria-labelledby="feedback-title">
+    <div class="modal-card feedback-card">
+      <button type="button" id="feedback-close-btn" class="modal-close-btn" title="Close" aria-label="Close feedback">✕</button>
+
+      <div id="feedback-form-view" class="feedback-view">
+        <div class="modal-badge">Early access</div>
+        <h2 id="feedback-title">Send feedback</h2>
+        <p class="muted-text">Found a bug or have an idea? It goes straight to the person building Speakly.</p>
+
+        <form id="feedback-form" novalidate>
+          <fieldset class="segmented" aria-label="Feedback type">
+            <label class="segmented-option">
+              <input type="radio" name="feedback-kind" value="bug" checked>
+              <span>🐞 Bug</span>
+            </label>
+            <label class="segmented-option">
+              <input type="radio" name="feedback-kind" value="idea">
+              <span>💡 Idea</span>
+            </label>
+            <label class="segmented-option">
+              <input type="radio" name="feedback-kind" value="other">
+              <span>💬 Other</span>
+            </label>
+          </fieldset>
+
+          <div class="field-group">
+            <label for="feedback-message">Message <small id="feedback-count" class="feedback-count">0 / 5000</small></label>
+            <textarea
+              id="feedback-message"
+              rows="5"
+              maxlength="5000"
+              placeholder="What happened? What did you expect? Steps to reproduce help a lot."
+              required></textarea>
+          </div>
+
+          <label class="feedback-check">
+            <input type="checkbox" id="feedback-diagnostics" checked>
+            <span>Include app version &amp; system info</span>
+          </label>
+
+          <small id="feedback-status" class="field-feedback" role="status" aria-live="polite"></small>
+
+          <div class="modal-actions">
+            <button type="button" id="feedback-cancel-btn" class="btn btn-ghost">Cancel</button>
+            <button type="submit" id="feedback-send-btn" class="btn btn-primary">Send</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="feedback-success-view" class="feedback-view feedback-success" hidden>
+        <div class="feedback-success-icon" aria-hidden="true">🦆</div>
+        <h2>Thanks — the duck read it 🦆</h2>
+        <p class="muted-text">Your feedback was sent. Every message gets read.</p>
+        <div class="modal-actions feedback-success-actions">
+          <button type="button" id="feedback-done-btn" class="btn btn-primary">Done</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <script src="./app.js"></script>
+</body>
+</html>

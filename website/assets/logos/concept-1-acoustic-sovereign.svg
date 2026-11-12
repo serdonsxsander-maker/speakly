@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-labelledby="title-c1 desc-c1">
+  <title id="title-c1">Speakly Concept 1 — Acoustic Sovereign Rubber Ducky</title>
+  <desc id="desc-c1">Golden yellow rubber ducky mascot wearing cobalt studio headphones inside a dark obsidian squircle with cyan acoustic ripples.</desc>
+  <defs>
+    <radialGradient id="c1-bg" cx="48%" cy="40%" r="65%">
+      <stop offset="0%" stop-color="#22283A"/>
+      <stop offset="100%" stop-color="#0C0D12"/>
+    </radialGradient>
+    <linearGradient id="c1-body" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFE135"/>
+      <stop offset="65%" stop-color="#FFD000"/>
+      <stop offset="100%" stop-color="#F59E0B"/>
+    </linearGradient>
+    <linearGradient id="c1-wing" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+  </defs>
+  <!-- Squircle Container -->
+  <rect x="4" y="4" width="92" height="92" rx="22" fill="url(#c1-bg)" stroke="#FFD000" stroke-opacity="0.4" stroke-width="1.5"/>
+  <!-- Acoustic Water Ripple -->
+  <ellipse cx="52" cy="83" rx="27" ry="3.5" fill="#38BDF8" opacity="0.32"/>
+  <ellipse cx="52" cy="83" rx="18" ry="2" fill="#FFD000" opacity="0.48"/>
+  <!-- Orange Beak (Behind Head) -->
+  <path d="M21 41 Q10 43 14 49 Q24 51 29 46 Z" fill="#FF6B00"/>
+  <!-- Duck Body & Perky Tail -->
+  <ellipse cx="54" cy="63" rx="26.5" ry="19.5" fill="url(#c1-body)"/>
+  <path d="M75 54 C85 44, 89 48, 79 63 Z" fill="url(#c1-body)"/>
+  <!-- Duck Head -->
+  <circle cx="38" cy="40" r="18" fill="url(#c1-body)"/>
+  <ellipse cx="36" cy="28" rx="9" ry="4" fill="#FFF3B0" opacity="0.55"/>
+  <!-- Sculpted Wing -->
+  <path d="M43 59 Q53 51 66 61 Q56 73 43 69 Z" fill="url(#c1-wing)"/>
+  <!-- Cheek Blush -->
+  <ellipse cx="30" cy="46" rx="4" ry="2.2" fill="#FF8A8A" opacity="0.8"/>
+  <!-- Eye with Double Catchlight -->
+  <ellipse cx="33.5" cy="37" rx="3.6" ry="4.8" fill="#0F172A"/>
+  <circle cx="32.2" cy="35.3" r="1.6" fill="#FFFFFF"/>
+  <circle cx="34.8" cy="38.5" r="0.8" fill="#FFFFFF"/>
+  <!-- Cobalt Studio Headphones -->
+  <path d="M24 37 C24 19, 51 19, 51 37" fill="none" stroke="#3B82F6" stroke-width="3.6" stroke-linecap="round"/>
+  <rect x="39" y="25" width="3" height="10" rx="1.5" fill="#3B82F6"/>
+  <rect x="37" y="33" width="7" height="12" rx="3.5" fill="#2563EB"/>
+  <rect x="38.8" y="35.2" width="3.4" height="7.6" rx="1.7" fill="#60A5FA"/>
+</svg>

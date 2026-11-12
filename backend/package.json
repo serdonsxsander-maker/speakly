@@ -1,0 +1,13 @@
+{
+  "name": "speakly-backend",
+  "version": "1.0.0",
+  "description": "Speakly Cloud Backend Proxy - Speech-to-Text & Grammar AI Cleaning Engine",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "dotenv": "^16.4.7"
+  }
+}

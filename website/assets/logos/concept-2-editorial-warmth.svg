@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-labelledby="title-c2 desc-c2">
+  <title id="title-c2">Speakly Concept 2 — Editorial Warmth Rubber Ducky</title>
+  <desc id="desc-c2">Minimalist continuous geometric rubber ducky mark on warm alabaster paper with terracotta and sage accents.</desc>
+  <!-- Alabaster Paper Squircle -->
+  <rect x="4" y="4" width="92" height="92" rx="22" fill="#FAF9F5" stroke="#141413" stroke-width="2"/>
+  <!-- Terracotta Sun / Voice Aura -->
+  <circle cx="62" cy="32" r="12" fill="#D97757" opacity="0.22"/>
+  <!-- Sage Acoustic Wave Lines -->
+  <path d="M18 78 Q35 73 52 78 T84 78" fill="none" stroke="#788C5D" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Geometric Duck Body & Head -->
+  <path d="M22 41 Q11 42 15 48 Q24 50 28 45 Z" fill="#D97757" stroke="#141413" stroke-width="2.2" stroke-linejoin="round"/>
+  <ellipse cx="54" cy="61" rx="25" ry="18" fill="#FFD000" stroke="#141413" stroke-width="2.4"/>
+  <circle cx="38" cy="40" r="16.5" fill="#FFD000" stroke="#141413" stroke-width="2.4"/>
+  <!-- Clean Architectural Wing -->
+  <path d="M44 58 Q55 51 66 60 Q55 70 44 66 Z" fill="#FAF9F5" stroke="#141413" stroke-width="2.2" stroke-linejoin="round"/>
+  <!-- Minimalist Ink Eye -->
+  <circle cx="34" cy="37" r="3" fill="#141413"/>
+</svg>

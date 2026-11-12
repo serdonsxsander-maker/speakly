@@ -1,0 +1,94 @@
+{
+  "name": "speakly",
+  "productName": "Speakly",
+  "version": "1.0.0",
+  "description": "Speakly \u2014 AI Voice-to-Text Desktop App with Rubber Ducky Mascot for macOS and Windows.",
+  "main": "src/main/main.js",
+  "author": "Speakly",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dev": "NODE_ENV=development electron .",
+    "pack": "electron-builder --dir",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win",
+    "dist:all": "electron-builder -mw",
+    "serve:download": "node ../scripts/serve-download.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "dotenv": "^16.4.7",
+    "uiohook-napi": "^1.5.5"
+  },
+  "devDependencies": {
+    "electron": "^35.2.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "com.speakly.desktop",
+    "productName": "Speakly",
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "assets/keymonitor",
+      "assets/whisper-local",
+      "assets/ggml-metal.metal"
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "extendInfo": {
+        "LSUIElement": true,
+        "NSMicrophoneUsageDescription": "Speakly needs microphone access to transcribe your voice into text.",
+        "NSAppleEventsUsageDescription": "Speakly needs accessibility and automation access to paste transcribed text at your cursor."
+      },
+      "identity": "-",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "artifactName": "Speakly-${version}-mac-${arch}.${ext}"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "Speakly-${version}-win-${arch}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "artifactName": "Speakly-Setup-${version}-win.${ext}"
+    },
+    "portable": {
+      "artifactName": "Speakly-${version}-win-portable.${ext}"
+    }
+  }
+}

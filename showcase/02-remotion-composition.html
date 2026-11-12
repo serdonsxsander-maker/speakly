@@ -1,0 +1,415 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&family=JetBrains+Mono:wght@600;700&display=swap');
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #0c0d12;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: #f1f5f9;
+      }
+      #stage {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        background: radial-gradient(circle at 50% 25%, #1a2036 0%, #0c0d12 72%);
+        overflow: hidden;
+      }
+      /* Top Brand Bar */
+      .brand-bar {
+        position: absolute;
+        top: 56px;
+        left: 88px;
+        right: 88px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        z-index: 20;
+      }
+      .brand-badge {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 26px 12px 14px;
+        background: rgba(22, 25, 36, 0.92);
+        border: 2px solid rgba(255, 208, 0, 0.45);
+        border-radius: 999px;
+        box-shadow: 0 12px 30px rgba(0,0,0,0.5), 0 0 24px rgba(255, 208, 0, 0.2);
+      }
+      .brand-badge svg { width: 46px; height: 46px; }
+      .brand-name { font-size: 26px; font-weight: 900; color: #fff; letter-spacing: -0.02em; }
+      .brand-sub { font-size: 18px; font-weight: 700; color: #FFD000; padding-left: 14px; border-left: 2px solid #2a3044; }
+      .skill-pill {
+        padding: 12px 24px;
+        background: rgba(59, 130, 246, 0.16);
+        border: 1.5px solid rgba(59, 130, 246, 0.5);
+        border-radius: 999px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 18px;
+        font-weight: 700;
+        color: #60a5fa;
+      }
+
+      /* Scenes */
+      .scene {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+      }
+
+      /* Scene 1: Speed Comparison + Right Cmd */
+      .s1-card {
+        width: 1460px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 48px;
+        align-items: center;
+      }
+      .s1-left h1 {
+        font-size: 74px;
+        font-weight: 900;
+        line-height: 1.06;
+        letter-spacing: -0.03em;
+        margin-bottom: 28px;
+      }
+      .s1-left h1 span { color: #FFD000; }
+      .s1-left p {
+        font-size: 28px;
+        color: #94a3b8;
+        font-weight: 600;
+        line-height: 1.45;
+      }
+      .wpm-bars {
+        background: #161924;
+        border: 2px solid #2a3044;
+        border-radius: 28px;
+        padding: 44px;
+        display: flex;
+        flex-direction: column;
+        gap: 32px;
+        box-shadow: 0 30px 70px rgba(0,0,0,0.6);
+      }
+      .bar-group { display: flex; flex-direction: column; gap: 12px; }
+      .bar-label { display: flex; justify-content: space-between; font-size: 24px; font-weight: 800; }
+      .bar-track { height: 36px; background: #0c0d12; border-radius: 99px; overflow: hidden; border: 1.5px solid #2a3044; }
+      .bar-fill-kbd { height: 100%; background: #475569; border-radius: 99px; width: 28%; }
+      .bar-fill-duck { height: 100%; background: linear-gradient(90deg, #FFD000, #FF6B00); border-radius: 99px; box-shadow: 0 0 25px rgba(255, 208, 0, 0.5); }
+
+      /* Scene 2: Interactive Floating Pill States (Spring Physics) */
+      .s2-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 48px;
+      }
+      .s2-header {
+        font-size: 56px;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        text-align: center;
+      }
+      .s2-header span { color: #FFD000; }
+      .big-pill-stage {
+        width: 980px;
+        height: 220px;
+        border-radius: 999px;
+        background: rgba(22, 24, 30, 0.96);
+        border: 4px solid #FFD000;
+        display: flex;
+        align-items: center;
+        padding: 0 64px 0 36px;
+        gap: 42px;
+        box-shadow: 0 30px 80px rgba(0,0,0,0.75), 0 0 60px rgba(255, 208, 0, 0.45);
+      }
+      .big-duck { width: 148px; height: 148px; flex-shrink: 0; }
+      .big-pill-info { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+      .big-pill-status { font-size: 54px; font-weight: 900; letter-spacing: -0.02em; }
+      .big-pill-sub { font-size: 28px; color: #94a3b8; font-weight: 600; }
+      .big-wave { display: flex; align-items: center; gap: 10px; height: 90px; }
+      .big-wave-bar { width: 12px; border-radius: 99px; background: linear-gradient(180deg, #FFF388 0%, #FFD000 60%, #FF6B00 100%); }
+
+      /* Scene 3: Live AI Formatting Modes (Before -> After) */
+      .s3-wrap {
+        width: 1520px;
+        display: grid;
+        grid-template-columns: 1fr 120px 1fr;
+        align-items: center;
+        gap: 24px;
+      }
+      .mode-card {
+        background: #161924;
+        border: 2.5px solid #2a3044;
+        border-radius: 28px;
+        padding: 44px;
+        min-height: 460px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: 0 28px 70px rgba(0,0,0,0.6);
+      }
+      .mode-card.after {
+        border-color: #34d399;
+        box-shadow: 0 28px 70px rgba(0,0,0,0.6), 0 0 45px rgba(52, 211, 153, 0.25);
+      }
+      .mode-tag {
+        display: inline-flex;
+        align-self: flex-start;
+        padding: 10px 22px;
+        border-radius: 999px;
+        font-size: 20px;
+        font-weight: 800;
+      }
+      .mode-body {
+        font-size: 32px;
+        line-height: 1.48;
+        font-weight: 600;
+        margin: 28px 0;
+      }
+      .strike {
+        color: #fb7185;
+        text-decoration: line-through;
+        opacity: 0.75;
+      }
+      .arrow-circle {
+        width: 96px;
+        height: 96px;
+        border-radius: 50%;
+        background: #FFD000;
+        color: #0c0d12;
+        display: grid;
+        place-items: center;
+        font-size: 44px;
+        font-weight: 900;
+        margin: 0 auto;
+        box-shadow: 0 0 35px rgba(255, 208, 0, 0.55);
+      }
+    </style>
+  </head>
+  <body>
+    <div id="stage">
+      <!-- Persistent Speakly Header -->
+      <div class="brand-bar">
+        <div class="brand-badge">
+          <svg viewBox="0 0 100 100" fill="none">
+            <ellipse cx="50" cy="62" rx="32" ry="24" fill="#FFD000" />
+            <path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000" />
+            <path d="M38 58 Q48 50 62 60 Q52 74 38 70 Z" fill="#F5B800" />
+            <circle cx="36" cy="36" r="21" fill="#FFD000" />
+            <path d="M18 36 Q8 38 12 44 Q22 46 26 42 Z" fill="#FF6B00" />
+            <ellipse cx="33" cy="32" rx="4" ry="5.5" fill="#1E293B" />
+            <circle cx="31.5" cy="30" r="1.8" fill="#FFFFFF" />
+          </svg>
+          <span class="brand-name">Speakly</span>
+          <span class="brand-sub">Rubber Ducky AI</span>
+        </div>
+        <div class="skill-pill">Remotion · Spring Physics &amp; Sequence Composition</div>
+      </div>
+
+      <!-- SCENE 1: 158 WPM vs 42 WPM (0s - 3.5s) -->
+      <div id="scene1" class="scene">
+        <div class="s1-card">
+          <div class="s1-left" id="s1-left">
+            <h1>Speak at <span>158 WPM</span>.<br/>Stop Pecking at 42.</h1>
+            <p>Hold <strong>Right ⌘ Command</strong> on macOS or <strong>Right Ctrl</strong> on Windows. Speakly's Rubber Ducky listens, removes filler words, and pastes right at your cursor.</p>
+          </div>
+          <div class="wpm-bars" id="s1-right">
+            <div class="bar-group">
+              <div class="bar-label">
+                <span style="color:#94a3b8;">Manual Keyboard Typing</span>
+                <span style="color:#94a3b8;">42 WPM</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill-kbd" id="bar-kbd"></div>
+              </div>
+            </div>
+            <div class="bar-group">
+              <div class="bar-label">
+                <span style="color:#FFD000;">🐥 Speakly Rubber Ducky AI</span>
+                <span style="color:#FFD000;" id="wpm-counter">158 WPM (3.7×)</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill-duck" id="bar-duck" style="width:0%;"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE 2: Live Morphing Duck HUD (3.5s - 7.5s) -->
+      <div id="scene2" class="scene">
+        <div class="s2-wrap">
+          <div class="s2-header">3-State Mascot HUD: <span id="hud-phase-label">Listening with Headphones</span></div>
+          <div class="big-pill-stage" id="big-pill">
+            <div class="big-duck" id="duck-container">
+              <!-- Dynamic SVG updated by frame -->
+            </div>
+            <div class="big-pill-info">
+              <div class="big-pill-status" id="pill-status-txt" style="color:#FFD000;">Listening…</div>
+              <div class="big-pill-sub" id="pill-sub-txt">Hold Right ⌘ · 60fps Waveform</div>
+            </div>
+            <div class="big-wave" id="big-wave">
+              <div class="big-wave-bar" id="wb0"></div>
+              <div class="big-wave-bar" id="wb1"></div>
+              <div class="big-wave-bar" id="wb2"></div>
+              <div class="big-wave-bar" id="wb3"></div>
+              <div class="big-wave-bar" id="wb4"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCENE 3: Smart Polish Before -> After (7.5s - 12.0s) -->
+      <div id="scene3" class="scene">
+        <div class="s3-wrap">
+          <div class="mode-card" id="card-before">
+            <div>
+              <span class="mode-tag" style="background:rgba(251,113,133,0.16); color:#fb7185;">🎙 Raw Rambling Speech</span>
+              <div class="mode-body">
+                "<span class="strike">Um hey</span> Sarah, let's move our meeting from <span class="strike">2pm wait no</span> 3:30 PM tomorrow and <span class="strike">like</span> review the Q4 launch plan."
+              </div>
+            </div>
+            <div style="color:#94a3b8; font-size:20px; font-weight:600;">Self-corrections &amp; filler words detected</div>
+          </div>
+
+          <div class="arrow-circle" id="arrow-mid">➜</div>
+
+          <div class="mode-card after" id="card-after">
+            <div>
+              <span class="mode-tag" style="background:rgba(52,211,153,0.18); color:#34d399;">✨ Speakly Smart Polish</span>
+              <div class="mode-body" style="color:#ffffff;" id="polished-typewriter"></div>
+            </div>
+            <div style="color:#FFD000; font-size:20px; font-weight:700;">✓ Pasted via Cmd+V · Clipboard Restored</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const DUCK_LISTENING = `<svg viewBox="0 0 100 100" fill="none">
+        <ellipse cx="50" cy="62" rx="32" ry="24" fill="#FFD000" />
+        <path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000" />
+        <path d="M38 58 Q48 50 62 60 Q52 74 38 70 Z" fill="#F5B800" />
+        <circle cx="36" cy="36" r="21" fill="#FFD000" />
+        <path d="M18 36 Q8 38 12 44 Q22 46 26 42 Z" fill="#FF6B00" />
+        <ellipse cx="33" cy="32" rx="4" ry="5.5" fill="#1E293B" />
+        <circle cx="31.5" cy="30" r="1.8" fill="#FFFFFF" />
+        <path d="M23 28 C23 15, 48 15, 49 28" stroke="#3B82F6" stroke-width="3.5" stroke-linecap="round" />
+        <rect x="19" y="27" width="6" height="12" rx="3" fill="#2563EB" />
+        <rect x="46" y="27" width="6" height="12" rx="3" fill="#2563EB" />
+      </svg>`;
+
+      const DUCK_THINKING = `<svg viewBox="0 0 100 100" fill="none">
+        <ellipse cx="50" cy="62" rx="32" ry="24" fill="#FFD000" />
+        <path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000" />
+        <path d="M38 58 Q48 50 62 60 Q52 74 38 70 Z" fill="#F5B800" />
+        <circle cx="36" cy="36" r="21" fill="#FFD000" />
+        <path d="M18 36 Q8 38 12 44 Q22 46 26 42 Z" fill="#FF6B00" />
+        <path d="M27 34 Q33 28 39 34" stroke="#1E293B" stroke-width="3" stroke-linecap="round" fill="none" />
+        <circle cx="48" cy="20" r="4" fill="#38BDF8" />
+        <circle cx="58" cy="12" r="6" fill="#38BDF8" />
+      </svg>`;
+
+      const DUCK_PASTED = `<svg viewBox="0 0 100 100" fill="none">
+        <ellipse cx="50" cy="62" rx="32" ry="24" fill="#FFD000" />
+        <path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000" />
+        <path d="M38 58 Q48 50 62 60 Q52 74 38 70 Z" fill="#F5B800" />
+        <circle cx="36" cy="36" r="21" fill="#FFD000" />
+        <path d="M18 36 Q8 38 12 44 Q22 46 26 42 Z" fill="#FF6B00" />
+        <path d="M28 33 Q34 26 40 33" stroke="#0F172A" stroke-width="3.5" stroke-linecap="round" fill="none" />
+        <ellipse cx="26" cy="38" rx="4" ry="2.2" fill="#FF8A8A" />
+        <path d="M36 4 L38 10 L44 12 L38 14 L36 20 L34 14 L28 12 L34 10 Z" fill="#FBBF24" />
+      </svg>`;
+
+      const POLISHED_STR = '"Hi Sarah — let\'s move our meeting to 3:30 PM tomorrow and review the Q4 launch plan."';
+
+      // Remotion-style spring helper
+      function spring(frame, fps, stiffness = 160, damping = 14) {
+        if (frame <= 0) return 0;
+        const t = frame / fps;
+        const omega = Math.sqrt(stiffness);
+        const zeta = damping / (2 * omega);
+        const env = Math.exp(-zeta * omega * t);
+        return 1 - env * (Math.cos(omega * t) + zeta * Math.sin(omega * t));
+      }
+
+      window.setVideoTime = function(t) {
+        const fps = 30;
+        const frame = Math.round(t * fps);
+
+        const s1 = document.getElementById('scene1');
+        const s2 = document.getElementById('scene2');
+        const s3 = document.getElementById('scene3');
+
+        s1.style.opacity = (t >= 0 && t < 3.5) ? '1' : '0';
+        s2.style.opacity = (t >= 3.5 && t < 7.5) ? '1' : '0';
+        s3.style.opacity = (t >= 7.5) ? '1' : '0';
+
+        if (t < 3.5) {
+          const sp = spring(frame, fps);
+          document.getElementById('s1-left').style.transform = `translateY(${(1 - sp) * 40}px)`;
+          document.getElementById('s1-right').style.transform = `scale(${0.85 + 0.15 * sp})`;
+          const pct = Math.min(100, Math.max(0, ((t - 0.4) / 1.4) * 95));
+          document.getElementById('bar-duck').style.width = `${pct}%`;
+        } else if (t < 7.5) {
+          const localT = t - 3.5;
+          const pill = document.getElementById('big-pill');
+          const duckBox = document.getElementById('duck-container');
+          const statusTxt = document.getElementById('pill-status-txt');
+          const subTxt = document.getElementById('pill-sub-txt');
+          const phaseLbl = document.getElementById('hud-phase-label');
+
+          // Animated waveform bars
+          for (let i = 0; i < 5; i++) {
+            const bar = document.getElementById('wb' + i);
+            const h = 24 + Math.abs(Math.sin(t * 9 + i * 1.1)) * 62;
+            bar.style.height = `${h}px`;
+          }
+
+          if (localT < 1.4) {
+            duckBox.innerHTML = DUCK_LISTENING;
+            pill.style.borderColor = '#FFD000';
+            statusTxt.textContent = 'Listening…';
+            statusTxt.style.color = '#FFD000';
+            subTxt.textContent = 'Hold Right ⌘ · 60fps Waveform';
+            phaseLbl.textContent = '1. Listening with Blue Headphones';
+            phaseLbl.style.color = '#FFD000';
+          } else if (localT < 2.7) {
+            duckBox.innerHTML = DUCK_THINKING;
+            pill.style.borderColor = '#38BDF8';
+            statusTxt.textContent = 'Thinking…';
+            statusTxt.style.color = '#38BDF8';
+            subTxt.textContent = 'Groq LPU + Smart Polish Formatting';
+            phaseLbl.textContent = '2. Thinking & Removing Filler Words';
+            phaseLbl.style.color = '#38BDF8';
+          } else {
+            duckBox.innerHTML = DUCK_PASTED;
+            pill.style.borderColor = '#34D399';
+            statusTxt.textContent = 'Pasted! ✨';
+            statusTxt.style.color = '#34D399';
+            subTxt.textContent = 'Inserted cleanly at your active cursor';
+            phaseLbl.textContent = '3. Solved Sparkle & Instant Paste';
+            phaseLbl.style.color = '#34D399';
+          }
+        } else {
+          const localFrame = Math.round((t - 7.5) * fps);
+          const sp1 = spring(localFrame, fps);
+          const sp2 = spring(localFrame - 12, fps);
+          document.getElementById('card-before').style.transform = `scale(${0.88 + 0.12 * sp1})`;
+          document.getElementById('card-after').style.transform = `scale(${0.88 + 0.12 * sp2})`;
+          const chars = Math.min(POLISHED_STR.length, Math.max(0, Math.floor((t - 8.0) * 42)));
+          document.getElementById('polished-typewriter').textContent = POLISHED_STR.slice(0, chars);
+        }
+      };
+      window.setVideoTime(0);
+    </script>
+  </body>
+</html>

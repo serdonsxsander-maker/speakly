@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap');
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #08090d;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        color: #f1f5f9;
+      }
+      #stage {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        background: radial-gradient(circle at 50% 42%, #141927 0%, #08090d 78%);
+        overflow: hidden;
+      }
+      /* Faint Wireglow Geometric Guide Rings */
+      .guide-ring {
+        position: absolute;
+        left: 50%;
+        top: 46%;
+        transform: translate(-50%, -50%);
+        border-radius: 50%;
+        border: 1.5px dashed rgba(255, 208, 0, 0.14);
+        pointer-events: none;
+      }
+
+      /* Top Brand & AI Model Badge */
+      .top-bar {
+        position: absolute;
+        top: 56px;
+        left: 88px;
+        right: 88px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 20;
+      }
+      .brand-lockup {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 12px 28px 12px 14px;
+        background: rgba(17, 19, 27, 0.92);
+        border: 2px solid rgba(255, 208, 0, 0.5);
+        border-radius: 999px;
+      }
+      .brand-lockup svg { width: 46px; height: 46px; }
+      .brand-lockup-name { font-size: 26px; font-weight: 900; }
+      .brand-lockup-sub { font-size: 18px; font-weight: 700; color: #FFD000; padding-left: 14px; border-left: 2px solid #2a3044; }
+      .model-pill {
+        padding: 12px 26px;
+        border-radius: 999px;
+        background: rgba(255, 208, 0, 0.12);
+        border: 1.5px solid #FFD000;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 18px;
+        font-weight: 700;
+        color: #FFD000;
+      }
+
+      /* Center Wireglow Subject */
+      .center-poster {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 28px;
+      }
+      .poster-canvas {
+        width: 1260px;
+        height: 580px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .bottom-caption-band {
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+      .poster-label {
+        font-size: 46px;
+        font-weight: 900;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #f8fafc;
+      }
+      .hairline-accent {
+        width: 560px;
+        height: 4px;
+        border-radius: 99px;
+        background: linear-gradient(90deg, transparent, #FFD000, #FF6B00, transparent);
+      }
+      .cli-ticker {
+        margin-top: 8px;
+        padding: 12px 28px;
+        border-radius: 12px;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid #334155;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 18px;
+        color: #94a3b8;
+      }
+      .cli-ticker strong { color: #38bdf8; }
+    </style>
+  </head>
+  <body>
+    <div id="stage">
+      <div class="guide-ring" id="ring1" style="width: 520px; height: 520px;"></div>
+      <div class="guide-ring" id="ring2" style="width: 780px; height: 780px;"></div>
+      <div class="guide-ring" id="ring3" style="width: 1040px; height: 1040px;"></div>
+
+      <div class="top-bar">
+        <div class="brand-lockup">
+          <svg viewBox="0 0 100 100" fill="none">
+            <ellipse cx="50" cy="62" rx="32" ry="24" fill="#FFD000" />
+            <path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000" />
+            <path d="M38 58 Q48 50 62 60 Q52 74 38 70 Z" fill="#F5B800" />
+            <circle cx="36" cy="36" r="21" fill="#FFD000" />
+            <path d="M18 36 Q8 38 12 44 Q22 46 26 42 Z" fill="#FF6B00" />
+            <ellipse cx="33" cy="32" rx="4" ry="5.5" fill="#1E293B" />
+            <circle cx="31.5" cy="30" r="1.8" fill="#FFFFFF" />
+          </svg>
+          <span class="brand-lockup-name">Speakly</span>
+          <span class="brand-lockup-sub">ai-video-generation · Style H Wireglow</span>
+        </div>
+        <div class="model-pill" id="model-badge">google/veo-3-1 · bytedance/seedance-2-0</div>
+      </div>
+
+      <div class="center-poster">
+        <div class="poster-canvas" id="poster-svg-mount"></div>
+        <div class="bottom-caption-band">
+          <div class="poster-label" id="poster-label">HOLD RIGHT ⌘ — SPEAK AT THE SPEED OF THOUGHT</div>
+          <div class="hairline-accent"></div>
+          <div class="cli-ticker" id="cli-cmd">
+            <strong>$ belt app run google/veo-3-1</strong> --input '{"prompt": "Speakly Rubber Ducky Wireglow Keynote"}'
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      window.setVideoTime = function(t) {
+        const ring1 = document.getElementById('ring1');
+        const ring2 = document.getElementById('ring2');
+        const ring3 = document.getElementById('ring3');
+        ring1.style.transform = `translate(-50%, -50%) rotate(${t * 14}deg)`;
+        ring2.style.transform = `translate(-50%, -50%) rotate(${-t * 10}deg)`;
+        ring3.style.transform = `translate(-50%, -50%) rotate(${t * 6}deg)`;
+
+        const mount = document.getElementById('poster-svg-mount');
+        const label = document.getElementById('poster-label');
+        const cli = document.getElementById('cli-cmd');
+        const badge = document.getElementById('model-badge');
+
+        const pulse = 1 + Math.sin(t * 5) * 0.05;
+        const beamWidth = 420 + Math.sin(t * 6) * 60;
+
+        if (t < 4.0) {
+          badge.textContent = 'Beat 1 · google/veo-3-1-fast (Macro Key + Acoustic Beam)';
+          label.textContent = '1. HOLD RIGHT ⌘ — ACTIVATE RUBBER DUCKY AI';
+          cli.innerHTML = `<strong>$ belt app run google/veo-3-1-fast</strong> --input '{"prompt": "Wireglow Right Command key emitting golden soundwave beam"}'`;
+
+          mount.innerHTML = `
+            <svg width="1100" height="500" viewBox="0 0 1100 500" fill="none">
+              <defs>
+                <linearGradient id="goldBeam" x1="0" y1="0.5" x2="1" y2="0.5">
+                  <stop offset="0%" stop-color="#FFD000" stop-opacity="0.85"/>
+                  <stop offset="60%" stop-color="#FF6B00" stop-opacity="0.35"/>
+                  <stop offset="100%" stop-color="#FF6B00" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <!-- Glowing Acoustic Beam from Keycap to Duck -->
+              <polygon points="340,250 780,${140 - Math.sin(t*6)*20} 780,${360 + Math.sin(t*6)*20}" fill="url(#goldBeam)" />
+              <!-- Wireframe Keycap -->
+              <rect x="140" y="150" width="220" height="200" rx="28" fill="#11131b" stroke="#94a3b8" stroke-width="3"/>
+              <rect x="160" y="168" width="180" height="154" rx="20" fill="#161924" stroke="#FFD000" stroke-width="3"/>
+              <text x="250" y="240" text-anchor="middle" fill="#FFD000" font-size="44" font-weight="900" font-family="Inter">⌘</text>
+              <text x="250" y="285" text-anchor="middle" fill="#f1f5f9" font-size="22" font-weight="700" font-family="Inter">right_cmd</text>
+
+              <!-- Illuminated Speakly Rubber Ducky -->
+              <g transform="translate(680, 120) scale(${2.4 * pulse})">
+                <ellipse cx="50" cy="62" rx="32" ry="24" fill="#FFD000" />
+                <path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000" />
+                <path d="M38 58 Q48 50 62 60 Q52 74 38 70 Z" fill="#F5B800" />
+                <circle cx="36" cy="36" r="21" fill="#FFD000" />
+                <path d="M18 36 Q8 38 12 44 Q22 46 26 42 Z" fill="#FF6B00" />
+                <ellipse cx="33" cy="32" rx="4" ry="5.5" fill="#1E293B" />
+                <circle cx="31.5" cy="30" r="1.8" fill="#FFFFFF" />
+                <path d="M23 28 C23 15, 48 15, 49 28" stroke="#3B82F6" stroke-width="3.5" stroke-linecap="round" />
+                <rect x="19" y="27" width="6" height="12" rx="3" fill="#2563EB" />
+                <rect x="46" y="27" width="6" height="12" rx="3" fill="#2563EB" />
+              </g>
+            </svg>
+          `;
+        } else if (t < 8.0) {
+          badge.textContent = 'Beat 2 · bytedance/seedance-2-0 (60fps Acoustic Neural Wave)';
+          label.textContent = '2. GROQ LPU + WHISPER TRANSCRIBES IN < 200MS';
+          cli.innerHTML = `<strong>$ belt app run bytedance/seedance-2-0</strong> --input '{"prompt": "Golden Rubber Ducky transforming soundwaves into structured typography", "generate_audio": true}'`;
+
+          let barsSvg = '';
+          for (let i = 0; i < 18; i++) {
+            const h = 30 + Math.abs(Math.sin(t * 8 + i * 0.55)) * 180;
+            const x = 140 + i * 46;
+            const y = 250 - h / 2;
+            const col = i > 10 ? '#34d399' : '#FFD000';
+            barsSvg += `<rect x="${x}" y="${y}" width="24" height="${h}" rx="12" fill="${col}" opacity="0.9"/>`;
+          }
+
+          mount.innerHTML = `
+            <svg width="1100" height="500" viewBox="0 0 1100 500" fill="none">
+              ${barsSvg}
+              <g transform="translate(430, 125) scale(2.4)">
+                <ellipse cx="50" cy="62" rx="32" ry="24" fill="#FFD000" />
+                <path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000" />
+                <path d="M38 58 Q48 50 62 60 Q52 74 38 70 Z" fill="#F5B800" />
+                <circle cx="36" cy="36" r="21" fill="#FFD000" />
+                <path d="M18 36 Q8 38 12 44 Q22 46 26 42 Z" fill="#FF6B00" />
+                <ellipse cx="33" cy="32" rx="4" ry="5.5" fill="#1E293B" />
+                <circle cx="31.5" cy="30" r="1.8" fill="#FFFFFF" />
+              </g>
+            </svg>
+          `;
+        } else {
+          badge.textContent = 'Beat 3 · alibaba/happyhorse-1-0 (Hero Brand Lockup)';
+          label.textContent = '3. SPEAKLY — YOUR RUBBER DUCKY VOICE ASSISTANT';
+          cli.innerHTML = `<strong>$ belt app run infsh/hunyuanvideo-foley</strong> --input '{"prompt": "Tactile key release + warm victory sparkle chime"}'`;
+
+          mount.innerHTML = `
+            <svg width="1100" height="500" viewBox="0 0 1100 500" fill="none">
+              <rect x="250" y="60" width="600" height="380" rx="48" fill="#11131b" stroke="#FFD000" stroke-width="4"/>
+              <g transform="translate(340, 115) scale(2.6)">
+                <ellipse cx="50" cy="62" rx="32" ry="24" fill="#FFD000" />
+                <path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000" />
+                <path d="M38 58 Q48 50 62 60 Q52 74 38 70 Z" fill="#F5B800" />
+                <circle cx="36" cy="36" r="21" fill="#FFD000" />
+                <path d="M18 36 Q8 38 12 44 Q22 46 26 42 Z" fill="#FF6B00" />
+                <path d="M28 33 Q34 26 40 33" stroke="#0F172A" stroke-width="3.2" stroke-linecap="round" fill="none" />
+                <ellipse cx="26" cy="38" rx="4" ry="2.2" fill="#FF8A8A" />
+                <path d="M36 4 L38 10 L44 12 L38 14 L36 20 L34 14 L28 12 L34 10 Z" fill="#FBBF24" />
+              </g>
+              <text x="650" y="245" fill="#ffffff" font-size="68" font-weight="900" font-family="Inter">Speakly</text>
+              <text x="650" y="295" fill="#FFD000" font-size="28" font-weight="700" font-family="Inter">Rubber Ducky AI</text>
+              <text x="650" y="340" fill="#34d399" font-size="22" font-weight="700" font-family="Inter">macOS &amp; Windows</text>
+            </svg>
+          `;
+        }
+      };
+      window.setVideoTime(0);
+    </script>
+  </body>
+</html>

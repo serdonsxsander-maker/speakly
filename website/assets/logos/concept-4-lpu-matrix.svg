@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-labelledby="title-c4 desc-c4">
+  <title id="title-c4">Speakly Concept 4 — LPU Cyber-Matrix Rubber Ducky</title>
+  <desc id="desc-c4">Precision capsule dot-matrix rubber ducky silhouette with LPU orange-gold and electric cyan acoustic wave bars.</desc>
+  <rect x="4" y="4" width="92" height="92" rx="22" fill="#06080E" stroke="#38BDF8" stroke-opacity="0.35" stroke-width="1.5"/>
+  <!-- Subtle LED Grid Background Dots -->
+  <g fill="#1E293B">
+    <circle cx="20" cy="20" r="1.2"/><circle cx="35" cy="20" r="1.2"/><circle cx="50" cy="20" r="1.2"/><circle cx="65" cy="20" r="1.2"/><circle cx="80" cy="20" r="1.2"/>
+    <circle cx="20" cy="80" r="1.2"/><circle cx="35" cy="80" r="1.2"/><circle cx="50" cy="80" r="1.2"/><circle cx="65" cy="80" r="1.2"/><circle cx="80" cy="80" r="1.2"/>
+  </g>
+  <!-- Acoustic Capsule Bars Forming the Duck Silhouette -->
+  <!-- Beak Capsule -->
+  <rect x="13" y="38" width="13" height="6" rx="3" fill="#FF6B00"/>
+  <!-- Vertical Acoustic Frequency Columns Forming Duck Head & Body -->
+  <rect x="27" y="26" width="6" height="44" rx="3" fill="#FFD000"/>
+  <rect x="36" y="21" width="6" height="54" rx="3" fill="#FFD000"/>
+  <rect x="45" y="25" width="6" height="52" rx="3" fill="#FFD000"/>
+  <rect x="54" y="44" width="6" height="33" rx="3" fill="#F59E0B"/>
+  <rect x="63" y="46" width="6" height="29" rx="3" fill="#F59E0B"/>
+  <rect x="72" y="42" width="6" height="26" rx="3" fill="#FFD000"/>
+  <!-- Cyan LPU Node Eye & Signal Spark -->
+  <circle cx="39" cy="33" r="3.5" fill="#06080E"/>
+  <circle cx="39" cy="33" r="2" fill="#00F5D4"/>
+  <!-- Live Waveform Pulse Right -->
+  <rect x="81" y="48" width="4" height="14" rx="2" fill="#00F5D4"/>
+</svg>

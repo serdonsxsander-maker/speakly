@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-labelledby="title-c6 desc-c6">
+  <title id="title-c6">Speakly Concept 6 — Studio Seal Crest</title>
+  <desc id="desc-c6">Circular audio broadcast crest with rubber ducky silhouette and golden soundwave ring on vintage studio green.</desc>
+  <!-- Deep Vintage Studio Green Squircle -->
+  <rect x="4" y="4" width="92" height="92" rx="22" fill="#0B1F17" stroke="#FFD000" stroke-opacity="0.45" stroke-width="1.5"/>
+  <!-- Outer Acoustic Broadcast Ring -->
+  <circle cx="50" cy="50" r="36" fill="none" stroke="#FFD000" stroke-width="2" stroke-dasharray="6 4" opacity="0.65"/>
+  <circle cx="50" cy="50" r="30" fill="#123125" stroke="#F59E0B" stroke-width="1.5"/>
+  <!-- Classic Golden Duck Inside Crest -->
+  <path d="M26 42 Q18 43 21 48 Q28 50 32 46 Z" fill="#FF6B00"/>
+  <ellipse cx="53" cy="58" rx="19" ry="14" fill="#FFD000"/>
+  <circle cx="40" cy="42" r="13" fill="#FFD000"/>
+  <path d="M45 55 Q53 49 63 56 Q54 66 45 63 Z" fill="#F59E0B"/>
+  <circle cx="37" cy="39.5" r="2.6" fill="#0B1F17"/>
+  <circle cx="36.2" cy="38.7" r="1" fill="#FFFFFF"/>
+</svg>

@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Speakly macOS Tester Setup &amp; Onboarding Guide</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Step-by-step installation and setup guide for Speakly AI Voice Dictation prototype on macOS.">
+  <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: #141417;
+      --card-border: #27272a;
+      --accent: #facc15;
+      --accent-glow: rgba(250, 204, 21, 0.2);
+      --text-main: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --text-sub: #71717a;
+      --green: #22c55e;
+      --green-glow: rgba(34, 197, 94, 0.15);
+      --blue: #38bdf8;
+      --kbd-bg: #1f1f23;
+      --kbd-border: #3f3f46;
+      --code-bg: #18181b;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      padding: 40px 20px 80px;
+    }
+
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent-glow);
+      color: var(--accent);
+      border: 1px solid rgba(250, 204, 21, 0.3);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 4px 14px;
+      border-radius: 9999px;
+      margin-bottom: 16px;
+      letter-spacing: 0.02em;
+    }
+
+    h1 {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+      color: #ffffff;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 16px;
+      max-width: 580px;
+      margin: 0 auto;
+    }
+
+    /* Key Guarantees Box */
+    .highlights-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 40px;
+    }
+
+    @media (max-width: 600px) {
+      .highlights-grid { grid-template-columns: 1fr; }
+    }
+
+    .highlight-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+    }
+
+    .highlight-icon {
+      font-size: 24px;
+      line-height: 1;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+    }
+
+    .highlight-content h3 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #ffffff;
+    }
+
+    .highlight-content p {
+      font-size: 13px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Steps */
+    .step-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 32px;
+      margin-bottom: 24px;
+      position: relative;
+      transition: border-color 0.2s ease;
+    }
+
+    .step-card:hover {
+      border-color: #3f3f46;
+    }
+
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #09090b;
+      font-weight: 800;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.01em;
+    }
+
+    .step-desc {
+      color: var(--text-muted);
+      font-size: 14.5px;
+      margin-bottom: 16px;
+    }
+
+    .callout {
+      background: rgba(38, 38, 42, 0.6);
+      border-left: 3px solid var(--accent);
+      padding: 12px 16px;
+      border-radius: 0 10px 10px 0;
+      font-size: 13.5px;
+      color: #d4d4d8;
+      margin: 14px 0;
+    }
+
+    .callout.tip {
+      border-left-color: var(--green);
+      background: var(--green-glow);
+    }
+
+    .callout strong {
+      color: #ffffff;
+    }
+
+    /* KBD Styling */
+    kbd {
+      display: inline-block;
+      background: var(--kbd-bg);
+      border: 1px solid var(--kbd-border);
+      border-bottom: 2px solid #52525b;
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-family: inherit;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #f4f4f5;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.4);
+    }
+
+    /* Checklist */
+    .checklist {
+      list-style: none;
+      margin-top: 14px;
+    }
+
+    .checklist li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: #d4d4d8;
+      margin-bottom: 10px;
+    }
+
+    .check-box {
+      width: 18px;
+      height: 18px;
+      border: 1.5px solid #52525b;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+      color: var(--green);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .check-box.checked {
+      background: var(--green);
+      border-color: var(--green);
+      color: #09090b;
+      font-weight: 900;
+    }
+
+    /* Code block */
+    code {
+      background: var(--code-bg);
+      border: 1px solid #27272a;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 13px;
+      color: #facc15;
+    }
+
+    /* FAQ Section */
+    .faq-title {
+      font-size: 22px;
+      font-weight: 800;
+      margin: 48px 0 20px;
+      text-align: center;
+      letter-spacing: -0.02em;
+    }
+
+    .faq-item {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      margin-bottom: 14px;
+    }
+
+    .faq-q {
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .faq-q::before {
+      content: "Q";
+      color: var(--accent);
+      font-weight: 800;
+      font-size: 13px;
+    }
+
+    .faq-a {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      margin-top: 60px;
+      color: var(--text-sub);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge">🐥 Speakly Prototype Setup Guide</div>
+      <h1>Set Up Speakly on macOS</h1>
+      <p>A quick 2-minute guide for testers to install, activate, and start dictating across any app on their Mac.</p>
+    </header>
+
+    <!-- Key Questions Answered Upfront -->
+    <div class="highlights-grid">
+      <div class="highlight-card">
+        <div class="highlight-icon">🌐</div>
+        <div class="highlight-content">
+          <h3>Works on Any Wi-Fi</h3>
+          <p>The app connects directly to cloud speech engines over HTTPS. Use it at home, school, coffee shops, or mobile hotspot—no local network required.</p>
+        </div>
+      </div>
+      <div class="highlight-card">
+        <div class="highlight-icon">⚡</div>
+        <div class="highlight-content">
+          <h3>Zero Re-setup on Reboot</h3>
+          <p>Permissions, hotkeys, and account settings are saved permanently in macOS. Close your laptop lid or restart—it is always ready.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 1 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-num">1</div>
+        <h2 class="step-title">Download &amp; Install to Applications</h2>
+      </div>
+      <p class="step-desc">Open the <code>Speakly-1.0.0-arm64.dmg</code> installer disk image you received.</p>
+      
+      <div class="callout tip">
+        <strong>⚠️ Crucial Step:</strong> Drag the <strong>Speakly</strong> duck icon into your Mac's <strong>Applications</strong> folder. Do NOT run the app directly from inside the DMG disk image. Installing into <code>/Applications</code> allows macOS to permanently remember your permissions across restarts!
+      </div>
+
+      <ul class="checklist">
+        <li>
+          <span class="check-box" onclick="this.classList.toggle('checked')">✓</span>
+          <span>Opened the .dmg installer and dragged Speakly into Applications.</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-num">2</div>
+        <h2 class="step-title">First Launch (macOS Gatekeeper)</h2>
+      </div>
+      <p class="step-desc">Open your <strong>Applications</strong> folder and launch <strong>Speakly</strong>.</p>
+      
+      <div class="callout">
+        <strong>First-time macOS prompt:</strong> Because Speakly is an early-stage prototype (not yet notarized by an Apple Developer certificate), macOS may show a message saying <em>"Apple cannot check it for malicious software"</em>.<br><br>
+        <strong>To bypass this one-time prompt:</strong>
+        <ol style="margin-left: 20px; margin-top: 6px;">
+          <li>Right-click (or <kbd>Control</kbd> + click) on <strong>Speakly</strong> in Applications.</li>
+          <li>Click <strong>Open</strong> in the menu.</li>
+          <li>Click <strong>Open</strong> again on the confirmation box.</li>
+        </ol>
+      </div>
+
+      <ul class="checklist">
+        <li>
+          <span class="check-box" onclick="this.classList.toggle('checked')">✓</span>
+          <span>Launched Speakly and confirmed the one-time open prompt.</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-num">3</div>
+        <h2 class="step-title">Connect Your Account (Google or Email)</h2>
+      </div>
+      <p class="step-desc">On first launch, Speakly displays the activation gate.</p>
+      
+      <p style="font-size: 14px; color: var(--text-muted); margin-bottom: 12px;">
+        Click <strong>Sign in with Google</strong> (or enter your email and password). Your default browser will open to authenticate, then automatically return to Speakly and sync your personalized hotkey and vocabulary.
+      </p>
+
+      <ul class="checklist">
+        <li>
+          <span class="check-box" onclick="this.classList.toggle('checked')">✓</span>
+          <span>Logged in with Google or Email (shows green "✓ Account connected").</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-num">4</div>
+        <h2 class="step-title">Enable Required macOS Permissions (One-Time)</h2>
+      </div>
+      <p class="step-desc">Speakly requires two standard macOS permissions to listen and paste at your cursor:</p>
+
+      <div style="display: flex; flex-direction: column; gap: 14px; margin: 16px 0;">
+        <div style="background: rgba(255,255,255,0.03); padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+          <strong style="color: #ffffff; font-size: 14px;">1. Microphone Access</strong>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">Click <strong>Allow Microphone</strong> and click <strong>OK</strong> when macOS prompts you.</p>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.03); padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+          <strong style="color: #ffffff; font-size: 14px;">2. Accessibility &amp; Keystroke Injection</strong>
+          <p style="color: var(--text-muted); font-size: 13px; margin-top: 4px;">
+            Click <strong>Open Accessibility</strong>. In macOS System Settings → Privacy &amp; Security → Accessibility, ensure <strong>Speakly</strong> is toggled <strong>ON</strong>. This allows Speakly to detect when you hold your hotkey and paste text directly where you are typing.
+          </p>
+        </div>
+      </div>
+
+      <div class="callout tip">
+        <strong>✓ Permanent:</strong> Once toggled on, macOS remembers these permissions forever. You will <strong>never</strong> have to grant them again, even when closing and reopening your laptop!
+      </div>
+
+      <ul class="checklist">
+        <li>
+          <span class="check-box" onclick="this.classList.toggle('checked')">✓</span>
+          <span>Microphone access granted.</span>
+        </li>
+        <li>
+          <span class="check-box" onclick="this.classList.toggle('checked')">✓</span>
+          <span>Accessibility toggled ON in macOS System Settings.</span>
+        </li>
+        <li>
+          <span class="check-box" onclick="this.classList.toggle('checked')">✓</span>
+          <span>Clicked "✓ Start Using Speakly" to unlock the app.</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step-card">
+      <div class="step-header">
+        <div class="step-num">5</div>
+        <h2 class="step-title">How to Use Speakly Anywhere</h2>
+      </div>
+      <p class="step-desc">Speakly runs quietly in your macOS Menu Bar (look for the yellow duck 🐥 at the top right of your screen).</p>
+
+      <div style="background: #18181b; border: 1px solid #27272a; border-radius: 14px; padding: 20px; text-align: center; margin: 20px 0;">
+        <div style="font-size: 13px; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">Push-to-Talk Hotkey</div>
+        <div style="font-size: 22px; font-weight: 700; color: #ffffff; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          Hold <kbd>Right ⌥ Option</kbd> (or <kbd>Right ⌘ Command</kbd>)
+        </div>
+        <p style="color: var(--text-muted); font-size: 13.5px; margin-top: 10px;">
+          1. Click your cursor into any text field (Slack, Google Docs, Email, Notes, Terminal, etc.).<br>
+          2. <strong>Press &amp; hold</strong> your hotkey. The floating duck indicator appears.<br>
+          3. <strong>Speak naturally</strong> in English or any language.<br>
+          4. <strong>Release the key.</strong> In ~0.3 seconds, cleaned &amp; grammatically polished text pastes instantly!
+        </p>
+      </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <h2 class="faq-title">Frequently Asked Questions for Testers</h2>
+
+    <div class="faq-item">
+      <div class="faq-q">Can I use Speakly on other Wi-Fi networks (not just the developer's)?</div>
+      <div class="faq-a">
+        <strong>Yes, absolutely!</strong> Speakly communicates directly with cloud-hosted AI speech models (Groq LPU and OpenAI Whisper) and Supabase Auth over secure HTTPS. You can use it on any home Wi-Fi, office network, university campus, coffee shop, or iPhone 5G personal hotspot anywhere in the world.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Do I have to redo this setup when I close my laptop or reboot?</div>
+      <div class="faq-a">
+        <strong>No.</strong> Your login session, hotkey preferences, and macOS permissions are saved permanently in your system. Speakly has <em>Launch at Login</em> enabled by default, so whenever your Mac wakes from sleep or boots up, Speakly is already waiting in your top menu bar ready for you to press your hotkey.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">How do I change my hotkey or change AI mode?</div>
+      <div class="faq-a">
+        Click the yellow duck icon 🐥 in your macOS menu bar (top right corner) to bring up the Speakly Dashboard. In <strong>Settings</strong>, you can switch your hotkey between Right Option, Right Command, or Right Control, or customize your AI dictation mode (Smart Polish, Raw Speech, Email/Slack formatter, etc.).
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">What if text doesn't paste automatically into my app?</div>
+      <div class="faq-a">
+        Open <strong>macOS System Settings → Privacy &amp; Security → Accessibility</strong>, remove Speakly and re-add it (or toggle it off and on). macOS occasionally requires a re-toggle if the app binary was updated. Also ensure the text cursor is blinking inside the text field where you want to paste.
+      </div>
+    </div>
+
+    <footer>
+      Speakly Prototype · Built with Rubber Ducky mascot for macOS
+    </footer>
+  </div>
+</body>
+</html>

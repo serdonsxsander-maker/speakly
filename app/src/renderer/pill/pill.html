@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+  <title>Speakly HUD</title>
+  <link rel="stylesheet" href="./pill.css">
+</head>
+<body>
+  <main class="hud-stage">
+    <!-- The Mascot Bubble: Sleek, compact, only visible when active/prompted -->
+    <div id="pill" class="pill state-idle" data-state="idle">
+      <!-- Mascot Container with animated states: listening, thinking, solved -->
+      <div class="mascot-wrapper" id="mascot-wrapper" aria-hidden="true">
+        <svg class="duck-svg" viewBox="0 0 100 100" fill="none">
+          <!-- Beak (Drawn behind head contour so colors never collide) -->
+          <path class="duck-beak" d="M18 36 Q7 38 11 45 Q21 47 27 42 Z" fill="#FF6B00" />
+
+          <!-- Duck Tail & Body -->
+          <ellipse cx="52" cy="62" rx="31" ry="23" fill="#FFD000" />
+          <path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000" />
+
+          <!-- Duck Head -->
+          <circle cx="36" cy="37" r="20.5" fill="#FFD000" />
+          <ellipse cx="34" cy="24" rx="10" ry="4.5" fill="#FFE866" opacity="0.55" />
+
+          <!-- Duck Wing with animated flap in listening/solved -->
+          <path class="duck-wing" d="M39 58 Q50 49 65 60 Q54 74 39 70 Z" fill="#F59E0B" />
+
+          <!-- Eyes & Expressions -->
+          <!-- Normal / Listening eye with sparkles -->
+          <g class="eye-listening">
+            <ellipse cx="32" cy="34" rx="4" ry="5.5" fill="#0F172A" />
+            <circle cx="30.5" cy="32" r="1.8" fill="#FFFFFF" />
+            <circle cx="33.5" cy="35.5" r="0.9" fill="#FFFFFF" />
+            <!-- Headphone / Listening Ears effect -->
+            <path class="headphone-band" d="M22 34 C22 15, 50 15, 50 34" stroke="#3B82F6" stroke-width="4" stroke-linecap="round" />
+            <rect class="headphone-ear" x="37" y="29" width="7" height="13" rx="3.5" fill="#2563EB" />
+            <rect x="38.6" y="31.5" width="3.8" height="8" rx="1.9" fill="#60A5FA" />
+          </g>
+
+          <!-- Thinking eye (curious squint / floating bubbles) -->
+          <g class="eye-thinking">
+            <path d="M26 35 Q32 29 38 35" stroke="#0F172A" stroke-width="2.8" stroke-linecap="round" fill="none" />
+            <circle cx="52" cy="20" r="3.2" fill="#F59E0B" opacity="0.9" class="think-bubble-1" />
+            <circle cx="61" cy="13" r="4.8" fill="#38BDF8" opacity="0.9" class="think-bubble-2" />
+          </g>
+
+          <!-- Solved eye (happy anime smile ^_^) -->
+          <g class="eye-solved">
+            <path d="M27 34 Q33 27 39 34" stroke="#0F172A" stroke-width="3" stroke-linecap="round" fill="none" />
+            <ellipse cx="28" cy="41" rx="4" ry="2.3" fill="#FF8A8A" opacity="0.8" />
+            <!-- Little lightbulb / sparkle of victory above head -->
+            <path class="solved-sparkle" d="M36 4 L38 10 L44 12 L38 14 L36 20 L34 14 L28 12 L34 10 Z" fill="#FBBF24" />
+          </g>
+        </svg>
+      </div>
+
+      <!-- Compact Content Display -->
+      <div class="pill-content">
+        <!-- Idle Content (If shown) -->
+        <div class="view view-idle">
+          <span class="status-title">Speakly</span>
+          <span class="status-sub">Ready</span>
+        </div>
+
+        <!-- Listening Content (No boring timer, clear dynamic soundwave + status) -->
+        <div class="view view-recording" hidden>
+          <div class="status-info">
+            <span class="status-title listening-pulse">Listening…</span>
+          </div>
+          <div id="waveform" class="waveform" aria-hidden="true">
+            <span class="bar" style="--bar-level: 0.3;"></span>
+            <span class="bar" style="--bar-level: 0.6;"></span>
+            <span class="bar" style="--bar-level: 0.9;"></span>
+            <span class="bar" style="--bar-level: 0.6;"></span>
+            <span class="bar" style="--bar-level: 0.3;"></span>
+          </div>
+          <button type="button" id="cancel-rec-btn" class="mini-btn-cancel" aria-label="Cancel">✕</button>
+        </div>
+
+        <!-- Processing / Thinking Content -->
+        <div class="view view-processing" hidden>
+          <div class="status-info">
+            <span class="status-title thinking-shimmer">Thinking…</span>
+            <span class="status-sub">Polishing with AI</span>
+          </div>
+        </div>
+
+        <!-- Solved / Pasted Content -->
+        <div class="view view-toast" hidden>
+          <div class="status-info">
+            <span class="status-title solved-glow" id="toast-title">Pasted! ✨</span>
+            <span class="status-sub" id="toast-text">Text ready</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="./pill.js"></script>
+</body>
+</html>

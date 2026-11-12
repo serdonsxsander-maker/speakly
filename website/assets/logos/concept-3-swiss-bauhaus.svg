@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-labelledby="title-c3 desc-c3">
+  <title id="title-c3">Speakly Concept 3 — Swiss Bauhaus Rubber Ducky</title>
+  <desc id="desc-c3">Pure geometric circles and semicircles forming a rubber ducky on an international yellow grid.</desc>
+  <!-- International Yellow Bauhaus Canvas -->
+  <rect x="4" y="4" width="92" height="92" rx="22" fill="#FFD000"/>
+  <!-- Bauhaus Grid Hairlines -->
+  <line x1="4" y1="50" x2="96" y2="50" stroke="#0A0A0A" stroke-opacity="0.1" stroke-width="1"/>
+  <line x1="50" y1="4" x2="50" y2="96" stroke="#0A0A0A" stroke-opacity="0.1" stroke-width="1"/>
+  <!-- International Orange Geometric Beak Triangle/Capsule -->
+  <rect x="13" y="36" width="18" height="9" rx="4.5" fill="#FF5500"/>
+  <!-- Pure Semicircle Body -->
+  <path d="M26 52 A28 28 0 0 0 82 52 Z" fill="#0A0A0A"/>
+  <!-- Pure Circle Head -->
+  <circle cx="38" cy="38" r="16" fill="#0A0A0A"/>
+  <!-- Bauhaus Quarter-Circle Wing Cutout -->
+  <path d="M44 56 A14 14 0 0 0 72 56 Z" fill="#FFD000"/>
+  <!-- Crisp Geometric Eye -->
+  <circle cx="34" cy="35" r="3.5" fill="#FFFFFF"/>
+  <!-- Signal Red Recording Dot -->
+  <circle cx="76" cy="26" r="5" fill="#FF5500"/>
+</svg>

@@ -105,7 +105,24 @@ function getDefaultState() {
       launchAtLogin: true,
       theme: 'system' // 'system' | 'dark' | 'light'
     },
-    dictionary: ['Speakly'],
+    dictionary: [
+      'Speakly',
+      'Groq',
+      'Cursor',
+      'Claude',
+      'Antigravity',
+      'Supabase',
+      'TypeScript',
+      'Tailwind',
+      'Next.js',
+      'PostgreSQL',
+      'GitHub',
+      'OAuth',
+      'JWT',
+      'LLM',
+      'JSON',
+      'API'
+    ],
     customModes: [],
     auth: {
       user: null,

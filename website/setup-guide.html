@@ -357,13 +357,18 @@
       <p class="step-desc">Open your <strong>Applications</strong> folder and launch <strong>Speakly</strong>.</p>
       
       <div class="callout">
-        <strong>First-time macOS prompt:</strong> Because Speakly is an early-stage prototype (not yet notarized by an Apple Developer certificate), macOS may show a message saying <em>"Apple cannot check it for malicious software"</em>.<br><br>
-        <strong>To bypass this one-time prompt:</strong>
-        <ol style="margin-left: 20px; margin-top: 6px;">
+        <strong>First-time macOS prompt:</strong> Because Speakly is in Early Access (not yet notarized by Apple), macOS may show a message saying <em>"Apple cannot check it for malicious software"</em> or <em>"App from an unidentified developer"</em>.<br><br>
+        <strong>Option A (Fastest):</strong>
+        <ol style="margin-left: 20px; margin-top: 6px; margin-bottom: 10px;">
           <li>Right-click (or <kbd>Control</kbd> + click) on <strong>Speakly</strong> in Applications.</li>
-          <li>Click <strong>Open</strong> in the menu.</li>
-          <li>Click <strong>Open</strong> again on the confirmation box.</li>
+          <li>Click <strong>Open</strong> in the context menu.</li>
+          <li>Click <strong>Open Anyway</strong> on the confirmation prompt.</li>
         </ol>
+        <strong>Option B (macOS 15 Sequoia):</strong><br>
+        Go to <strong>System Settings → Privacy &amp; Security</strong>, scroll down to the <em>Security</em> section, and click <strong>"Open Anyway"</strong> next to Speakly.<br><br>
+        <strong>Option C (Power users / Terminal):</strong><br>
+        Run this single command in Terminal:<br>
+        <code>xattr -cr /Applications/Speakly.app</code>
       </div>
 
       <ul class="checklist">

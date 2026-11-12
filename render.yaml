@@ -18,3 +18,10 @@ services:
         sync: false
       - key: SPEAKLY_CLIENT_SECRET
         generateValue: true
+
+  - type: web
+    name: speakly-website
+    runtime: static
+    rootDir: website
+    buildCommand: ""
+    staticPublishPath: .

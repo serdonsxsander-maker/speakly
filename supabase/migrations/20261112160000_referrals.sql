@@ -29,3 +29,8 @@ group by upper(trim(raw_user_meta_data->>'referral_code'))
 order by total_signups desc;
 
 comment on view public.partner_performance_summary is 'Aggregated performance metrics per partner code.';
+
+-- SECURITY: Strictly lock views so only the founder (Dashboard / service_role) can view referrals
+revoke all on public.partner_referrals from anon, authenticated;
+revoke all on public.partner_performance_summary from anon, authenticated;
+

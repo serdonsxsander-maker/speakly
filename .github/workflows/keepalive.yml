@@ -1,0 +1,21 @@
+name: Render Backend Keep-Alive
+
+on:
+  schedule:
+    # Trigger every 10 minutes to prevent Render free-tier instance from sleeping
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Speakly Cloud Health Endpoint
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 15 https://speakly-backend.onrender.com/health || echo "000")
+          echo "Render Health Ping Response: $STATUS"
+          if [ "$STATUS" -eq 200 ]; then
+            echo "Speakly Backend is warm and healthy."
+          else
+            echo "Backend ping returned status $STATUS (may be waking up or deploying)."
+          fi

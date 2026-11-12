@@ -25,9 +25,14 @@ const GROQ_API_KEY = (process.env.GROQ_API_KEY || '').trim();
 const OPENAI_API_KEY = (process.env.OPENAI_API_KEY || '').trim();
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://lwiznvgeemrkrildyyvw.supabase.co';
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';
+const SUPABASE_SERVICE_ROLE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
 const SPEAKLY_CLIENT_SECRET = (process.env.SPEAKLY_CLIENT_SECRET || 'speakly_client_beta_v1_secure_handshake').trim();
+const BILLING_WEBHOOK_SECRET = (process.env.BILLING_WEBHOOK_SECRET || '').trim();
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseAdmin = SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { autoRefreshToken: false, persistSession: false } })
+  : null;
 
 const GRAMMAR_CLEANUP_PROMPT = `
 You are Speakly's real-time grammar and speech cleanup engine.
@@ -388,6 +393,78 @@ const server = http.createServer(async (req, res) => {
       const status = err.statusCode || 400;
       res.writeHead(status, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ success: false, error: err.message }));
+    }
+    return;
+  }
+
+  // Billing & Subscription Webhook (Lemon Squeezy / Polar / Stripe)
+  if (url.pathname === '/api/v1/billing/webhook' && req.method === 'POST') {
+    try {
+      const rawBody = await readBodyWithLimit(req, 1024 * 1024); // 1MB limit
+      const signature = req.headers['x-signature'] || req.headers['webhook-signature'] || '';
+
+      // Verify HMAC signature if secret configured
+      if (BILLING_WEBHOOK_SECRET) {
+        const hmac = crypto.createHmac('sha256', BILLING_WEBHOOK_SECRET);
+        const digest = Buffer.from(hmac.update(rawBody).digest('hex'), 'utf8');
+        const signatureBuf = Buffer.from(String(signature), 'utf8');
+        if (digest.length !== signatureBuf.length || !crypto.timingSafeEqual(digest, signatureBuf)) {
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: 'Invalid webhook signature' }));
+          return;
+        }
+      }
+
+      const event = JSON.parse(rawBody.toString('utf8'));
+      const eventName = event.meta?.event_name || event.type || event.event || '';
+      const userEmail = (
+        event.data?.attributes?.user_email ||
+        event.data?.object?.customer_email ||
+        event.customer_email ||
+        ''
+      ).toLowerCase().trim();
+
+      const customUserId = event.meta?.custom_data?.user_id || event.data?.attributes?.custom_data?.user_id || null;
+
+      console.log(`[Billing Webhook] Received event: ${eventName} for ${userEmail || customUserId || 'unknown'}`);
+
+      // Handle Subscription Lifecycle
+      if (supabaseAdmin && (userEmail || customUserId)) {
+        const isPro = /subscription_created|subscription_resumed|order_created|invoice\.payment_succeeded/i.test(eventName);
+        const isCancelled = /subscription_cancelled|subscription_expired|customer\.subscription\.deleted/i.test(eventName);
+
+        let targetUserId = customUserId;
+
+        // If no custom user ID, find user by email in Supabase
+        if (!targetUserId && userEmail) {
+          const { data: usersData } = await supabaseAdmin.auth.admin.listUsers();
+          const matchedUser = usersData?.users?.find(u => (u.email || '').toLowerCase() === userEmail);
+          if (matchedUser) {
+            targetUserId = matchedUser.id;
+          }
+        }
+
+        if (targetUserId) {
+          const subscriptionPayload = {
+            plan: isCancelled ? 'free' : (isPro ? 'pro' : 'free'),
+            status: isCancelled ? 'cancelled' : (isPro ? 'active' : 'inactive'),
+            provider: 'merchant_of_record',
+            updatedAt: new Date().toISOString()
+          };
+
+          await supabaseAdmin.auth.admin.updateUserById(targetUserId, {
+            user_metadata: { speakly_subscription: subscriptionPayload }
+          });
+          console.log(`[Billing Webhook] Updated user ${targetUserId} subscription to ${subscriptionPayload.plan} (${subscriptionPayload.status})`);
+        }
+      }
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ received: true, event: eventName }));
+    } catch (err) {
+      console.error('[Billing Webhook Error]:', err.message);
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ received: false, error: err.message }));
     }
     return;
   }

@@ -586,14 +586,164 @@ const server = http.createServer(async (req, res) => {
   }
 
   // --------------------------------------------------------------------------
-  // Billing & Subscription Webhook (Lemon Squeezy / Polar / Stripe)
+  // Lemon Squeezy Checkout URL Generation
+  // Automatically attaches Supabase user_id and partner referral code
+  // --------------------------------------------------------------------------
+  if (url.pathname === '/api/v1/billing/checkout' && req.method === 'POST') {
+    try {
+      const bodyBuffer = await readBodyWithLimit(req, 1024 * 1024);
+      let body = {};
+      try {
+        body = JSON.parse(bodyBuffer.toString('utf8'));
+      } catch (_) {}
+
+      // Optional user auth
+      const authResult = await authenticateUser(req).catch(() => ({ ok: false }));
+      const authUser = authResult.ok ? authResult.user : null;
+
+      const userId = authUser?.id || body.userId || null;
+      const userEmail = (authUser?.email || body.email || '').toLowerCase().trim();
+      const userName = (
+        authUser?.user_metadata?.speakly_prefs?.userFirstName
+          ? `${authUser.user_metadata.speakly_prefs.userFirstName} ${authUser.user_metadata.speakly_prefs.userLastName || ''}`.trim()
+          : (body.name || '')
+      );
+      const referralCode = (
+        body.referralCode ||
+        authUser?.user_metadata?.referral_code ||
+        ''
+      ).toUpperCase().trim();
+
+      // If Lemon Squeezy API credentials are configured, create checkout session via API
+      if (LEMONSQUEEZY_API_KEY && LEMONSQUEEZY_STORE_ID && LEMONSQUEEZY_VARIANT_ID) {
+        try {
+          const apiRes = await fetch('https://api.lemonsqueezy.com/v1/checkouts', {
+            method: 'POST',
+            headers: {
+              'Accept': 'application/vnd.api+json',
+              'Content-Type': 'application/vnd.api+json',
+              'Authorization': `Bearer ${LEMONSQUEEZY_API_KEY}`
+            },
+            body: JSON.stringify({
+              data: {
+                type: 'checkouts',
+                attributes: {
+                  checkout_data: {
+                    email: userEmail || undefined,
+                    name: userName || undefined,
+                    custom: {
+                      user_id: userId || undefined,
+                      referral_code: referralCode || undefined
+                    }
+                  },
+                  product_options: {
+                    redirect_url: body.returnUrl || 'https://speakly.app'
+                  }
+                },
+                relationships: {
+                  store: { data: { type: 'stores', id: String(LEMONSQUEEZY_STORE_ID) } },
+                  variant: { data: { type: 'variants', id: String(LEMONSQUEEZY_VARIANT_ID) } }
+                }
+              }
+            })
+          });
+
+          if (apiRes.ok) {
+            const apiJson = await apiRes.json();
+            const checkoutUrl = apiJson.data?.attributes?.url;
+            if (checkoutUrl) {
+              res.writeHead(200, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({
+                success: true,
+                checkoutUrl,
+                referralCode: referralCode || null,
+                userId: userId || null
+              }));
+              return;
+            }
+          }
+        } catch (apiErr) {
+          console.warn('[Lemon Squeezy API Checkout Error]:', apiErr.message);
+        }
+      }
+
+      // Robust URL fallback (direct Lemon Squeezy hosted checkout or overlay link)
+      const baseCheckout = LEMONSQUEEZY_CHECKOUT_URL.includes('://')
+        ? LEMONSQUEEZY_CHECKOUT_URL
+        : `https://${LEMONSQUEEZY_CHECKOUT_URL}`;
+      const checkoutUrlObj = new URL(baseCheckout);
+
+      if (userEmail) checkoutUrlObj.searchParams.set('checkout[email]', userEmail);
+      if (userName) checkoutUrlObj.searchParams.set('checkout[name]', userName);
+      if (userId) checkoutUrlObj.searchParams.set('checkout[custom][user_id]', userId);
+      if (referralCode) checkoutUrlObj.searchParams.set('checkout[custom][referral_code]', referralCode);
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: true,
+        checkoutUrl: checkoutUrlObj.toString(),
+        referralCode: referralCode || null,
+        userId: userId || null
+      }));
+    } catch (err) {
+      const status = err.statusCode || 400;
+      res.writeHead(status, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: err.message }));
+    }
+    return;
+  }
+
+  // --------------------------------------------------------------------------
+  // Lemon Squeezy Customer Billing Portal
+  // Directs active subscribers to manage payment method, cancel, or download VAT invoices
+  // --------------------------------------------------------------------------
+  if (url.pathname === '/api/v1/billing/portal' && req.method === 'GET') {
+    try {
+      const authResult = await authenticateUser(req);
+      if (!authResult.ok) {
+        res.writeHead(401, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ success: false, error: authResult.error }));
+        return;
+      }
+
+      let portalUrl = 'https://speakly.lemonsqueezy.com/billing';
+
+      if (supabaseAdmin) {
+        // Query subscriptions table first
+        const { data: subData } = await supabaseAdmin
+          .from('subscriptions')
+          .select('customer_portal_url')
+          .eq('user_id', authResult.userId)
+          .single();
+
+        if (subData?.customer_portal_url) {
+          portalUrl = subData.customer_portal_url;
+        } else {
+          // Check user_metadata
+          const metaPortal = authResult.user?.user_metadata?.speakly_subscription?.customerPortalUrl;
+          if (metaPortal) portalUrl = metaPortal;
+        }
+      }
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: true, portalUrl }));
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: err.message }));
+    }
+    return;
+  }
+
+  // --------------------------------------------------------------------------
+  // Lemon Squeezy Webhook Handler
+  // Synchronizes EU VAT invoices, Subscriptions & 30% Partner Commissions
   // --------------------------------------------------------------------------
   if (url.pathname === '/api/v1/billing/webhook' && req.method === 'POST') {
     try {
       const rawBody = await readBodyWithLimit(req, 1024 * 1024); // 1MB limit
       const signature = req.headers['x-signature'] || req.headers['webhook-signature'] || '';
 
-      // Verify HMAC signature if secret configured
+      // Verify HMAC-SHA256 signature if secret configured
       if (BILLING_WEBHOOK_SECRET) {
         const hmac = crypto.createHmac('sha256', BILLING_WEBHOOK_SECRET);
         const digest = Buffer.from(hmac.update(rawBody).digest('hex'), 'utf8');
@@ -607,52 +757,161 @@ const server = http.createServer(async (req, res) => {
 
       const event = JSON.parse(rawBody.toString('utf8'));
       const eventName = event.meta?.event_name || event.type || event.event || '';
+      const customData = event.meta?.custom_data || event.data?.attributes?.custom_data || {};
+      const attributes = event.data?.attributes || {};
+
       const userEmail = (
-        event.data?.attributes?.user_email ||
+        attributes.user_email ||
+        attributes.customer_email ||
         event.data?.object?.customer_email ||
         event.customer_email ||
         ''
       ).toLowerCase().trim();
 
-      const customUserId = event.meta?.custom_data?.user_id || event.data?.attributes?.custom_data?.user_id || null;
+      const customUserId = customData.user_id || null;
+      let partnerCode = (customData.referral_code || '').toUpperCase().trim();
 
-      console.log(`[Billing Webhook] Received event: ${eventName} for ${userEmail || customUserId || 'unknown'}`);
+      const lsSubscriptionId = String(event.data?.id || attributes.subscription_id || '');
+      const customerId = String(attributes.customer_id || '');
+      const orderId = String(attributes.order_id || event.data?.id || '');
+      const rawStatus = String(attributes.status || '').toLowerCase();
+      const portalUrl = attributes.urls?.customer_portal || '';
+      const updatePaymentMethodUrl = attributes.urls?.update_payment_method || '';
+      const renewsAt = attributes.renews_at || null;
+      const endsAt = attributes.ends_at || null;
+      const trialEndsAt = attributes.trial_ends_at || null;
+      const variantId = String(attributes.variant_id || '');
+      const totalCents = typeof attributes.total === 'number'
+        ? attributes.total
+        : parseInt(attributes.total || '0', 10);
+      const currency = (attributes.currency || 'USD').toUpperCase();
 
-      // Handle Subscription Lifecycle
+      console.log(`[Lemon Squeezy Webhook] ${eventName} | User: ${userEmail || customUserId || 'unknown'} | Status: ${rawStatus || 'N/A'}`);
+
       if (supabaseAdmin && (userEmail || customUserId)) {
-        const isPro = /subscription_created|subscription_resumed|order_created|invoice\.payment_succeeded/i.test(eventName);
-        const isCancelled = /subscription_cancelled|subscription_expired|customer\.subscription\.deleted/i.test(eventName);
-
         let targetUserId = customUserId;
+        let existingUserMeta = null;
 
-        // If no custom user ID, find user by email in Supabase
+        // If targetUserId is missing, query auth.users by email
         if (!targetUserId && userEmail) {
           const { data: usersData } = await supabaseAdmin.auth.admin.listUsers();
           const matchedUser = usersData?.users?.find(u => (u.email || '').toLowerCase() === userEmail);
           if (matchedUser) {
             targetUserId = matchedUser.id;
+            existingUserMeta = matchedUser.user_metadata || {};
           }
+        } else if (targetUserId) {
+          const { data: userResp } = await supabaseAdmin.auth.admin.getUserById(targetUserId);
+          existingUserMeta = userResp?.user?.user_metadata || {};
         }
 
-        if (targetUserId) {
+        // If partnerCode was not passed in checkout custom data, fall back to user's saved referral code
+        if (!partnerCode && existingUserMeta?.referral_code) {
+          partnerCode = String(existingUserMeta.referral_code).toUpperCase().trim();
+        }
+
+        // 1. Subscription Lifecycle Handling
+        const isSubscriptionEvent = /subscription_created|subscription_updated|subscription_resumed|subscription_cancelled|subscription_expired|subscription_paused|subscription_unpaused/i.test(eventName);
+
+        if (isSubscriptionEvent && targetUserId) {
+          const isPro = rawStatus === 'active' || rawStatus === 'on_trial';
+          const plan = isPro ? 'pro' : 'free';
+          const normalizedStatus = ['active', 'on_trial', 'paused', 'past_due', 'unpaid', 'cancelled', 'expired'].includes(rawStatus)
+            ? rawStatus
+            : (isPro ? 'active' : 'inactive');
+
           const subscriptionPayload = {
-            plan: isCancelled ? 'free' : (isPro ? 'pro' : 'free'),
-            status: isCancelled ? 'cancelled' : (isPro ? 'active' : 'inactive'),
-            provider: 'merchant_of_record',
+            plan,
+            status: normalizedStatus,
+            provider: 'lemon_squeezy',
+            lemonSqueezyId: lsSubscriptionId,
+            customerPortalUrl: portalUrl,
+            renewsAt,
+            endsAt,
             updatedAt: new Date().toISOString()
           };
 
+          // Update user_metadata for instant client state resolution
           await supabaseAdmin.auth.admin.updateUserById(targetUserId, {
             user_metadata: { speakly_subscription: subscriptionPayload }
           });
-          console.log(`[Billing Webhook] Updated user ${targetUserId} subscription to ${subscriptionPayload.plan} (${subscriptionPayload.status})`);
+
+          // Upsert into public.subscriptions table
+          try {
+            await supabaseAdmin
+              .from('subscriptions')
+              .upsert({
+                user_id: targetUserId,
+                lemon_squeezy_id: lsSubscriptionId,
+                customer_id: customerId,
+                order_id: orderId,
+                status: normalizedStatus,
+                plan,
+                variant_id: variantId,
+                trial_ends_at: trialEndsAt,
+                renews_at: renewsAt,
+                ends_at: endsAt,
+                customer_portal_url: portalUrl,
+                update_payment_method_url: updatePaymentMethodUrl,
+                updated_at: new Date().toISOString()
+              }, { onConflict: 'lemon_squeezy_id' });
+          } catch (dbSubErr) {
+            console.warn('[Lemon Squeezy DB Subscription Upsert Warning]:', dbSubErr.message);
+          }
+
+          console.log(`[Lemon Squeezy] User ${targetUserId} synced: ${plan} (${normalizedStatus})`);
+        }
+
+        // 2. Paid Conversion & Recurring Partner Commission Attribution
+        // Commission triggers on paid orders and recurring subscription invoices
+        const isPaidBillingEvent = /subscription_payment_success|order_created/i.test(eventName);
+        const isPaymentPaid = (rawStatus === 'paid' || eventName === 'subscription_payment_success') && totalCents > 0;
+
+        if (isPaidBillingEvent && isPaymentPaid && partnerCode) {
+          const commissionRate = 0.30; // 30% recurring partner share
+          const commissionCents = Math.round(totalCents * commissionRate);
+
+          try {
+            await supabaseAdmin
+              .from('partner_conversions')
+              .insert({
+                partner_code: partnerCode,
+                user_id: targetUserId,
+                user_email: userEmail,
+                lemon_squeezy_order_id: orderId,
+                lemon_squeezy_subscription_id: lsSubscriptionId,
+                amount_cents: totalCents,
+                currency,
+                commission_rate: commissionRate,
+                commission_cents: commissionCents,
+                status: 'paid'
+              });
+
+            console.log(`[Lemon Squeezy] 🤝 Partner Commission recorded!`);
+            console.log(`   Partner: ${partnerCode} | Order: ${orderId} | Gross: ${(totalCents / 100).toFixed(2)} ${currency} | 30% Commission: ${(commissionCents / 100).toFixed(2)} ${currency}`);
+          } catch (convErr) {
+            console.warn('[Lemon Squeezy Partner Conversion Insert Warning]:', convErr.message);
+          }
+        }
+
+        // 3. Refund Handling
+        if (/order_refunded/i.test(eventName) && orderId) {
+          try {
+            await supabaseAdmin
+              .from('partner_conversions')
+              .update({ status: 'refunded' })
+              .eq('lemon_squeezy_order_id', orderId);
+            console.log(`[Lemon Squeezy] Refund marked for order ${orderId}`);
+          } catch (refErr) {
+            console.warn('[Lemon Squeezy Refund Warning]:', refErr.message);
+          }
         }
       }
 
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ received: true, event: eventName }));
     } catch (err) {
-      console.error('[Billing Webhook Error]:', err.message);
+      console.error('[Lemon Squeezy Webhook Error]:', err.message);
       res.writeHead(400, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ received: false, error: err.message }));
     }

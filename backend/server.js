@@ -43,6 +43,19 @@ You are Speakly's real-time grammar and speech cleanup engine.
 5. Output ONLY the final polished text ready to paste. Never answer questions, never add conversational quotes or commentary.
 `;
 
+const HALLUCINATION_PHRASES = new Set([
+  'thank you.',
+  'thank you for watching.',
+  'thanks for watching.',
+  'thank you for watching!',
+  'subtitles by the amara.org community',
+  'ondertitels ingediend door de amara.org gemeenschap',
+  'sous-titres réalisés para la communauté d\'amara.org',
+  'you',
+  '.',
+  '...'
+]);
+
 // In-Memory Sliding-Window Rate Limiting (Prevents API abuse & wallet drain)
 const rateLimitMap = new Map();
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
@@ -235,7 +248,9 @@ async function transcribeAndPolish({
   const sttData = await sttRes.json();
   const rawText = String(sttData?.text || '').trim();
 
-  if (!rawText) return { rawText: '', finalText: '' };
+  if (!rawText || HALLUCINATION_PHRASES.has(rawText.toLowerCase())) {
+    return { rawText: '', finalText: '', engine: hasGroq ? 'groq-lpu' : 'openai' };
+  }
 
   if (modeId === 'raw') {
     return {

@@ -17,6 +17,8 @@ contextBridge.exposeInMainWorld('voxflow', {
   deleteAccount: () => ipcRenderer.invoke('voxflow:delete-account'),
   copyText: (text) => ipcRenderer.invoke('voxflow:copy-text', text),
   openExternal: (url) => ipcRenderer.invoke('voxflow:open-external', url),
+  openCheckout: () => ipcRenderer.invoke('voxflow:open-checkout'),
+  openBillingPortal: () => ipcRenderer.invoke('voxflow:open-billing-portal'),
   requestMicPermission: () => ipcRenderer.invoke('voxflow:request-mic-permission'),
   requestAccessibility: () => ipcRenderer.invoke('voxflow:request-accessibility'),
   checkPermissions: () => ipcRenderer.invoke('voxflow:check-permissions'),

@@ -1,0 +1,275 @@
+{
+  "generatedAt": "2026-11-13T08:41:32.304Z",
+  "git": {
+    "branch": "main",
+    "latestCommit": "e2db4a0 - chore: move legacy Python files to legacy/ so Render defaults to Node",
+    "commitDate": "5 minutes ago",
+    "clean": false,
+    "untrackedCount": 4,
+    "modifiedCount": 10
+  },
+  "installers": {
+    "macArm64": {
+      "exists": true,
+      "size": 106,
+      "path": "app/dist/Speakly-1.0.0-mac-arm64.dmg"
+    },
+    "macX64": {
+      "exists": true,
+      "size": 111,
+      "path": "app/dist/Speakly-1.0.0-mac-x64.dmg"
+    },
+    "winSetup": {
+      "exists": true,
+      "size": 89,
+      "path": "app/dist/Speakly-Setup-1.0.0-win.exe"
+    },
+    "winPortable": {
+      "exists": true,
+      "size": 81,
+      "path": "app/dist/Speakly-1.0.0-win-portable.exe"
+    },
+    "checksums": {
+      "exists": true,
+      "path": "app/dist/SHA256SUMS.txt"
+    }
+  },
+  "database": {
+    "feedbackMigration": true,
+    "lemonSqueezyMigration": true
+  },
+  "backend": {
+    "renderConfigured": true,
+    "keepaliveConfigured": true,
+    "productionUrl": "https://speakly-backend.onrender.com"
+  },
+  "tracks": [
+    {
+      "id": "desktop-app",
+      "num": 1,
+      "title": "Desktop Client (macOS & Windows)",
+      "leadChat": "Desktop App & Onboarding",
+      "progress": 95,
+      "status": "ready",
+      "description": "Native Electron client with floating Duck HUD, hotkey listeners, auto-paste, and in-app feedback.",
+      "items": [
+        {
+          "text": "Revoke and purge hardcoded Groq & OpenAI keys from store and build configs",
+          "done": true
+        },
+        {
+          "text": "Automatic cleanup of leaked keys in legacy local tester profiles",
+          "done": true
+        },
+        {
+          "text": "In-app Feedback Modal (Bug / Idea / Other) with automatic diagnostics & Duck success view",
+          "done": true
+        },
+        {
+          "text": "Default Personal Dictionary preloaded with 20+ essential developer keywords",
+          "done": true
+        },
+        {
+          "text": "Referral code field added to signup & stored in user_metadata",
+          "done": true
+        },
+        {
+          "text": "Subscription status & customer portal sync wired into store",
+          "done": true
+        },
+        {
+          "text": "Mascot visual integrity locked across all 3 states (Listening, Thinking, Solved)",
+          "done": true
+        },
+        {
+          "text": "Production binaries built for macOS (Apple Silicon + Intel) and Windows",
+          "done": true
+        }
+      ]
+    },
+    {
+      "id": "backend-security",
+      "num": 2,
+      "title": "Cloud Backend & Inference Proxy",
+      "leadChat": "Backend & Security",
+      "progress": 90,
+      "status": "action_required",
+      "description": "Hardened Node.js proxy on Render running Groq LPU transcription (~290ms) and Llama-3.3 prompt formatting.",
+      "items": [
+        {
+          "text": "Strict Supabase JWT authentication enforced on all AI endpoints (guest bypass closed)",
+          "done": true
+        },
+        {
+          "text": "Sliding-window rate limiting (45 requests / min per user) to protect Groq credits",
+          "done": true
+        },
+        {
+          "text": "Whisper hallucination suppressor to filter background silence artifacts",
+          "done": true
+        },
+        {
+          "text": "Lemon Squeezy webhook signature verification & subscription sync endpoint",
+          "done": true
+        },
+        {
+          "text": "Render free-tier 5-minute keep-alive workflow configured (.github/workflows/keepalive.yml)",
+          "done": true
+        },
+        {
+          "text": "Push to GitHub & deploy service on Render with production env vars",
+          "done": false,
+          "blocker": true
+        }
+      ]
+    },
+    {
+      "id": "website-downloads",
+      "num": 3,
+      "title": "Early Access Website & Distribution",
+      "leadChat": "Website & Install Flow",
+      "progress": 92,
+      "status": "ready",
+      "description": "Dark-mode Cyber-Matrix landing page with dual direct downloads, 20-second setup guide, and referral banner.",
+      "items": [
+        {
+          "text": "Strip all legacy BYOK (Bring Your Own Key) and promo code references",
+          "done": true
+        },
+        {
+          "text": "Prominent dual download buttons with automatic OS detection (Mac DMG vs Windows EXE)",
+          "done": true
+        },
+        {
+          "text": "20-second visual setup guide for macOS Gatekeeper (\"Open Anyway\") and Windows SmartScreen",
+          "done": true
+        },
+        {
+          "text": "1-click terminal CLI copy tool for macOS quarantine removal",
+          "done": true
+        },
+        {
+          "text": "Referral tracking: captures ?ref=CODE, saves to cookie/storage, and displays welcome banner",
+          "done": true
+        },
+        {
+          "text": "Open Graph social previews and Duck favicon added across all pages",
+          "done": true
+        },
+        {
+          "text": "Publish releases to GitHub Releases via scripts/publish-release.sh",
+          "done": false,
+          "blocker": true
+        }
+      ]
+    },
+    {
+      "id": "billing-affiliates",
+      "num": 4,
+      "title": "Billing & Lemon Squeezy (MoR)",
+      "leadChat": "Billing & Affiliates",
+      "progress": 85,
+      "status": "action_required",
+      "description": "Merchant of Record configuration to legally collect EU/Belgian VAT and automate recurring 30% affiliate payouts.",
+      "items": [
+        {
+          "text": "Select Lemon Squeezy as Merchant of Record (0€ monthly fee, automated EU/Belgian OSS VAT)",
+          "done": true
+        },
+        {
+          "text": "Define 30% recurring affiliate commission model (paid conversions only, stops on churn)",
+          "done": true
+        },
+        {
+          "text": "Write complete step-by-step setup documentation (docs/LEMON_SQUEEZY_SETUP.md)",
+          "done": true
+        },
+        {
+          "text": "Create Supabase SQL migration for subscriptions and affiliate attribution tables",
+          "done": true
+        },
+        {
+          "text": "Connect Lemon Squeezy webhook to Render backend & test checkout overlay",
+          "done": false,
+          "blocker": true
+        },
+        {
+          "text": "Run migration 20261112170000_lemon_squeezy.sql in Supabase SQL editor",
+          "done": false,
+          "blocker": true
+        }
+      ]
+    },
+    {
+      "id": "growth-marketing",
+      "num": 5,
+      "title": "Growth & Multi-Wedge Marketing Lab",
+      "leadChat": "Growth & Outreach Lab",
+      "progress": 88,
+      "status": "ready",
+      "description": "Targeted acquisition strategy focusing on developers prompting AI, Belgian tech communities, and video hooks.",
+      "items": [
+        {
+          "text": "Developer Wedge Strategy: Focus on Cursor, Claude Code, and terminal power-users",
+          "done": true
+        },
+        {
+          "text": "Belgium & Benelux Growth Playbook: student reps in Ghent/Leuven/Brussels, local meetups",
+          "done": true
+        },
+        {
+          "text": "5 short-form video hooks & scripts for TikTok, YouTube Shorts, and X",
+          "done": true
+        },
+        {
+          "text": "Interactive Ad Review Dashboard & teleprompter at marketing/index.html",
+          "done": true
+        },
+        {
+          "text": "Curated list of 22 AI-coding creators with 1-click personalized DM pitches",
+          "done": true
+        },
+        {
+          "text": "35% commission calculator for pitching high-converting micro-influencers",
+          "done": true
+        },
+        {
+          "text": "Begin outreach to first 10 micro-creators with commission partnership offer",
+          "done": false
+        }
+      ]
+    },
+    {
+      "id": "founder-rituals",
+      "num": 6,
+      "title": "Executive Telemetry & Antigravity HQ",
+      "leadChat": "Co-Founder HQ (This Chat)",
+      "progress": 95,
+      "status": "ready",
+      "description": "Single source of truth across all Antigravity chats, persistent memory, and live CLI stats.",
+      "items": [
+        {
+          "text": "Universal Project Memory (PROJECT_MEMORY.md) synchronized across all chats",
+          "done": true
+        },
+        {
+          "text": "Global Rules locked (.agents/rules/speakly-rules.md) enforcing zero-secrets & mascot rules",
+          "done": true
+        },
+        {
+          "text": "Founder morning stats CLI dashboard (node scripts/stats.js) querying Supabase telemetry",
+          "done": true
+        },
+        {
+          "text": "High-end interactive Mission Control tool (tools/mission-control/index.html)",
+          "done": true
+        },
+        {
+          "text": "Weekly Monday growth & telemetry report setup via Antigravity /schedule",
+          "done": false
+        }
+      ]
+    }
+  ],
+  "readinessScore": 91
+}

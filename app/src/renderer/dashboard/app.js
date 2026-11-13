@@ -553,6 +553,34 @@
       if (accountLoggedIn) accountLoggedIn.hidden = false;
       if (accountUserEmail) accountUserEmail.textContent = state.auth.user.email;
       if (accountSyncedHotkey) accountSyncedHotkey.textContent = state.hotkeyDisplay;
+
+      // Render Lemon Squeezy subscription & billing status
+      const sub = state.subscription || {};
+      const isPro = sub.plan === 'pro' && (sub.status === 'active' || sub.status === 'on_trial');
+      const subBadge = document.getElementById('sub-plan-badge');
+      const subDesc = document.getElementById('sub-plan-desc');
+      const btnUpgrade = document.getElementById('btn-upgrade-pro');
+      const btnBilling = document.getElementById('btn-manage-billing');
+
+      if (subBadge && subDesc && btnUpgrade && btnBilling) {
+        if (isPro) {
+          subBadge.textContent = '★ Speakly Pro (Active)';
+          subBadge.style.background = 'rgba(52, 211, 153, 0.15)';
+          subBadge.style.color = '#34d399';
+          subBadge.style.borderColor = 'rgba(52, 211, 153, 0.3)';
+          subDesc.textContent = sub.renewsAt ? `Renews on ${new Date(sub.renewsAt).toLocaleDateString()}` : 'Unlimited voice intelligence active.';
+          btnUpgrade.hidden = true;
+          btnBilling.hidden = false;
+        } else {
+          subBadge.textContent = sub.status === 'trial' ? 'Early Access Trial' : 'Free Tier';
+          subBadge.style.background = 'rgba(255, 208, 0, 0.15)';
+          subBadge.style.color = '#ffd000';
+          subBadge.style.borderColor = 'rgba(255, 208, 0, 0.3)';
+          subDesc.textContent = 'Upgrade for unlimited sub-second dictation across all apps.';
+          btnUpgrade.hidden = false;
+          btnBilling.hidden = true;
+        }
+      }
     } else {
       if (accountBadge) {
         accountBadge.dataset.ok = 'false';
@@ -973,6 +1001,43 @@
     authLogoutBtn.addEventListener('click', async () => {
       const next = await window.voxflow.authLogout();
       renderState(next);
+    });
+  }
+
+  // Lemon Squeezy Checkout & Customer Portal Buttons
+  const btnUpgradePro = document.getElementById('btn-upgrade-pro');
+  if (btnUpgradePro) {
+    btnUpgradePro.addEventListener('click', async () => {
+      btnUpgradePro.disabled = true;
+      btnUpgradePro.textContent = 'Opening checkout…';
+      try {
+        await window.voxflow.openCheckout();
+      } catch (err) {
+        console.error('Checkout error:', err);
+      } finally {
+        setTimeout(() => {
+          btnUpgradePro.disabled = false;
+          btnUpgradePro.textContent = 'Upgrade to Pro ($10/mo)';
+        }, 2000);
+      }
+    });
+  }
+
+  const btnManageBilling = document.getElementById('btn-manage-billing');
+  if (btnManageBilling) {
+    btnManageBilling.addEventListener('click', async () => {
+      btnManageBilling.disabled = true;
+      btnManageBilling.textContent = 'Opening portal…';
+      try {
+        await window.voxflow.openBillingPortal();
+      } catch (err) {
+        console.error('Portal error:', err);
+      } finally {
+        setTimeout(() => {
+          btnManageBilling.disabled = false;
+          btnManageBilling.textContent = 'Manage Billing & VAT';
+        }, 2000);
+      }
     });
   }
 

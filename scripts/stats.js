@@ -90,19 +90,65 @@ async function main() {
     console.log('💬 Feedback check:', err.message);
   }
 
-  // 2. Partner Referral Performance
+  // 2. Active Subscriptions & MRR (Lemon Squeezy Sync)
+  console.log('\n---------------------------------------------------------');
+  try {
+    const { data: subs, error: subErr } = await supabase
+      .from('subscriptions')
+      .select('status, plan, renews_at');
+
+    if (subErr) {
+      console.log('💳 Subscriptions Table:', subErr.message);
+    } else if (subs && subs.length > 0) {
+      const activeSubs = subs.filter(s => s.status === 'active');
+      const trialSubs = subs.filter(s => s.status === 'on_trial');
+      const mrr = activeSubs.length * 10;
+      console.log(`💳 Lemon Squeezy Subscriptions:`);
+      console.log(`   - Active Pro Users: ${activeSubs.length} ($${mrr}/mo MRR)`);
+      console.log(`   - 14-Day Free Trials: ${trialSubs.length}`);
+      console.log(`   - Total Subscriptions Recorded: ${subs.length}`);
+    } else {
+      console.log('💳 Subscriptions: 0 active paid subscriptions yet (Early access free trials active).');
+    }
+  } catch (err) {
+    console.log('💳 Subscriptions check:', err.message);
+  }
+
+  // 3. Partner Referral & 30% Recurring Commission Performance
   console.log('\n---------------------------------------------------------');
   try {
     const { data: partners, error: ptErr } = await supabase
-      .from('partner_performance_summary')
+      .from('partner_revenue_summary')
       .select('*')
       .limit(10);
 
     if (ptErr) {
-      console.log('🤝 Partner Referrals:', ptErr.message);
+      // Fallback to basic performance summary if revenue summary view not yet run
+      const { data: fallbackPartners, error: fbErr } = await supabase
+        .from('partner_performance_summary')
+        .select('*')
+        .limit(10);
+
+      if (fbErr) {
+        console.log('🤝 Partner Referrals:', fbErr.message);
+      } else if (fallbackPartners && fallbackPartners.length > 0) {
+        console.log('🤝 Partner Referrals (Signups):');
+        console.table(fallbackPartners);
+      } else {
+        console.log('🤝 Partner Referrals: 0 signups recorded yet. (Share partner codes to start tracking!)');
+      }
     } else if (partners && partners.length > 0) {
-      console.log('🤝 Top Partner Codes:');
-      console.table(partners);
+      console.log('🤝 Top Partner Codes (Signups + 30% Paid Conversions):');
+      const formatted = partners.map(p => ({
+        'Partner Code': p.partner_code,
+        'Signups': p.total_signups,
+        'Paying Users': p.paying_customers,
+        'Active Subs': p.active_subscriptions,
+        'Conversion %': `${p.conversion_rate_pct || 0}%`,
+        'Gross Revenue': `$${((p.total_revenue_cents || 0) / 100).toFixed(2)}`,
+        '30% Commission': `$${((p.total_commission_cents || 0) / 100).toFixed(2)}`
+      }));
+      console.table(formatted);
     } else {
       console.log('🤝 Partner Referrals: 0 signups recorded yet. (Share partner codes to start tracking!)');
     }

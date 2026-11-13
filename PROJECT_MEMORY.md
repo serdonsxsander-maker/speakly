@@ -18,9 +18,14 @@
 | 2026-11-12 | Security: removed the hardcoded Groq + OpenAI keys from the app. Old keys must be revoked. AI keys live only on the backend. |
 | 2026-11-12 | Partner referral code field added to onboarding & settings signup; saved in Supabase `user_metadata.referral_code`. |
 | 2026-11-12 | Website (`website/index.html` & `website/app.js`) updated: BYOK removed, direct downloads wired, OS auto-detection added. |
+| 2026-11-12 | Landing page reworked for Early Access: dual prominent download buttons (Mac DMG & Windows Setup EXE) with OS auto-detection, all legacy BYOK/DuckyPro references stripped, pricing simplified to 100% Free during Early Access (no card required), tightened copy around Cursor/Claude/Terminal developer wedge, and added a 20-second visual first-launch guide for macOS Gatekeeper ("Open Anyway") and Windows Defender SmartScreen ("Run anyway") with a 1-click terminal CLI copy tool. |
 | 2026-11-12 | Clean Windows installers built: `Speakly-Setup-1.0.0-win.exe` (89MB) and `Speakly-1.0.0-win-portable.exe` (81MB). |
 | 2026-11-12 | Interactive Ad Review Dashboard created at `showcase/ad-review.html` with 5 strategic angles. |
+| 2026-11-12 | Multi-Wedge Growth Strategy & Central Marketing Hub built at `marketing/index.html` with 22 curated targets, 1-click DM copy, interactive teleprompter, and 35% commission calculator. |
+| 2026-11-12 | Launch Prioritization: Short-Form Video First (TikTok, YouTube Shorts, X) using the 5 multi-wedge video hooks and pre-rendered MP4 assets in `website/assets/videos/`. |
+| 2026-11-12 | Affiliate Tracking Decision: Automated affiliate management via Lemon Squeezy / Stripe Connect once billing goes live; manual ref tracking in Supabase during early access. |
 | 2026-11-12 | Backend hardened for Render: strictly requires authenticated Supabase users (guest AI access blocked to protect Groq tokens), active 45 req/min rate limiter, 5-minute keep-alive ping on `/health`. |
+| 2026-11-12 | **Lemon Squeezy chosen as Merchant of Record (MoR)**: 0€/month, automatically collects and remits EU/Belgian VAT via OSS/MOSS. Wired native Lemon Squeezy checkout, Lemon.js overlay & affiliate tracking, recurring 30% partner commission on paid conversions, and Supabase subscription sync (`supabase/migrations/20261112170000_lemon_squeezy.sql`). |
 
 ## Brand Identity & Visual Language (LOCKED: Option 04 — LPU Cyber-Matrix)
 - **Active Brand Kit**: Option 04 — LPU Cyber-Matrix

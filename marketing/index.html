@@ -1,0 +1,1728 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Speakly — Central Growth & Marketing Hub</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-void: #06080E;
+      --bg-surface: #0C101A;
+      --bg-card: #121826;
+      --bg-elevated: #182236;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(0, 245, 212, 0.4);
+      --matrix-gold: #FFD000;
+      --matrix-gold-dim: rgba(255, 208, 0, 0.15);
+      --lpu-cyan: #00F5D4;
+      --lpu-cyan-dim: rgba(0, 245, 212, 0.12);
+      --electric-blue: #38BDF8;
+      --pulse-orange: #FF6B00;
+      --emerald-green: #34D399;
+      --emerald-dim: rgba(52, 211, 153, 0.15);
+      --text-main: #F1F5F9;
+      --text-muted: #94A3B8;
+      --text-dim: #64748B;
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+      --shadow-glow-cyan: 0 0 25px rgba(0, 245, 212, 0.2);
+      --shadow-glow-gold: 0 0 25px rgba(255, 208, 0, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-void);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Ambient cyber grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: 
+        radial-gradient(circle at 15% 15%, rgba(0, 245, 212, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(255, 208, 0, 0.04) 0%, transparent 40%),
+        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 48px 48px, 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 32px 24px 80px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Top Navigation / App Header */
+    header.hub-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-mascot-container {
+      width: 52px;
+      height: 52px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .brand-mascot-container:hover {
+      transform: scale(1.05);
+      box-shadow: var(--shadow-glow-gold);
+    }
+    .brand-mascot-container svg {
+      width: 40px;
+      height: 40px;
+    }
+
+    .brand-titles h1 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge-stage {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      background: var(--matrix-gold-dim);
+      color: var(--matrix-gold);
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 208, 0, 0.3);
+    }
+
+    .brand-titles p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s, border-color 0.15s, color 0.15s;
+    }
+    .nav-btn:hover {
+      background: var(--bg-elevated);
+      border-color: var(--border-focus);
+      color: var(--lpu-cyan);
+    }
+
+    .nav-btn.primary {
+      background: var(--matrix-gold);
+      color: #000;
+      border-color: var(--matrix-gold);
+    }
+    .nav-btn.primary:hover {
+      background: #FFE033;
+      box-shadow: var(--shadow-glow-gold);
+      color: #000;
+    }
+
+    /* Metrics Strip */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 36px;
+    }
+
+    .metric-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 18px 20px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .metric-card:hover {
+      border-color: rgba(255, 255, 255, 0.16);
+    }
+    .metric-card .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .metric-card .val {
+      font-size: 26px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: -0.02em;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .metric-card .hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .metric-card.accent-cyan .val { color: var(--lpu-cyan); }
+    .metric-card.accent-gold .val { color: var(--matrix-gold); }
+    .metric-card.accent-emerald .val { color: var(--emerald-green); }
+
+    /* Main Hub Tabs */
+    .tabs-nav {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 28px;
+      overflow-x: auto;
+      padding-bottom: 2px;
+    }
+
+    .tab-trigger {
+      background: transparent;
+      border: none;
+      color: var(--text-dim);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px 18px;
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      position: relative;
+      transition: color 0.15s, background 0.15s;
+      white-space: nowrap;
+    }
+    .tab-trigger:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .tab-trigger.active {
+      color: var(--matrix-gold);
+      background: rgba(255, 208, 0, 0.04);
+    }
+    .tab-trigger.active::after {
+      content: '';
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--matrix-gold);
+      box-shadow: 0 0 10px var(--matrix-gold);
+    }
+
+    .tab-pane {
+      display: none;
+      animation: fadeIn 0.25s ease-in-out;
+    }
+    .tab-pane.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Section Cards */
+    .section-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      margin-bottom: 32px;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .section-head h2 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .section-head p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Wedges Matrix Grid */
+    .wedges-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 20px;
+    }
+
+    .wedge-card {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      position: relative;
+    }
+    .wedge-card:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+    }
+    .wedge-card.highlight {
+      border-color: rgba(0, 245, 212, 0.35);
+      background: linear-gradient(180deg, rgba(0, 245, 212, 0.03) 0%, var(--bg-card) 100%);
+    }
+
+    .wedge-badge-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .wedge-tag {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+    .tag-coding { background: rgba(56, 189, 248, 0.15); color: #38BDF8; }
+    .tag-adhd { background: rgba(244, 114, 182, 0.15); color: #F472B6; }
+    .tag-benelux { background: rgba(255, 208, 0, 0.15); color: #FFD000; }
+    .tag-sales { background: rgba(52, 211, 153, 0.15); color: #34D399; }
+    .tag-pm { background: rgba(167, 139, 250, 0.15); color: #A78BFA; }
+
+    .wedge-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .wedge-pain {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      line-height: 1.45;
+    }
+    .wedge-specs {
+      border-top: 1px solid var(--border-subtle);
+      padding-top: 14px;
+      font-size: 12px;
+      color: var(--text-dim);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .wedge-specs span strong {
+      color: var(--text-main);
+    }
+
+    .wedge-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-sm {
+      flex: 1;
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-elevated);
+      color: var(--text-main);
+      cursor: pointer;
+      text-align: center;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn-sm:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    .btn-sm.active-filter {
+      border-color: var(--lpu-cyan);
+      color: var(--lpu-cyan);
+      background: var(--lpu-cyan-dim);
+    }
+
+    /* CRM Table & Pitch Drawer */
+    .crm-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .filter-pills {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .filter-pill {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-dim);
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .filter-pill:hover, .filter-pill.active {
+      color: var(--text-main);
+      background: var(--bg-elevated);
+      border-color: var(--lpu-cyan);
+    }
+    .filter-pill.active {
+      color: var(--lpu-cyan);
+      background: var(--lpu-cyan-dim);
+    }
+
+    .search-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 6px 12px;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 13px;
+      width: 240px;
+    }
+    .search-box:focus {
+      outline: none;
+      border-color: var(--lpu-cyan);
+    }
+
+    .crm-table-container {
+      overflow-x: auto;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      background: var(--bg-card);
+    }
+
+    table.crm-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+    table.crm-table th {
+      background: var(--bg-elevated);
+      color: var(--text-dim);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    table.crm-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      vertical-align: middle;
+    }
+    table.crm-table tr:last-child td {
+      border-bottom: none;
+    }
+    table.crm-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .creator-name {
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .creator-handle {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .status-select {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      font-size: 12px;
+      font-family: inherit;
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .status-select:focus {
+      outline: none;
+      border-color: var(--lpu-cyan);
+    }
+
+    .btn-copy-pitch {
+      background: var(--lpu-cyan-dim);
+      border: 1px solid rgba(0, 245, 212, 0.3);
+      color: var(--lpu-cyan);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s;
+    }
+    .btn-copy-pitch:hover {
+      background: var(--lpu-cyan);
+      color: #000;
+      box-shadow: var(--shadow-glow-cyan);
+    }
+
+    /* Video Studio & Teleprompter */
+    .video-studio-grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 960px) {
+      .video-studio-grid { grid-template-columns: 1fr; }
+    }
+
+    .scripts-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .script-item {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .script-item:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .script-item.active {
+      border-color: var(--matrix-gold);
+      background: var(--matrix-gold-dim);
+    }
+    .script-item h4 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+    .script-item p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .teleprompter-view {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      position: relative;
+    }
+    .teleprompter-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .script-meta-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--matrix-gold);
+      background: rgba(255, 208, 0, 0.1);
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .script-teleprompter-box {
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .teleprompter-section {
+      background: var(--bg-surface);
+      border-left: 3px solid var(--border-subtle);
+      padding: 12px 16px;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      transition: border-color 0.2s, background 0.2s;
+    }
+    .teleprompter-section.active-reading {
+      border-left-color: var(--lpu-cyan);
+      background: rgba(0, 245, 212, 0.05);
+    }
+    .teleprompter-section .time-stamp {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--lpu-cyan);
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .teleprompter-section .cue-title {
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+    .teleprompter-section .spoken-text {
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--text-main);
+      font-weight: 500;
+    }
+    .teleprompter-section .visual-cue {
+      font-size: 12px;
+      color: var(--matrix-gold);
+      margin-top: 6px;
+      font-style: italic;
+    }
+
+    /* Calculator */
+    .calculator-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      align-items: center;
+    }
+    @media (max-width: 860px) {
+      .calculator-container { grid-template-columns: 1fr; }
+    }
+
+    .calc-inputs {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .calc-row {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .calc-row-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .calc-row-header span.val-display {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--matrix-gold);
+      font-weight: 700;
+    }
+    .range-slider {
+      width: 100%;
+      height: 6px;
+      background: var(--bg-card);
+      border-radius: 4px;
+      outline: none;
+      -webkit-appearance: none;
+      accent-color: var(--matrix-gold);
+    }
+
+    .calc-results-card {
+      background: linear-gradient(145deg, var(--bg-card) 0%, var(--bg-surface) 100%);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      position: relative;
+    }
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 12px;
+    }
+    .result-row:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+    .result-row .res-label {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .result-row .res-val {
+      font-size: 24px;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Mascot Playground HUD */
+    .mascot-playground {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .mascot-preview-area {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .mascot-svg-box {
+      width: 80px;
+      height: 80px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-glow-gold);
+    }
+    .mascot-svg-box svg {
+      width: 65px;
+      height: 65px;
+    }
+    .mascot-state-info h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .mascot-state-info p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    .mascot-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    /* Toast Notification */
+    #toast-notification {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--lpu-cyan);
+      box-shadow: var(--shadow-glow-cyan);
+      color: var(--text-main);
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 9999;
+    }
+    #toast-notification.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Checkbox styling */
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      margin-bottom: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .checklist-item:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .checklist-item input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--matrix-gold);
+      cursor: pointer;
+    }
+    .checklist-item.done {
+      text-decoration: line-through;
+      color: var(--text-dim);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Top Header -->
+    <header class="hub-header">
+      <div class="brand-group">
+        <div class="brand-mascot-container" id="brand-header-mascot" title="Rubber Ducky AI Mascot"></div>
+        <div class="brand-titles">
+          <h1>Speakly Growth &amp; Marketing Hub <span class="badge-stage">Multi-Wedge Engine</span></h1>
+          <p>Solo Founder Playbook • 0.29s Groq LPU Voice Dictation • Belgium &amp; Global</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a href="../website/index.html" class="nav-btn" target="_blank">🌐 Live Website Draft</a>
+        <a href="../showcase/ad-review.html" class="nav-btn" target="_blank">📺 Ad Review Studio</a>
+        <button class="nav-btn primary" onclick="switchTab('tab-crm')">⚡ Direct DM Outreach</button>
+      </div>
+    </header>
+
+    <!-- Metrics Dashboard Strip -->
+    <div class="metrics-grid">
+      <div class="metric-card accent-cyan">
+        <div class="label">Live Test Wedges</div>
+        <div class="val" id="metric-wedges">5 Active</div>
+        <div class="hint">⚡ AI Coders, ADHD, Benelux, Sales, PMs</div>
+      </div>
+      <div class="metric-card accent-gold">
+        <div class="label">Total Curated Leads</div>
+        <div class="val" id="metric-leads">22 Targets</div>
+        <div class="hint">🎯 Micro-creators, hubs &amp; newsletters</div>
+      </div>
+      <div class="metric-card accent-emerald">
+        <div class="label">Partner Model</div>
+        <div class="val">35% Rev-Share</div>
+        <div class="hint">🔄 12-month recurring, €0 upfront cost</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Engine Latency</div>
+        <div class="val">0.29s</div>
+        <div class="hint">🚀 Groq Whisper-v3 + Llama 3.3</div>
+      </div>
+    </div>
+
+    <!-- Hub Navigation Tabs -->
+    <div class="tabs-nav">
+      <button class="tab-trigger active" onclick="switchTab('tab-matrix')">🎯 1. Multi-Wedge Matrix</button>
+      <button class="tab-trigger" onclick="switchTab('tab-crm')">📬 2. Creator &amp; Hub Outreach CRM</button>
+      <button class="tab-trigger" onclick="switchTab('tab-teleprompter')">🎬 3. Video Teleprompter Studio</button>
+      <button class="tab-trigger" onclick="switchTab('tab-calculator')">💰 4. Partner Commission Calc</button>
+      <button class="tab-trigger" onclick="switchTab('tab-mascot')">🐥 5. Mascot &amp; Brand Assets</button>
+      <button class="tab-trigger" onclick="switchTab('tab-playbook')">📋 6. Daily Founder Routine</button>
+    </div>
+
+    <!-- TAB 1: Multi-Wedge Matrix -->
+    <div id="tab-matrix" class="tab-pane active">
+      <div class="section-box">
+        <div class="section-head">
+          <div>
+            <h2>Active Wedges &amp; Positioning Experiments</h2>
+            <p>Testing multiple audiences concurrently to identify the lowest CPA and highest retention.</p>
+          </div>
+          <button class="btn-sm active-filter" onclick="filterCrmByWedge('all')">View All Leads</button>
+        </div>
+
+        <div class="wedges-grid">
+          <!-- Wedge 1 -->
+          <div class="wedge-card highlight">
+            <div class="wedge-badge-row">
+              <span class="wedge-tag tag-coding">Wedge 01 • Flagship</span>
+              <span style="font-size: 11px; color: var(--emerald-green); font-weight: 700;">🟢 ACTIVE</span>
+            </div>
+            <h3 class="wedge-title">AI Coding &amp; Vibe Coders</h3>
+            <p class="wedge-pain">Developers spend 40% of their coding time manually typing out 3-paragraph context instructions into Cursor Composer, Windsurf, or Claude Code.</p>
+            <div class="wedge-specs">
+              <span>Primary Tool: <strong>Cursor, Claude Code, Terminal</strong></span>
+              <span>Pain Relief: <strong>RSI / Wrist relief + 0.29s prompt paste</strong></span>
+              <span>Target MRR/Seat: <strong>€14 / month</strong></span>
+            </div>
+            <div class="wedge-actions">
+              <button class="btn-sm" onclick="filterCrmByWedge('coding')">Filter 8 Leads</button>
+              <button class="btn-sm" onclick="loadScript(0)">Open Script</button>
+            </div>
+          </div>
+
+          <!-- Wedge 2 -->
+          <div class="wedge-card">
+            <div class="wedge-badge-row">
+              <span class="wedge-tag tag-adhd">Wedge 02 • High Viral</span>
+              <span style="font-size: 11px; color: var(--lpu-cyan); font-weight: 700;">🔵 PILOT</span>
+            </div>
+            <h3 class="wedge-title">ADHD "Brain Dump" Workers</h3>
+            <p class="wedge-pain">Thoughts move at 200 WPM, but fingers type at 50 WPM. Getting stuck in perfectionist editing loops and backspacing entire paragraphs.</p>
+            <div class="wedge-specs">
+              <span>Primary Tool: <strong>Slack, Notion, Apple Mail, WhatsApp</strong></span>
+              <span>Pain Relief: <strong>Rambling thoughts $\rightarrow$ clean crisp text</strong></span>
+              <span>Target MRR/Seat: <strong>€14 / month</strong></span>
+            </div>
+            <div class="wedge-actions">
+              <button class="btn-sm" onclick="filterCrmByWedge('adhd')">Filter 4 Leads</button>
+              <button class="btn-sm" onclick="loadScript(1)">Open Script</button>
+            </div>
+          </div>
+
+          <!-- Wedge 3 -->
+          <div class="wedge-card">
+            <div class="wedge-badge-row">
+              <span class="wedge-tag tag-benelux">Wedge 03 • Home Court</span>
+              <span style="font-size: 11px; color: var(--matrix-gold); font-weight: 700;">🟡 BENELUX</span>
+            </div>
+            <h3 class="wedge-title">Belgian &amp; Benelux Agencies</h3>
+            <p class="wedge-pain">Constant Dutch/English/French code-switching. Apple Dictation fails miserably when Flemish speakers mix English tech terms into Dutch sentences.</p>
+            <div class="wedge-specs">
+              <span>Primary Hubs: <strong>Wintercircus, BeCentral, Start it @KBC</strong></span>
+              <span>Pain Relief: <strong>Zero-effort multilingual auto-detection</strong></span>
+              <span>Target MRR/Seat: <strong>€18 / month</strong></span>
+            </div>
+            <div class="wedge-actions">
+              <button class="btn-sm" onclick="filterCrmByWedge('benelux')">Filter 6 Leads</button>
+              <button class="btn-sm" onclick="loadScript(2)">Open Script</button>
+            </div>
+          </div>
+
+          <!-- Wedge 4 -->
+          <div class="wedge-card">
+            <div class="wedge-badge-row">
+              <span class="wedge-tag tag-sales">Wedge 04 • B2B Teams</span>
+              <span style="font-size: 11px; color: var(--text-dim); font-weight: 700;">⚪ QUEUED</span>
+            </div>
+            <h3 class="wedge-title">Sales Reps &amp; CRM Note-Takers</h3>
+            <p class="wedge-pain">Spending 15 minutes after every discovery call typing deal notes into HubSpot or Salesforce, eating away active selling time.</p>
+            <div class="wedge-specs">
+              <span>Primary Tool: <strong>HubSpot, Salesforce, Pipedrive</strong></span>
+              <span>Pain Relief: <strong>10s spoken summary $\rightarrow$ bulleted CRM record</strong></span>
+              <span>Target MRR/Seat: <strong>€25 / seat / mo</strong></span>
+            </div>
+            <div class="wedge-actions">
+              <button class="btn-sm" onclick="filterCrmByWedge('sales')">Filter 2 Leads</button>
+              <button class="btn-sm" onclick="loadScript(3)">Open Script</button>
+            </div>
+          </div>
+
+          <!-- Wedge 5 -->
+          <div class="wedge-card">
+            <div class="wedge-badge-row">
+              <span class="wedge-tag tag-pm">Wedge 05 • High LTV</span>
+              <span style="font-size: 11px; color: var(--text-dim); font-weight: 700;">⚪ QUEUED</span>
+            </div>
+            <h3 class="wedge-title">Product Managers &amp; Spec Writers</h3>
+            <p class="wedge-pain">Writing dozens of Jira tickets, Linear issues, and PRDs per sprint. Meeting fatigue leads to shallow ticket descriptions.</p>
+            <div class="wedge-specs">
+              <span>Primary Tool: <strong>Linear, Jira, Notion, Confluence</strong></span>
+              <span>Pain Relief: <strong>Spoken context $\rightarrow$ formatted user stories</strong></span>
+              <span>Target MRR/Seat: <strong>€16 / month</strong></span>
+            </div>
+            <div class="wedge-actions">
+              <button class="btn-sm" onclick="filterCrmByWedge('pm')">Filter 2 Leads</button>
+              <button class="btn-sm" onclick="loadScript(4)">Open Script</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: CRM & Outreach Manager -->
+    <div id="tab-crm" class="tab-pane">
+      <div class="section-box">
+        <div class="section-head">
+          <div>
+            <h2>Micro-Creator &amp; Partner Outreach Pipeline</h2>
+            <p>Click "Copy Tailored DM" to copy a personalized pitch (with custom ref link) directly to your clipboard.</p>
+          </div>
+          <div style="font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--matrix-gold);">
+            Commission Offer: 35% Recurring (12 mo)
+          </div>
+        </div>
+
+        <div class="crm-toolbar">
+          <div class="filter-pills" id="crm-filter-pills">
+            <button class="filter-pill active" data-wedge="all" onclick="filterCrm('all')">All Targets (22)</button>
+            <button class="filter-pill" data-wedge="coding" onclick="filterCrm('coding')">AI Coding (8)</button>
+            <button class="filter-pill" data-wedge="adhd" onclick="filterCrm('adhd')">ADHD / Brain Dump (4)</button>
+            <button class="filter-pill" data-wedge="benelux" onclick="filterCrm('benelux')">Belgium &amp; Benelux (6)</button>
+            <button class="filter-pill" data-wedge="sales" onclick="filterCrm('sales')">Sales &amp; CRM (2)</button>
+            <button class="filter-pill" data-wedge="pm" onclick="filterCrm('pm')">Product Managers (2)</button>
+          </div>
+          <input type="text" class="search-box" id="crm-search" placeholder="Search target or platform..." oninput="searchCrm()">
+        </div>
+
+        <div class="crm-table-container">
+          <table class="crm-table">
+            <thead>
+              <tr>
+                <th>Target / Channel</th>
+                <th>Wedge Niche</th>
+                <th>Audience</th>
+                <th>Platform</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="crm-table-body">
+              <!-- Dynamically populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: Video Studio & Teleprompter -->
+    <div id="tab-teleprompter" class="tab-pane">
+      <div class="section-box">
+        <div class="section-head">
+          <div>
+            <h2>15–30s Short-Form Video Studio &amp; Teleprompter</h2>
+            <p>Engineered for TikTok, Instagram Reels, and X. Paced at 158 words per minute for maximum retention.</p>
+          </div>
+          <div class="header-actions">
+            <button class="btn-sm active-filter" id="btn-prompter-run" onclick="toggleTeleprompter()">▶ Start Prompter Simulation</button>
+            <button class="btn-sm" onclick="copyCurrentScript()">📋 Copy Full Script</button>
+          </div>
+        </div>
+
+        <div class="video-studio-grid">
+          <!-- Left: Script Selector -->
+          <div class="scripts-list" id="scripts-selector-list">
+            <!-- Dynamically populated -->
+          </div>
+
+          <!-- Right: Teleprompter & Video Screen -->
+          <div class="teleprompter-view">
+            <div class="teleprompter-controls">
+              <span class="script-meta-badge" id="prompter-meta">Duration: 24s • Pacing: 158 WPM</span>
+              <div style="display: flex; gap: 8px;">
+                <button class="btn-sm active-filter" onclick="copyPostingPackage()">📦 Copy Posting Package (TikTok/Shorts)</button>
+                <button class="btn-sm" onclick="copyCurrentScript()">📋 Copy Script</button>
+              </div>
+            </div>
+
+            <!-- Integrated Video Player & Pacing Sync -->
+            <div style="display: grid; grid-template-columns: 240px 1fr; gap: 18px; align-items: start;">
+              <div style="background: #000; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--border-subtle); position: relative;">
+                <video id="prompter-video-player" controls playsinline style="width: 100%; height: auto; display: block; max-height: 380px; object-fit: contain; background: #000;"></video>
+                <div style="padding: 8px 10px; font-size: 11px; color: var(--text-dim); background: var(--bg-surface); border-top: 1px solid var(--border-subtle);">
+                  Preview: <span id="prompter-video-label" style="color: var(--lpu-cyan); font-family: monospace;">03-ad-creative-30s.mp4</span>
+                </div>
+              </div>
+
+              <div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                  <span style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim);">Teleprompter Flow</span>
+                  <span style="font-size: 13px; font-family: monospace; color: var(--matrix-gold);" id="prompter-timer">00:00 / 00:24</span>
+                </div>
+                <div class="script-teleprompter-box" id="prompter-box">
+                  <!-- Dynamically loaded script blocks -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: Calculator -->
+    <div id="tab-calculator" class="tab-pane">
+      <div class="section-box">
+        <div class="section-head">
+          <div>
+            <h2>Commission &amp; Revenue Share Model Simulator</h2>
+            <p>Interactive partner economics: simulate MRR, partner payouts, and net founder earnings.</p>
+          </div>
+        </div>
+
+        <div class="calculator-container">
+          <div class="calc-inputs">
+            <div class="calc-row">
+              <div class="calc-row-header">
+                <span>Monthly Pro Plan Price:</span>
+                <span class="val-display" id="disp-price">€14 / month</span>
+              </div>
+              <input type="range" class="range-slider" id="slider-price" min="8" max="29" value="14" oninput="updateCalculator()">
+            </div>
+
+            <div class="calc-row">
+              <div class="calc-row-header">
+                <span>Paying Users per Creator/Partner:</span>
+                <span class="val-display" id="disp-users">50 users</span>
+              </div>
+              <input type="range" class="range-slider" id="slider-users" min="5" max="300" step="5" value="50" oninput="updateCalculator()">
+            </div>
+
+            <div class="calc-row">
+              <div class="calc-row-header">
+                <span>Recurring Commission Rate:</span>
+                <span class="val-display" id="disp-rate">35% recurring</span>
+              </div>
+              <input type="range" class="range-slider" id="slider-rate" min="20" max="50" step="5" value="35" oninput="updateCalculator()">
+            </div>
+
+            <div class="calc-row">
+              <div class="calc-row-header">
+                <span>Number of Active Affiliate Partners:</span>
+                <span class="val-display" id="disp-partners">5 partners</span>
+              </div>
+              <input type="range" class="range-slider" id="slider-partners" min="1" max="25" value="5" oninput="updateCalculator()">
+            </div>
+          </div>
+
+          <div class="calc-results-card">
+            <div class="result-row">
+              <span class="res-label">Gross Cohort MRR:</span>
+              <span class="res-val" style="color: var(--text-main);" id="calc-gross-mrr">€3,500</span>
+            </div>
+            <div class="result-row">
+              <span class="res-label">Total Partner Payouts (Monthly):</span>
+              <span class="res-val" style="color: var(--matrix-gold);" id="calc-partner-payout">€1,225</span>
+            </div>
+            <div class="result-row">
+              <span class="res-label">Estimated Groq LPU API Costs (~€0.80/user):</span>
+              <span class="res-val" style="color: var(--text-dim);" id="calc-api-cost">€200</span>
+            </div>
+            <div class="result-row">
+              <span class="res-label">Net Founder Monthly Profit:</span>
+              <span class="res-val" style="color: var(--emerald-green);" id="calc-net-profit">€2,075</span>
+            </div>
+            <div class="result-row">
+              <span class="res-label">Annualized Run Rate (Net ARR):</span>
+              <span class="res-val" style="color: var(--lpu-cyan);" id="calc-net-arr">€24,900</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: Brand Mascot & HUD Previewer -->
+    <div id="tab-mascot" class="tab-pane">
+      <div class="section-box">
+        <div class="section-head">
+          <div>
+            <h2>Brand Mascot &amp; Cyber-Matrix Design Kit</h2>
+            <p>Option 04 — LPU Cyber-Matrix visual assets and our immutable Rubber Ducky floating HUD states.</p>
+          </div>
+        </div>
+
+        <div class="mascot-playground">
+          <div class="mascot-preview-area">
+            <div class="mascot-svg-box" id="interactive-duck-svg"></div>
+            <div class="mascot-state-info">
+              <h3 id="interactive-state-title">State: Listening</h3>
+              <p id="interactive-state-desc">Studio headphones on, 16kHz audio capture active.</p>
+            </div>
+          </div>
+          <div class="mascot-buttons">
+            <button class="btn-sm active-filter" onclick="setPlaygroundState('listening')">1. Listening (Headphones)</button>
+            <button class="btn-sm" onclick="setPlaygroundState('thinking')">2. Thinking (Bubbles)</button>
+            <button class="btn-sm" onclick="setPlaygroundState('solved')">3. Solved (Sparkle &amp; Blush)</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: Founder Daily Routine -->
+    <div id="tab-playbook" class="tab-pane">
+      <div class="section-box">
+        <div class="section-head">
+          <div>
+            <h2>Solo Founder 30-Minute Daily Growth Sprint</h2>
+            <p>Actionable checklist to consistently drive high-converting early access signups with €0 ad budget.</p>
+          </div>
+          <button class="btn-sm" onclick="resetChecklist()">Reset Checkboxes</button>
+        </div>
+
+        <div id="daily-checklist-container">
+          <label class="checklist-item">
+            <input type="checkbox" data-task="task-1" onchange="toggleTask(this)">
+            <span><strong>Send 5 tailored DMs:</strong> 2 AI Coding creators, 1 ADHD creator, 1 Belgian hub lead, 1 newsletter editor.</span>
+          </label>
+          <label class="checklist-item">
+            <input type="checkbox" data-task="task-2" onchange="toggleTask(this)">
+            <span><strong>Reply to 3 technical threads:</strong> Search X/Twitter and Reddit for "Cursor prompt", "Wrist pain coding", or "Wispr Flow slow".</span>
+          </label>
+          <label class="checklist-item">
+            <input type="checkbox" data-task="task-3" onchange="toggleTask(this)">
+            <span><strong>Publish 1 Short-Form Video:</strong> Use one of our 5 scripts on TikTok, YouTube Shorts, and X with `#cursorai #vibecoding`.</span>
+          </label>
+          <label class="checklist-item">
+            <input type="checkbox" data-task="task-4" onchange="toggleTask(this)">
+            <span><strong>Check Supabase `referral_code` signups:</strong> Review if any partner links brought in new testers and send a thank-you note.</span>
+          </label>
+          <label class="checklist-item">
+            <input type="checkbox" data-task="task-5" onchange="toggleTask(this)">
+            <span><strong>Monitor Tweakers &amp; Belgian Slacks:</strong> Answer questions about RAM-only zero retention privacy and Groq 0.29s latency.</span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Toast Notification Element -->
+  <div id="toast-notification">
+    <span>✅</span>
+    <span id="toast-msg">Custom pitch copied to clipboard!</span>
+  </div>
+
+  <script>
+    // 1. OFFICIAL RUBBER DUCKY SVG GENERATOR (Matches website/app.js)
+    function getRubberDuckySVG(state = "listening") {
+      let stateExtras = "";
+      if (state === "listening") {
+        stateExtras = `
+          <ellipse cx="32" cy="34" rx="4" ry="5.5" fill="#0F172A" />
+          <circle cx="30.5" cy="32" r="1.8" fill="#FFFFFF" />
+          <circle cx="33.5" cy="35.5" r="0.9" fill="#FFFFFF" />
+          <path d="M22 34 C22 15, 50 15, 50 34" fill="none" stroke="#3B82F6" stroke-width="4.5" stroke-linecap="round" />
+          <rect x="37" y="29" width="7.5" height="14" rx="3.75" fill="#2563EB" />
+          <rect x="38.8" y="31.5" width="4" height="9" rx="2" fill="#60A5FA" />
+        `;
+      } else if (state === "thinking") {
+        stateExtras = `
+          <path d="M26 35 Q32 29 38 35" fill="none" stroke="#0F172A" stroke-width="3.2" stroke-linecap="round" />
+          <circle cx="58" cy="18" r="3.2" fill="#F59E0B" />
+          <circle cx="67" cy="11" r="5" fill="#38BDF8" />
+        `;
+      } else if (state === "solved") {
+        stateExtras = `
+          <path d="M27 34 Q33 27 39 34" fill="none" stroke="#0F172A" stroke-width="3.2" stroke-linecap="round" />
+          <ellipse cx="28" cy="41" rx="4.5" ry="2.5" fill="#FF8A8A" opacity="0.8" />
+          <path d="M68 8 L70 15 L77 17 L70 19 L68 26 L66 19 L59 17 L66 15 Z" fill="#FBBF24" />
+        `;
+      }
+
+      return `
+        <svg viewBox="0 0 100 95" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <ellipse cx="52" cy="86" rx="30" ry="4" fill="#38BDF8" opacity="0.28" />
+          <path d="M18 36 Q7 38 11 45 Q21 47 27 42 Z" fill="#FF6B00" />
+          <ellipse cx="52" cy="62" rx="31" ry="23" fill="#FFD000" />
+          <path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000" />
+          <circle cx="36" cy="37" r="20.5" fill="#FFD000" />
+          <ellipse cx="34" cy="24" rx="10" ry="4.5" fill="#FFE866" opacity="0.55" />
+          <path d="M39 58 Q50 49 65 60 Q54 74 39 70 Z" fill="#F59E0B" />
+          ${stateExtras}
+        </svg>
+      `;
+    }
+
+    // 2. CURATED LEADS DATABASE (22 Targets across 5 Wedges)
+    const LEADS_DATA = [
+      { id: 1, name: "Cole Medin", handle: "@colemedin", wedge: "coding", audience: "28k Subs", platform: "YouTube / X", lang: "EN", ref: "colemedin", pitchType: "coding" },
+      { id: 2, name: "Riley Brown", handle: "@rileybrown_ai", wedge: "coding", audience: "45k X / 35k YT", platform: "X / YouTube", lang: "EN", ref: "rileybrown", pitchType: "coding" },
+      { id: 3, name: "Nick Saraev", handle: "@NickSaraev", wedge: "coding", audience: "32k Subs", platform: "YouTube", lang: "EN", ref: "nicksaraev", pitchType: "coding" },
+      { id: 4, name: "Yevhen McElheny", handle: "@ymcelheny", wedge: "coding", audience: "12k Subs", platform: "YouTube / X", lang: "EN", ref: "yevhen", pitchType: "coding" },
+      { id: 5, name: "David Ondrej", handle: "@DavidOndrej", wedge: "coding", audience: "40k Subs", platform: "YouTube", lang: "EN", ref: "davidondrej", pitchType: "coding" },
+      { id: 6, name: "Takuya Matsuyama", handle: "@inkdrop_app", wedge: "coding", audience: "65k Subs", platform: "YouTube / X", lang: "EN", ref: "takuya", pitchType: "coding" },
+      { id: 7, name: "Garrick Webster", handle: "@garrickwebster", wedge: "coding", audience: "8k Readers", platform: "Substack", lang: "EN", ref: "garrick", pitchType: "coding" },
+      { id: 8, name: "Skillselion Weekly", handle: "skillselion.com", wedge: "coding", audience: "15k Devs", platform: "Newsletter", lang: "EN", ref: "skillselion", pitchType: "newsletter" },
+      { id: 9, name: "Jesse J. Anderson", handle: "@jessejanderson", wedge: "adhd", audience: "95k X / 40k Threads", platform: "X / Threads", lang: "EN", ref: "extraadhd", pitchType: "adhd" },
+      { id: 10, name: "Aron Croft", handle: "@hiddenadhd", wedge: "adhd", audience: "180k TikTok", platform: "TikTok / YT", lang: "EN", ref: "aroncroft", pitchType: "adhd" },
+      { id: 11, name: "ADHD Actually", handle: "@adhdactually", wedge: "adhd", audience: "45k Insta", platform: "Instagram", lang: "EN", ref: "adhdactually", pitchType: "adhd" },
+      { id: 12, name: "ADHD in Tech Community", handle: "r/adhd_programmers", wedge: "adhd", audience: "58k Members", platform: "Reddit", lang: "EN", ref: "redditadhd", pitchType: "adhd" },
+      { id: 13, name: "Wintercircus Ghent", handle: "wintercircus.be", wedge: "benelux", audience: "50+ Startups", platform: "Tech Hub / Slack", lang: "NL", ref: "wintercircus", pitchType: "hub" },
+      { id: 14, name: "BeCentral / BeCode", handle: "becentral.org", wedge: "benelux", audience: "1k+ Builders", platform: "Campus / Community", lang: "NL", ref: "becentral", pitchType: "hub" },
+      { id: 15, name: "Start it @KBC", handle: "startit.be", wedge: "benelux", audience: "250+ Founders", platform: "Accelerator", lang: "NL", ref: "startit", pitchType: "hub" },
+      { id: 16, name: "Tweakers.net Devs", handle: "tweakers.net/forum", wedge: "benelux", audience: "500k Benelux Tech", platform: "Tech Forum", lang: "NL", ref: "tweakers", pitchType: "showcase" },
+      { id: 17, name: "Bloovi / Tech Tribes", handle: "bloovi.be", wedge: "benelux", audience: "40k Readers", platform: "Media / Newsletter", lang: "NL", ref: "bloovi", pitchType: "benelux_media" },
+      { id: 18, name: "The Beacon Antwerp", handle: "thebeacon.eu", wedge: "benelux", audience: "AI Hub Antwerp", platform: "Tech Hub", lang: "NL", ref: "thebeacon", pitchType: "hub" },
+      { id: 19, name: "Will Allred (Lavender)", handle: "@williamallred", wedge: "sales", audience: "60k LinkedIn", platform: "LinkedIn / Sales", lang: "EN", ref: "willallred", pitchType: "sales" },
+      { id: 20, name: "Kyle Coleman", handle: "@kyletcoleman", wedge: "sales", audience: "90k LinkedIn", platform: "LinkedIn", lang: "EN", ref: "kylecoleman", pitchType: "sales" },
+      { id: 21, name: "Lenny Rachitsky Community", handle: "lennysnewsletter.com", wedge: "pm", audience: "600k PMs", platform: "Slack / Substack", lang: "EN", ref: "lennypm", pitchType: "pm" },
+      { id: 22, name: "Linear Power Users", handle: "@linear power users", wedge: "pm", audience: "Design & PM Devs", platform: "X / Discord", lang: "EN", ref: "linearpm", pitchType: "pm" }
+    ];
+
+    // 3. PITCH TEMPLATES GENERATOR
+    function generatePitch(lead) {
+      if (lead.pitchType === "coding") {
+        return `Hey ${lead.name.split(" ")[0]},\n\nLoved your recent breakdowns on AI coding workflows! Quick question: how much time do you spend typing 3-paragraph context instructions into Cursor Composer or Claude Code?\n\nI’m a solo engineer and just launched early access for Speakly (https://speakly.app/?ref=${lead.ref}) — a desktop companion for Mac & Windows built specifically for prompt-driven devs.\n\nHold Right-Option, ramble your technical thoughts, and in 0.29s it strips filler words and auto-pastes clean code prompts into Cursor or terminal. Runs on Groq LPUs (Whisper-large-v3-turbo + Llama 3.3).\n\nWe’re setting up 5 creator partners:\n- 35% recurring monthly commission on every paying subscriber you refer for 12 months.\n- Custom vanity code (${lead.ref}) & transparent dashboard tracking.\n\nCould I send you a free Pro access pass to test it in your next coding video?\n\nCheers,\nSanders (Founder, Speakly)`;
+      } else if (lead.pitchType === "adhd") {
+        return `Hey ${lead.name.split(" ")[0]},\n\nI love your content around navigating ADHD and daily focus. \n\nI built a tool called Speakly (https://speakly.app/?ref=${lead.ref}) designed specifically to eliminate "typing paralysis" and executive dysfunction when writing.\n\nInstead of struggling to type thoughts into Slack or email, you hold one key, ramble freely with all your tangents and "um"s, and in 0.29 seconds Speakly’s AI formats your raw brain dump into clean, concise text.\n\nWe offer a 35% recurring monthly affiliate program for ADHD creators. Would love to gift you a free Pro account so you can test if this helps your community.\n\nBest,\nSanders`;
+      } else if (lead.pitchType === "hub" || lead.pitchType === "benelux_media") {
+        return `Onderwerp: Exclusieve Early Access Speakly (Belgische 0.29s AI voice tool) voor ${lead.name}\n\nHey,\n\nAls solo tech-founder in België bewonder ik wat jullie met ${lead.name} neerzetten. \n\nIk heb Speakly gebouwd (https://speakly.app/?ref=${lead.ref}): een Mac/Windows desktop tool die gesproken spraak in 0,29 seconden omzet in gestructureerde tekst in Cursor, Slack en Gmail. \n\nHet grote voordeel voor Vlaanderen: het ondersteunt naadloze 'code-switching' tussen Nederlands en Engels vakjargon zonder van modus te hoeven wisselen.\n\nIk wil jullie community graag een voordeel aanbieden:\n- 1 maand gratis Pro early access voor residenten/leden met code '${lead.ref.toUpperCase()}'.\n- 35% recurring commissie op alle betalende leden die daarna actief blijven.\n\nMag ik jullie een testversie sturen om het zelf eens te proberen?\n\nGroeten,\nSanders (Oprichter Speakly)`;
+      } else if (lead.pitchType === "sales") {
+        return `Hey ${lead.name.split(" ")[0]},\n\nSaw your insights on cutting SDR admin waste. \n\nI built Speakly (https://speakly.app/?ref=${lead.ref}) to fix CRM logging fatigue. The second a sales call ends, reps hold one hotkey, speak a 15-second deal summary, and Speakly instantly pastes formatted bullet points (deal stage, objections, next steps) into HubSpot or Salesforce.\n\n0.29s latency on Groq LPUs. We offer a 35% recurring monthly partnership. Want to test it on a free Pro account?\n\nBest,\nSanders`;
+      } else {
+        return `Hey ${lead.name.split(" ")[0]},\n\nReaching out regarding Speakly (https://speakly.app/?ref=${lead.ref}) — an ultra-low latency (0.29s) desktop voice dictation tool for Linear, Jira, and Notion.\n\nIt turns stream-of-consciousness spoken ideas into structured PRDs and bug tickets without breaking your focus. \n\nWe offer a 35% recurring revenue share for tech partners. Would love to send over a complimentary Pro access pass to test.\n\nBest,\nSanders`;
+      }
+    }
+
+    // 4. VIDEO SCRIPTS DATABASE (5 High Retention Scripts with Rendered MP4 Previews)
+    const VIDEO_SCRIPTS = [
+      {
+        id: 0,
+        title: "01. Stop Typing Cursor Prompts",
+        wedge: "AI Coding",
+        duration: "24s",
+        videoSrc: "../website/assets/videos/03-ad-creative-30s.mp4",
+        videoLabel: "03-ad-creative-30s.mp4",
+        caption: "Stop typing 3 paragraphs into Cursor Composer. Hold Right-⌘, speak your messy context, and watch it paste in 0.29s.",
+        tags: "#cursorai #vibecoding #developer #softwareengineer #webdev #programming #macapps",
+        pinnedComment: "Early access for Mac and Windows is live at speakly.app 🦆 (0.29s latency on Groq LPUs, zero focus stealing)",
+        sections: [
+          { time: "0:00 - 0:03", title: "Visual Disruption Hook", spoken: "Stop typing out three paragraphs of context into Cursor Composer.", visual: "Loud mechanical keyboard clacking cut short by rubber duck squeak 🐥" },
+          { time: "0:03 - 0:11", title: "The Friction & Pain", spoken: "You're spending 40% of your coding time fixing typos and explaining your folder structure.", visual: "Zoom into Cursor prompt box with frustrating backspacing." },
+          { time: "0:11 - 0:19", title: "The 0.29s Payoff", spoken: "I hold Right-Option, talk through my messy thought, and Speakly cleans it up and pastes it in 0.29 seconds. Runs on Groq LPUs.", visual: "Rubber duck HUD glows solved ✨, pristine Tailwind code prompt appears." },
+          { time: "0:19 - 0:24", title: "The Loop & CTA", spoken: "It's called Speakly. Link for Mac and Windows early access is in bio.", visual: "Clean mascot badge and instant download prompt." }
+        ]
+      },
+      {
+        id: 1,
+        title: "02. ADHD Brain Dump to Clean Text",
+        wedge: "ADHD / Neurodiversity",
+        duration: "26s",
+        videoSrc: "../website/assets/videos/02-remotion-30s.mp4",
+        videoLabel: "02-remotion-30s.mp4",
+        caption: "For anyone with ADHD who stares at an empty email for 15 minutes because thoughts move 5x faster than fingers.",
+        tags: "#adhd #neurodivergent #productivityhacks #executivefunction #deepwork #macapps",
+        pinnedComment: "Try the raw brain dump mode at speakly.app — turns rambling speech into crisp, polite text.",
+        sections: [
+          { time: "0:00 - 0:03", title: "Emotional Hook", spoken: "If you have ADHD and get paralyzed trying to write a single email, watch this.", visual: "Cursor blinking on an empty email draft for 10 agonizing seconds." },
+          { time: "0:03 - 0:12", title: "The Rambling Dump", spoken: "My brain has 50 tabs open at once. So I don't type anymore. I just hold this hotkey and ramble all my random thoughts.", visual: "Holding key, speaking rapidly with tangents: 'Wait make that Thursday...'" },
+          { time: "0:12 - 0:20", title: "The AI Transformation", spoken: "Speakly's LPU model removes every stutter, extracts my actual point, and pastes a polite, professional reply.", visual: "Instant transformation into a 3-bullet clean message in Slack." },
+          { time: "0:20 - 0:26", title: "Closing CTA", spoken: "Download Speakly for Mac or Windows. Free early access link in profile.", visual: "Duck smiles with rosy cheeks." }
+        ]
+      },
+      {
+        id: 2,
+        title: "03. Belgian Code-Switching 🇧🇪",
+        wedge: "Benelux Market",
+        duration: "25s",
+        videoSrc: "../website/assets/videos/01-hyperframes-launch.mp4",
+        videoLabel: "01-hyperframes-launch.mp4",
+        caption: "Waarom faalt Apple Dictation altijd op Vlaams tech-jargon? 🇧🇪 Speakly switcht naadloos tussen Nederlands en Engels in 0.29s.",
+        tags: "#vlaanderen #belgiumtech #genttech #devbe #programmeren #gent #antwerpen #nederland",
+        pinnedComment: "Gemaakt door een solo-dev in België. Vroege toegang nu open op speakly.app 🇧🇪",
+        sections: [
+          { time: "0:00 - 0:03", title: "Flemish Tech Hook", spoken: "Waarom faalt Apple Dictation altijd zodra je Vlaams met Engels mixt?", visual: "Split screen: Siri failing with garbled text vs Speakly." },
+          { time: "0:03 - 0:11", title: "The Daily Struggle", spoken: "Elke developer in België zegt dingen zoals 'Kun je die PR mergen en de endpoint checken?'. Siri maakt daar pure onzin van.", visual: "Close-up of ridiculous Siri transcription." },
+          { time: "0:11 - 0:20", title: "The Groq Solution", spoken: "Speakly draait op Groq Whisper en switcht vlekkeloos tussen Nederlands en Engels tech-jargon in 0,29 seconden.", visual: "Pasting flawless Dutch/English sentence into Slack." },
+          { time: "0:20 - 0:25", title: "Local Belgian Pride", spoken: "Gemaakt door een solo-ontwikkelaar in België. Download vroege toegang op speakly.app.", visual: "Belgium flag emoji + Cyber-Matrix HUD." }
+        ]
+      },
+      {
+        id: 3,
+        title: "04. Post-Call CRM Speedrun",
+        wedge: "Sales & CRM",
+        duration: "22s",
+        videoSrc: "../website/assets/videos/03-ad-creative-imessage.mp4",
+        videoLabel: "03-ad-creative-imessage.mp4",
+        caption: "How top sales reps log 30-minute discovery calls in 10 seconds flat directly into HubSpot/Salesforce.",
+        tags: "#sales #sdr #b2b #crm #hubspot #productivity #remotework",
+        pinnedComment: "Save 45 minutes of daily admin: early access at speakly.app",
+        sections: [
+          { time: "0:00 - 0:03", title: "B2B Sales Hook", spoken: "How top sales reps log their call notes in under 10 seconds.", visual: "Clicking 'End Zoom Call' $\rightarrow$ deal record open in HubSpot." },
+          { time: "0:03 - 0:10", title: "The Action", spoken: "Don't sit there typing deal summaries for 10 minutes. Hold one key and talk aloud to your screen.", visual: "Speaking deal notes: 'Budget is 20k, decision maker is Sarah, next demo Tuesday.'" },
+          { time: "0:10 - 0:18", title: "The Payoff", spoken: "Speakly structures it into bulleted action items and auto-pastes directly into your CRM.", visual: "HubSpot note field populates with bullet points in 0.29s." },
+          { time: "0:18 - 0:22", title: "CTA", spoken: "Get back to selling. Try Speakly on Mac and Windows.", visual: "Floating pill HUD with 0.29s badge." }
+        ]
+      },
+      {
+        id: 4,
+        title: "05. The Rubber Ducky Speed Test",
+        wedge: "General Productivity",
+        duration: "19s",
+        videoSrc: "../website/assets/videos/02-remotion-best-practices.mp4",
+        videoLabel: "02-remotion-best-practices.mp4",
+        caption: "Why does this rubber duck live at the bottom of my screen? 🐥 Turns 160 WPM speech into clean text in 0.29s.",
+        tags: "#macsetup #desksetup #software #rubberducky #techtok #productivitytools #macapps",
+        pinnedComment: "Meet your new favorite desktop companion: speakly.app (free early access)",
+        sections: [
+          { time: "0:00 - 0:03", title: "Curiosity Hook", spoken: "Why does this rubber duck live at the bottom of my screen?", visual: "Zoom in on animated duck wearing studio headphones 🎧 squeak!" },
+          { time: "0:03 - 0:11", title: "Speed Contrast", spoken: "Human typing: 50 words per minute. Speaking to this duck: 160 words per minute. With zero latency.", visual: "Side-by-side timer: 15s typing vs 0.29s instant paste." },
+          { time: "0:11 - 0:19", title: "Clean Paste CTA", spoken: "It works in every app: VS Code, Slack, Notion, Gmail. Grab early access at speakly.app.", visual: "Duck sparkle animation ✨" }
+        ]
+      }
+    ];
+
+    // CURRENT STATE
+    let currentWedgeFilter = "all";
+    let activeScriptIndex = 0;
+    let isTeleprompterRunning = false;
+    let prompterInterval = null;
+    let prompterElapsed = 0;
+
+    // INITIALIZATION
+    window.addEventListener("DOMContentLoaded", () => {
+      // Mount mascots
+      document.getElementById("brand-header-mascot").innerHTML = getRubberDuckySVG("solved");
+      setPlaygroundState("listening");
+
+      // Render CRM Leads & Scripts
+      renderCrmTable();
+      renderScriptSelector();
+      loadScript(0);
+      updateCalculator();
+      loadChecklistState();
+    });
+
+    // TAB SWITCHING
+    function switchTab(tabId) {
+      document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+      document.querySelectorAll(".tab-trigger").forEach(t => t.classList.remove("active"));
+      
+      const targetPane = document.getElementById(tabId);
+      if (targetPane) targetPane.classList.add("active");
+
+      // Match tab button
+      const triggers = document.querySelectorAll(".tab-trigger");
+      triggers.forEach(tr => {
+        if (tr.getAttribute("onclick") && tr.getAttribute("onclick").includes(tabId)) {
+          tr.classList.add("active");
+        }
+      });
+    }
+
+    // CRM RENDERING & FILTERING
+    function renderCrmTable() {
+      const tbody = document.getElementById("crm-table-body");
+      tbody.innerHTML = "";
+
+      const query = (document.getElementById("crm-search")?.value || "").toLowerCase();
+
+      const filtered = LEADS_DATA.filter(item => {
+        const matchesWedge = currentWedgeFilter === "all" || item.wedge === currentWedgeFilter;
+        const matchesSearch = item.name.toLowerCase().includes(query) || 
+                              item.handle.toLowerCase().includes(query) || 
+                              item.platform.toLowerCase().includes(query);
+        return matchesWedge && matchesSearch;
+      });
+
+      filtered.forEach(lead => {
+        const savedStatus = localStorage.getItem("status_lead_" + lead.id) || "To Contact";
+        const tr = document.createElement("tr");
+
+        let tagClass = "tag-coding";
+        if (lead.wedge === "adhd") tagClass = "tag-adhd";
+        if (lead.wedge === "benelux") tagClass = "tag-benelux";
+        if (lead.wedge === "sales") tagClass = "tag-sales";
+        if (lead.wedge === "pm") tagClass = "tag-pm";
+
+        tr.innerHTML = `
+          <td>
+            <div class="creator-name">${lead.name}</div>
+            <div class="creator-handle">${lead.handle}</div>
+          </td>
+          <td><span class="wedge-tag ${tagClass}">${lead.wedge.toUpperCase()}</span></td>
+          <td><strong>${lead.audience}</strong></td>
+          <td>${lead.platform}</td>
+          <td>
+            <select class="status-select" onchange="updateLeadStatus(${lead.id}, this.value)">
+              <option value="To Contact" ${savedStatus === 'To Contact' ? 'selected' : ''}>To Contact</option>
+              <option value="DMed" ${savedStatus === 'DMed' ? 'selected' : ''}>DMed</option>
+              <option value="Testing App" ${savedStatus === 'Testing App' ? 'selected' : ''}>Testing App</option>
+              <option value="Partnered" ${savedStatus === 'Partnered' ? 'selected' : ''}>Partnered (35%)</option>
+              <option value="Declined" ${savedStatus === 'Declined' ? 'selected' : ''}>Declined</option>
+            </select>
+          </td>
+          <td>
+            <button class="btn-copy-pitch" onclick="copyLeadPitch(${lead.id})">
+              📋 Copy Pitch (${lead.lang})
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterCrm(wedge) {
+      currentWedgeFilter = wedge;
+      document.querySelectorAll(".filter-pill").forEach(p => {
+        p.classList.toggle("active", p.dataset.wedge === wedge);
+      });
+      renderCrmTable();
+    }
+
+    function filterCrmByWedge(wedge) {
+      switchTab('tab-crm');
+      filterCrm(wedge);
+    }
+
+    function searchCrm() {
+      renderCrmTable();
+    }
+
+    function updateLeadStatus(id, val) {
+      localStorage.setItem("status_lead_" + id, val);
+      showToast(`Updated status for #${id} to '${val}'`);
+    }
+
+    function copyLeadPitch(id) {
+      const lead = LEADS_DATA.find(l => l.id === id);
+      if (!lead) return;
+      const pitch = generatePitch(lead);
+      navigator.clipboard.writeText(pitch).then(() => {
+        showToast(`Pitch for ${lead.name} copied to clipboard!`);
+      });
+    }
+
+    // TELEPROMPTER & SCRIPTS
+    function renderScriptSelector() {
+      const list = document.getElementById("scripts-selector-list");
+      list.innerHTML = "";
+      VIDEO_SCRIPTS.forEach((scr, idx) => {
+        const item = document.createElement("div");
+        item.className = `script-item ${idx === activeScriptIndex ? 'active' : ''}`;
+        item.onclick = () => loadScript(idx);
+        item.innerHTML = `
+          <h4>${scr.title}</h4>
+          <p>${scr.wedge} • ${scr.duration}</p>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function loadScript(idx) {
+      activeScriptIndex = idx;
+      renderScriptSelector();
+      const scr = VIDEO_SCRIPTS[idx];
+      document.getElementById("prompter-meta").textContent = `${scr.wedge} • ${scr.duration} • 158 WPM`;
+      document.getElementById("prompter-timer").textContent = `00:00 / 00:${scr.duration.replace('s','')}`;
+
+      // Update Video Player Preview
+      const videoEl = document.getElementById("prompter-video-player");
+      const videoLabel = document.getElementById("prompter-video-label");
+      if (videoEl && scr.videoSrc) {
+        videoEl.src = scr.videoSrc;
+        videoEl.load();
+      }
+      if (videoLabel) {
+        videoLabel.textContent = scr.videoLabel || "custom-recording.mp4";
+      }
+
+      const box = document.getElementById("prompter-box");
+      box.innerHTML = "";
+      scr.sections.forEach((sec, sIdx) => {
+        const div = document.createElement("div");
+        div.className = "teleprompter-section";
+        div.id = `prompter-sec-${sIdx}`;
+        div.innerHTML = `
+          <div class="time-stamp">${sec.time}</div>
+          <div class="cue-title">${sec.title}</div>
+          <div class="spoken-text">"${sec.spoken}"</div>
+          <div class="visual-cue">Visual: ${sec.visual}</div>
+        `;
+        box.appendChild(div);
+      });
+
+      // Stop any running simulation
+      if (isTeleprompterRunning) toggleTeleprompter();
+    }
+
+    function copyPostingPackage() {
+      const scr = VIDEO_SCRIPTS[activeScriptIndex];
+      const pkg = `🎬 ${scr.title} (${scr.wedge})\n\n📝 CAPTION:\n${scr.caption}\n\n🏷️ HASHTAGS:\n${scr.tags}\n\n📌 PINNED COMMENT:\n${scr.pinnedComment}`;
+      navigator.clipboard.writeText(pkg).then(() => {
+        showToast("Posting Package (Caption + Tags + Pinned Comment) copied!");
+      });
+    }
+
+    function copyCurrentScript() {
+      const scr = VIDEO_SCRIPTS[activeScriptIndex];
+      let txt = `=== ${scr.title} (${scr.wedge} - ${scr.duration}) ===\n\n`;
+      scr.sections.forEach(s => {
+        txt += `[${s.time}] ${s.title}\nSPOKEN: "${s.spoken}"\nVISUAL: ${s.visual}\n\n`;
+      });
+      navigator.clipboard.writeText(txt).then(() => {
+        showToast("Full video script copied to clipboard!");
+      });
+    }
+
+    function toggleTeleprompter() {
+      const btn = document.getElementById("btn-prompter-run");
+      const scr = VIDEO_SCRIPTS[activeScriptIndex];
+      const totalSec = parseInt(scr.duration.replace("s", ""), 10);
+
+      if (isTeleprompterRunning) {
+        clearInterval(prompterInterval);
+        isTeleprompterRunning = false;
+        btn.textContent = "▶ Start Prompter Simulation";
+        btn.classList.add("active-filter");
+        document.querySelectorAll(".teleprompter-section").forEach(s => s.classList.remove("active-reading"));
+      } else {
+        isTeleprompterRunning = true;
+        prompterElapsed = 0;
+        btn.textContent = "⏹ Stop Simulation";
+        btn.classList.remove("active-filter");
+
+        prompterInterval = setInterval(() => {
+          prompterElapsed++;
+          document.getElementById("prompter-timer").textContent = 
+            `00:${String(prompterElapsed).padStart(2,'0')} / 00:${String(totalSec).padStart(2,'0')}`;
+
+          // Highlight corresponding block
+          const quarter = totalSec / scr.sections.length;
+          const currentSectionIdx = Math.min(Math.floor(prompterElapsed / quarter), scr.sections.length - 1);
+
+          document.querySelectorAll(".teleprompter-section").forEach((sec, i) => {
+            sec.classList.toggle("active-reading", i === currentSectionIdx);
+          });
+
+          if (prompterElapsed >= totalSec) {
+            toggleTeleprompter();
+            showToast("Teleprompter run complete!");
+          }
+        }, 1000);
+      }
+    }
+
+    // CALCULATOR
+    function updateCalculator() {
+      const price = parseInt(document.getElementById("slider-price").value, 10);
+      const users = parseInt(document.getElementById("slider-users").value, 10);
+      const rate = parseInt(document.getElementById("slider-rate").value, 10);
+      const partners = parseInt(document.getElementById("slider-partners").value, 10);
+
+      document.getElementById("disp-price").textContent = `€${price} / month`;
+      document.getElementById("disp-users").textContent = `${users} users`;
+      document.getElementById("disp-rate").textContent = `${rate}% recurring`;
+      document.getElementById("disp-partners").textContent = `${partners} partners`;
+
+      const totalUsers = users * partners;
+      const grossMRR = totalUsers * price;
+      const partnerPayout = Math.round(grossMRR * (rate / 100));
+      const apiCost = Math.round(totalUsers * 0.80); // ~0.80 EUR per user avg Groq inference
+      const netProfit = grossMRR - partnerPayout - apiCost;
+      const netARR = netProfit * 12;
+
+      document.getElementById("calc-gross-mrr").textContent = `€${grossMRR.toLocaleString()}`;
+      document.getElementById("calc-partner-payout").textContent = `€${partnerPayout.toLocaleString()}`;
+      document.getElementById("calc-api-cost").textContent = `€${apiCost.toLocaleString()}`;
+      document.getElementById("calc-net-profit").textContent = `€${netProfit.toLocaleString()}`;
+      document.getElementById("calc-net-arr").textContent = `€${netARR.toLocaleString()}`;
+    }
+
+    // MASCOT PLAYGROUND
+    function setPlaygroundState(state) {
+      const box = document.getElementById("interactive-duck-svg");
+      box.innerHTML = getRubberDuckySVG(state);
+
+      const title = document.getElementById("interactive-state-title");
+      const desc = document.getElementById("interactive-state-desc");
+
+      if (state === "listening") {
+        title.textContent = "State 1: Listening (Studio Headphones)";
+        desc.textContent = "Wakes immediately when hotkey is held down. Captures 16kHz audio stream.";
+      } else if (state === "thinking") {
+        title.textContent = "State 2: Thinking (Thought Bubbles)";
+        desc.textContent = "Processing on Groq LPU (~0.29s median). Stripping filler words and structuring text.";
+      } else if (state === "solved") {
+        title.textContent = "State 3: Solved (Anime Eyes & Sparkle)";
+        desc.textContent = "Auto-pasted into Cursor/Slack via OS simulation. Clipboard restored after 600ms.";
+      }
+    }
+
+    // FOUNDER CHECKLIST WITH LOCALSTORAGE
+    function toggleTask(checkbox) {
+      const taskName = checkbox.dataset.task;
+      localStorage.setItem("checklist_" + taskName, checkbox.checked ? "true" : "false");
+      checkbox.parentElement.classList.toggle("done", checkbox.checked);
+    }
+
+    function loadChecklistState() {
+      document.querySelectorAll(".checklist-item input[type='checkbox']").forEach(cb => {
+        const val = localStorage.getItem("checklist_" + cb.dataset.task);
+        if (val === "true") {
+          cb.checked = true;
+          cb.parentElement.classList.add("done");
+        }
+      });
+    }
+
+    function resetChecklist() {
+      document.querySelectorAll(".checklist-item input[type='checkbox']").forEach(cb => {
+        cb.checked = false;
+        cb.parentElement.classList.remove("done");
+        localStorage.removeItem("checklist_" + cb.dataset.task);
+      });
+      showToast("Daily checklist reset!");
+    }
+
+    // TOAST HELPER
+    function showToast(msg) {
+      const toast = document.getElementById("toast-notification");
+      document.getElementById("toast-msg").textContent = msg;
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 3200);
+    }
+  </script>
+</body>
+</html>

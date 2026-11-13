@@ -24,6 +24,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <link rel="icon" type="image/png" href="assets/icon.png" />
+
+  <!-- Lemon Squeezy Native Checkout & Recurring Affiliate Tracking (Zero-fee MoR, handles EU/Belgian VAT) -->
+  <script src="https://assets.lemonsqueezy.com/lemon.js" defer></script>
 </head>
 <body>
 
@@ -105,29 +108,64 @@
       <div class="container">
         <div class="hero-eyebrow-pill">
           <span class="eyebrow-dot"></span>
-          <span>macOS &amp; Windows Push-to-Talk Voice Engine</span>
+          <span>Early Access · Voice-to-Prompt Engine for Developers</span>
           <span class="eyebrow-sep">·</span>
-          <span class="eyebrow-highlight">Groq LPU 0.3s Latency</span>
+          <span class="eyebrow-highlight">Groq LPU 0.29s Latency</span>
         </div>
 
         <h1 class="hero-display" data-split-reveal>
-          Speak at 158 words per minute.<br />
-          <span class="text-gradient-duck">Paste clean text at your cursor.</span>
+          Speak messy logic at 158 WPM.<br />
+          <span class="text-gradient-duck">Paste clean prompts into Cursor &amp; Terminal.</span>
         </h1>
 
         <p class="hero-lead">
-          Hold <kbd>Right ⌘</kbd> on macOS or <kbd>Right Ctrl</kbd> on Windows. Your rubber duck listens, strips out filler words and mid-sentence self-corrections, and drops formatted text directly into Slack, Cursor, Notion, or Gmail.
+          Hold <kbd>Right ⌘</kbd> on Mac or <kbd>Right Ctrl</kbd> on Windows. Ramble your thoughts, correct yourself mid-sentence, and your Rubber Ducky strips filler words and formats technical names before pasting directly at your cursor in 290ms. No focus stealing. No API setup.
         </p>
 
-        <div class="hero-cta-row">
-          <button class="btn-hero-primary" data-open-modal="download">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.33c.64-.78 1.08-1.86.96-2.94-.93.04-2.06.62-2.72 1.4-.58.68-1.1 1.79-.96 2.84 1.04.08 2.08-.52 2.72-1.3z"/></svg>
-            Download for macOS &amp; Windows
-          </button>
-          <button class="btn-hero-secondary" id="hero-watch-film-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
-            Watch 30s Launch Film
-          </button>
+        <!-- Two Prominent Direct Download Buttons + OS Auto-Detection -->
+        <div class="hero-cta-container">
+          <div class="hero-cta-row">
+            <!-- Mac Direct Download Button -->
+            <a href="../app/dist/Speakly-1.0.0-mac-arm64.dmg" download="Speakly-1.0.0-mac-arm64.dmg" class="btn-hero-dl btn-hero-mac" id="hero-dl-mac">
+              <div class="btn-dl-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.33c.64-.78 1.08-1.86.96-2.94-.93.04-2.06.62-2.72 1.4-.58.68-1.1 1.79-.96 2.84 1.04.08 2.08-.52 2.72-1.3z"/>
+                </svg>
+              </div>
+              <div class="btn-dl-copy">
+                <span class="btn-dl-main">Download for Mac</span>
+                <span class="btn-dl-sub">Apple Silicon (M1–M4) &amp; Intel · .dmg</span>
+              </div>
+              <span class="detected-badge" id="mac-detected-badge" hidden>Detected</span>
+            </a>
+
+            <!-- Windows Direct Download Button -->
+            <a href="../app/dist/Speakly-Setup-1.0.0-win.exe" download="Speakly-Setup-1.0.0-win.exe" class="btn-hero-dl btn-hero-win" id="hero-dl-win">
+              <div class="btn-dl-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.951-1.801"/>
+                </svg>
+              </div>
+              <div class="btn-dl-copy">
+                <span class="btn-dl-main">Download for Windows</span>
+                <span class="btn-dl-sub">Windows 10 &amp; 11 · 64-bit .exe</span>
+              </div>
+              <span class="detected-badge" id="win-detected-badge" hidden>Detected</span>
+            </a>
+
+            <!-- Watch 30s Film Secondary Button -->
+            <button class="btn-hero-secondary" id="hero-watch-film-btn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+              Watch 30s Film
+            </button>
+          </div>
+
+          <!-- Micro-callout for the 20-second First-Launch Guide -->
+          <div class="hero-subhint">
+            <span class="subhint-dot"></span>
+            <span>Early Access ad-hoc build · </span>
+            <a href="#first-launch-guide" class="subhint-link">See 20-second macOS "Open Anyway" &amp; Windows SmartScreen guide ↓</a>
+          </div>
         </div>
 
         <!-- "ONE LIVE THING" (design-taste-frontend): Real Interactive Push-to-Talk Studio -->
@@ -447,7 +485,7 @@
           <div class="bento-card bento-span-7">
             <div class="bento-eyebrow">ULTRA-LOW LATENCY INFERENCE</div>
             <h3>0.3 seconds from key release to pasted text.</h3>
-            <p>Choose between <strong>Groq LPU Turbo</strong> (`whisper-large-v3-turbo` + `llama-3.3-70b-versatile`) for instant sub-second turnaround at 1/8th the API cost, or <strong>OpenAI Cloud</strong> (`whisper-1` + `gpt-4o-mini`) for 99+ global languages.</p>
+            <p>Powered by <strong>Groq LPU Turbo</strong> (`whisper-large-v3-turbo` + `llama-3.3-70b-versatile`) with automated cloud fallback. Zero API keys required — sub-second voice-to-code processing runs fully managed on our backend.</p>
 
             <div class="latency-bars-widget">
               <div class="latency-row">
@@ -501,6 +539,192 @@
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <!-- =========================================================================
+         20-SECOND FIRST-LAUNCH GUIDE: MACOS "OPEN ANYWAY" & WINDOWS SMARTSCREEN
+         ========================================================================= -->
+    <section class="first-launch-section" id="first-launch-guide">
+      <div class="container">
+        <div class="section-header-block text-center">
+          <span class="section-kicker">⏱️ 20-SECOND FIRST-LAUNCH GUIDE</span>
+          <h2 class="section-display" data-split-reveal>
+            macOS "Open Anyway" &amp; Windows SmartScreen
+          </h2>
+          <p class="section-sub">
+            Speakly is 100% free during Early Access. Because we haven't paid Apple's $99/yr or Microsoft's $400/yr certificate fees yet, your OS will show a standard first-time warning. Here is how to launch in under 20 seconds:
+          </p>
+        </div>
+
+        <!-- Interactive OS Switcher Tabs -->
+        <div class="guide-tabs-bar" role="tablist" aria-label="First-Time Launch Guide by Platform">
+          <button class="guide-tab-btn active" id="tab-btn-mac" data-guide-tab="mac" role="tab" aria-selected="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.33c.64-.78 1.08-1.86.96-2.94-.93.04-2.06.62-2.72 1.4-.58.68-1.1 1.79-.96 2.84 1.04.08 2.08-.52 2.72-1.3z"/></svg>
+            <span>macOS Gatekeeper ("Open Anyway")</span>
+            <span class="tab-badge-gold">Apple Silicon &amp; Intel</span>
+          </button>
+          <button class="guide-tab-btn" id="tab-btn-win" data-guide-tab="win" role="tab" aria-selected="false">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.951-1.801"/></svg>
+            <span>Windows SmartScreen ("Run Anyway")</span>
+            <span class="tab-badge-blue">Windows 10 &amp; 11</span>
+          </button>
+        </div>
+
+        <!-- TAB CONTENT: MACOS -->
+        <div class="guide-tab-panel active" id="guide-panel-mac" role="tabpanel">
+          <div class="guide-grid">
+            <!-- Left: Visual Simulation of macOS Gatekeeper Alert -->
+            <div class="os-sim-card mac-sim">
+              <div class="sim-header mac-sim-header">
+                <div class="mac-traffic-dots">
+                  <span class="dot-red"></span>
+                  <span class="dot-yellow"></span>
+                  <span class="dot-green"></span>
+                </div>
+                <span class="sim-title">macOS Security &amp; Gatekeeper</span>
+              </div>
+              <div class="sim-dialog-mac">
+                <div class="sim-dialog-icon">
+                  <div class="dialog-duck-badge">🦆</div>
+                  <div class="dialog-warn-badge">⚠️</div>
+                </div>
+                <div class="sim-dialog-content">
+                  <h4>"Speakly" cannot be opened because Apple cannot check it for malicious software.</h4>
+                  <p class="sim-dialog-desc">This software needs to be updated. Contact the developer for more information.</p>
+                  <div class="sim-dialog-actions">
+                    <span class="sim-btn-ghost">Move to Trash</span>
+                    <span class="sim-btn-primary highlight-pulse">Open Anyway</span>
+                  </div>
+                </div>
+              </div>
+              <div class="sim-footer-note">
+                <span class="note-pill">1-TIME APPROVAL</span>
+                <span>macOS remembers your permission permanently. You won't see this again.</span>
+              </div>
+            </div>
+
+            <!-- Right: 3 Clear Steps for Developers -->
+            <div class="guide-steps-card">
+              <div class="guide-step-item">
+                <div class="step-badge">1</div>
+                <div class="step-body">
+                  <h4>Right-Click &amp; Open (Fastest · 5 seconds)</h4>
+                  <p>In Finder <kbd>/Applications</kbd>, <strong>Right-click</strong> (or hold <kbd>Control</kbd> + click) <strong>Speakly.app</strong> and click <strong>Open</strong> in the menu.</p>
+                </div>
+              </div>
+
+              <div class="guide-step-item">
+                <div class="step-badge">2</div>
+                <div class="step-body">
+                  <h4>Click "Open Anyway"</h4>
+                  <p>A confirmation modal will appear. Click the prominent <strong>Open Anyway</strong> button. Speakly launches immediately into your menu bar.</p>
+                </div>
+              </div>
+
+              <div class="guide-step-item">
+                <div class="step-badge">3</div>
+                <div class="step-body">
+                  <h4>Or macOS Sequoia System Settings</h4>
+                  <p>Open <strong>System Settings → Privacy &amp; Security</strong>, scroll down to <em>Security</em>, and click <strong>"Open Anyway"</strong> next to Speakly.</p>
+                </div>
+              </div>
+
+              <!-- Terminal Power User Box -->
+              <div class="terminal-quick-box">
+                <div class="term-header">
+                  <span class="term-tag">⌨️ DEVELOPER CLI 1-LINER</span>
+                  <button class="copy-term-btn" id="copy-mac-term-btn" type="button" title="Copy command to clipboard">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    <span id="copy-term-text">Copy Command</span>
+                  </button>
+                </div>
+                <code>xattr -cr /Applications/Speakly.app</code>
+              </div>
+
+              <div class="guide-links-footer">
+                <a href="setup-guide.html" target="_blank" class="guide-detail-link">
+                  <span>Open comprehensive macOS Setup &amp; Accessibility Guide (2 min)</span>
+                  <span class="link-arrow">→</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB CONTENT: WINDOWS -->
+        <div class="guide-tab-panel" id="guide-panel-win" role="tabpanel" hidden>
+          <div class="guide-grid">
+            <!-- Left: Visual Simulation of Windows SmartScreen -->
+            <div class="os-sim-card win-sim">
+              <div class="sim-header win-header">
+                <div class="win-shield-icon">🛡️</div>
+                <span class="sim-title">Windows Defender SmartScreen</span>
+              </div>
+              <div class="sim-dialog-win">
+                <div class="sim-win-banner">
+                  <div class="win-banner-title">Windows protected your PC</div>
+                  <p class="win-banner-desc">Microsoft Defender SmartScreen prevented an unrecognized app from starting. Running this app might put your PC at risk.</p>
+                  <div class="win-more-info-link highlight-pulse">
+                    <u>More info</u> (in Dutch: "Meer informatie")
+                  </div>
+                </div>
+                <div class="sim-win-details">
+                  <div class="win-app-row"><strong>App:</strong> Speakly-Setup-1.0.0-win.exe</div>
+                  <div class="win-app-row"><strong>Publisher:</strong> Unknown publisher</div>
+                </div>
+                <div class="sim-win-actions">
+                  <span class="sim-btn-win-ghost">Don't run</span>
+                  <span class="sim-btn-win-primary highlight-pulse">Run anyway</span>
+                </div>
+              </div>
+              <div class="sim-footer-note win-footer-note">
+                <span class="note-pill blue">1-TIME APPROVAL</span>
+                <span>Windows permanently approves Speakly after you click "Run anyway".</span>
+              </div>
+            </div>
+
+            <!-- Right: 2 Clear Steps for Windows -->
+            <div class="guide-steps-card">
+              <div class="guide-step-item">
+                <div class="step-badge win-badge">1</div>
+                <div class="step-body">
+                  <h4>Click "More info"</h4>
+                  <p>When the blue Windows Defender SmartScreen window pops up, click the underlined text link <strong>"More info"</strong> (or <em>"Meer informatie"</em>).</p>
+                </div>
+              </div>
+
+              <div class="guide-step-item">
+                <div class="step-badge win-badge">2</div>
+                <div class="step-body">
+                  <h4>Click "Run anyway"</h4>
+                  <p>A new button appears in the bottom right corner labeled <strong>"Run anyway"</strong> (or <em>"Toch uitvoeren"</em>). Click it to complete installation.</p>
+                </div>
+              </div>
+
+              <!-- Portable Option Callout -->
+              <div class="portable-callout-card">
+                <div class="portable-header">
+                  <span class="badge-blue-pill">ZERO INSTALL ALTERNATIVE</span>
+                  <h4>Prefer No Installation at All?</h4>
+                </div>
+                <p>Download our standalone portable binary. No setup wizard or admin privileges required:</p>
+                <a href="../app/dist/Speakly-1.0.0-win-portable.exe" download="Speakly-1.0.0-win-portable.exe" class="portable-dl-btn" id="guide-win-portable-btn">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.951-1.801"/></svg>
+                  <span>Download Portable .exe (81 MB)</span>
+                </a>
+              </div>
+
+              <div class="guide-links-footer">
+                <a href="setup-guide-windows.html" target="_blank" class="guide-detail-link win-link">
+                  <span>Open volledige Windows Handleiding &amp; Microfoon Gids (2 min)</span>
+                  <span class="link-arrow">→</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -878,7 +1102,7 @@
             <div>
               <span class="film-badge">FLAGSHIP #2 · AD-CREATIVE iMESSAGE REVEAL (30s)</span>
               <h3>"How Did You Type That Whole Spec in 4 Seconds?"</h3>
-              <p class="film-desc">Authentic iOS dark-mode iMessage story with live Mid-Sentence Self-Correction inside the composer bar, Groq 0.3s proof, and `DUCKYPRO` promo reveal.</p>
+              <p class="film-desc">Authentic iOS dark-mode iMessage story with live Mid-Sentence Self-Correction inside the composer bar, Groq 0.3s proof, and instant developer prompt pasting.</p>
             </div>
             <a href="assets/videos/03-ad-creative-30s.mp4" download class="film-dl-link">⬇ MP4 (3.3 MB)</a>
           </div>
@@ -920,35 +1144,53 @@
        ========================================================================= -->
   <section id="view-pricing" class="page-view" hidden>
     <div class="container pricing-view-container">
-      <div class="section-header-block">
-        <span class="section-kicker">EARLY ACCESS PRICING</span>
-        <h2 class="section-display">Zero-setup voice intelligence.<br />Straight to Early Access.</h2>
+      <div class="section-header-block text-center">
+        <span class="section-kicker">EARLY ACCESS · NO CREDIT CARD REQUIRED</span>
+        <h2 class="section-display">Zero-setup voice intelligence.<br />100% Free during Early Access.</h2>
         <p class="section-sub">
-          Speakly transforms rambling speech into clean, structured prose at 160 WPM. Instant sub-second Groq LPU processing with zero API keys to configure.
+          We are focused on building the fastest voice-to-code engine on Earth. While in Early Access, Speakly is completely free with unlimited sub-second dictations. No payment info or personal API keys required.
         </p>
       </div>
 
-      <div class="pricing-cards-grid" style="max-width: 580px; margin: 0 auto;">
+      <div class="pricing-cards-grid" style="max-width: 620px; margin: 0 auto 48px;">
         <!-- Single Focused Early Access Tier -->
         <div class="pricing-card featured-pro" style="width: 100%;">
-          <div class="pricing-tier-badge gold">EARLY ACCESS EDITION</div>
-          <h3>Speakly Pro</h3>
+          <div class="pricing-tier-badge gold">EARLY ACCESS PASS · 100% FREE</div>
+          <h3>Speakly for Desktop</h3>
           <div class="pricing-amount">
-            <span class="price-big">$10</span>
-            <span class="price-period">/ month · 14-day free trial</span>
+            <span class="price-big">$0</span>
+            <span class="price-period">/ month during Early Access</span>
           </div>
-          <p class="pricing-desc">Full access to the non-focus-stealing Rubber Ducky assistant across all your apps on macOS &amp; Windows.</p>
+          <p class="pricing-desc">
+            Full access to the non-focus-stealing Rubber Ducky assistant across all your apps on macOS &amp; Windows.<br />
+            <em style="color: var(--text-secondary); display: block; margin-top: 6px; font-size: 13px;">(When managed subscriptions launch, early access testers keep preferred $10/mo pricing, similar to Wispr Flow).</em>
+          </p>
           <ul class="pricing-features">
             <li>✓ Unlimited sub-second push-to-talk dictation on macOS &amp; Windows</li>
-            <li>✓ Automatic removal of filler words ("um", "uh") &amp; self-corrections</li>
-            <li>✓ All 5 AI Formatting Modes (AI Prompt / Dev, Email, Notes, Verbatim, Smart)</li>
+            <li>✓ 0.29s Groq LPU inference (no personal API key needed, fully managed)</li>
+            <li>✓ Automatic removal of filler words ("um", "uh") &amp; mid-sentence self-corrections</li>
+            <li>✓ All 5 AI Formatting Modes including <strong>AI Prompt / Dev Mode</strong> for Cursor &amp; Claude</li>
             <li>✓ Personal Dictionary for technical terms, codenames &amp; acronyms</li>
             <li>✓ Supabase Cloud Sync for your dictionary and preferences</li>
             <li>✓ Direct in-app feedback button with 24h founder response</li>
           </ul>
-          <button class="btn-primary-duck full-width" data-open-modal="download">
-            Start 14-Day Free Trial
-          </button>
+
+          <!-- Two Prominent Direct Download Buttons in Pricing -->
+          <div class="pricing-dl-actions">
+            <a href="../app/dist/Speakly-1.0.0-mac-arm64.dmg" download="Speakly-1.0.0-mac-arm64.dmg" class="btn-pricing-dl btn-pricing-mac" id="pricing-dl-mac">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.33c.64-.78 1.08-1.86.96-2.94-.93.04-2.06.62-2.72 1.4-.58.68-1.1 1.79-.96 2.84 1.04.08 2.08-.52 2.72-1.3z"/></svg>
+              <span>Download for Mac (.dmg)</span>
+            </a>
+            <a href="../app/dist/Speakly-Setup-1.0.0-win.exe" download="Speakly-Setup-1.0.0-win.exe" class="btn-pricing-dl btn-pricing-win" id="pricing-dl-win">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.951-1.801"/></svg>
+              <span>Download for Windows (.exe)</span>
+            </a>
+          </div>
+
+          <div class="pricing-card-note">
+            <span>First time launching on macOS or Windows? </span>
+            <a href="#first-launch-guide" class="pricing-guide-jump">View 20-second "Open Anyway" guide →</a>
+          </div>
         </div>
       </div>
 
@@ -986,7 +1228,7 @@
   </section>
 
   <!-- =========================================================================
-       APPLE SHEET MODAL: DOWNLOAD / PROMO CODE CLAIM
+       APPLE SHEET MODAL: DIRECT DOWNLOAD
        Follows apple-design spring sheet rules
        ========================================================================= -->
   <div class="apple-modal-backdrop" id="download-modal" hidden>
@@ -995,17 +1237,39 @@
       <div class="modal-duck-hero" id="modal-duck-svg"></div>
       <span class="section-kicker">DIRECT DOWNLOAD · EARLY ACCESS</span>
       <h3 id="modal-title">Download Speakly for Desktop</h3>
-      <p>Choose your operating system below. One-click installer with zero configuration needed.</p>
+      <p>Choose your operating system below. Direct download links with zero configuration needed.</p>
 
       <div class="modal-dl-grid">
         <a href="../app/dist/Speakly-1.0.0-mac-arm64.dmg" download="Speakly-1.0.0-mac-arm64.dmg" class="modal-os-card" id="dl-mac-btn">
-          <strong> macOS (.dmg)</strong>
+          <div class="modal-card-top">
+            <strong> macOS (.dmg)</strong>
+            <span class="modal-dl-badge">Direct DL</span>
+          </div>
           <span>Apple Silicon (M1–M4) &amp; Intel · 106 MB</span>
         </a>
         <a href="../app/dist/Speakly-Setup-1.0.0-win.exe" download="Speakly-Setup-1.0.0-win.exe" class="modal-os-card" id="dl-win-btn">
-          <strong>⊞ Windows Installer (.exe)</strong>
+          <div class="modal-card-top">
+            <strong>⊞ Windows Setup (.exe)</strong>
+            <span class="modal-dl-badge blue">Direct DL</span>
+          </div>
           <span>Windows 10 &amp; 11 (64-bit) · 89 MB</span>
         </a>
+      </div>
+
+      <div class="modal-portable-box">
+        <a href="../app/dist/Speakly-1.0.0-win-portable.exe" download="Speakly-1.0.0-win-portable.exe" class="modal-portable-link" id="dl-win-portable-btn">
+          <span>📦 Zero-install Windows portable version: <strong>Download Portable .exe (81 MB)</strong> →</span>
+        </a>
+      </div>
+
+      <!-- Quick 20-second setup notice inside modal -->
+      <div class="modal-guide-callout">
+        <span class="guide-callout-icon">⏱️</span>
+        <div class="guide-callout-info">
+          <strong>First time launching an unsigned Early Access build?</strong>
+          <span>macOS "Open Anyway" &amp; Windows SmartScreen bypass take under 20 seconds.</span>
+        </div>
+        <button type="button" class="modal-guide-action-btn" id="modal-view-guide-btn">View Guide</button>
       </div>
 
       <div style="text-align: center; margin-top: 18px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">

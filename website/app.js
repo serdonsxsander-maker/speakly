@@ -713,7 +713,31 @@ document.addEventListener("DOMContentLoaded", () => {
       if (modalKicker) {
         modalKicker.innerHTML = `PARTNER INVITE: <span style="color:#ffd000;">${activeRef}</span> · DIRECT DOWNLOAD`;
       }
+
+      // Wire partner referral code attribution to Lemon Squeezy checkout
+      const checkoutBtn = document.getElementById("btn-pricing-checkout");
+      if (checkoutBtn) {
+        const url = new URL(checkoutBtn.href || "https://speakly.lemonsqueezy.com/buy/speakly-pro");
+        url.searchParams.set("checkout[custom][referral_code]", activeRef);
+        checkoutBtn.href = url.toString();
+      }
     }
+
+    // Initialize Lemon Squeezy overlay checkout & native affiliate tracking
+    try {
+      if (typeof window.createLemonSqueezy === "function") {
+        window.createLemonSqueezy();
+      }
+      if (window.LemonSqueezy?.Setup) {
+        window.LemonSqueezy.Setup({
+          eventHandler: (event) => {
+            if (event.event === "Checkout.Success") {
+              console.log("🐥 Lemon Squeezy Checkout Succeeded! User converting to Pro.");
+            }
+          }
+        });
+      }
+    } catch (_) {}
   } catch (_) {}
 
   mountAllDuckIcons();
@@ -891,39 +915,170 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // OS Auto-Detection for Hero CTA
+  // =========================================================================
+  // OS AUTO-DETECTION, DIRECT DOWNLOADS & 20-SECOND VISUAL GUIDE
+  // =========================================================================
   const isMac = /Macintosh|Mac OS X/i.test(navigator.userAgent);
   const isWindows = /Windows NT/i.test(navigator.userAgent);
-  const heroBtn = document.querySelector(".btn-hero-primary");
-  if (heroBtn) {
-    if (isMac) {
-      heroBtn.innerHTML = `
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.33c.64-.78 1.08-1.86.96-2.94-.93.04-2.06.62-2.72 1.4-.58.68-1.1 1.79-.96 2.84 1.04.08 2.08-.52 2.72-1.3z"/></svg>
-        Download for macOS
-      `;
-    } else if (isWindows) {
-      heroBtn.innerHTML = `
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.951-1.801"/></svg>
-        Download for Windows
-      `;
-    }
-  }
 
-  // Download Sheet Modal
-  const modal = document.getElementById("download-modal");
-  const closeModalBtn = document.getElementById("close-modal-btn");
+  const heroDlMac = document.getElementById("hero-dl-mac");
+  const heroDlWin = document.getElementById("hero-dl-win");
+  const macDetectedBadge = document.getElementById("mac-detected-badge");
+  const winDetectedBadge = document.getElementById("win-detected-badge");
+  const pricingDlMac = document.getElementById("pricing-dl-mac");
+  const pricingDlWin = document.getElementById("pricing-dl-win");
+
+  // Apply OS auto-detection styling
+  if (isMac) {
+    if (heroDlMac) heroDlMac.classList.add("is-detected");
+    if (macDetectedBadge) macDetectedBadge.hidden = false;
+    if (pricingDlMac) pricingDlMac.classList.add("is-detected");
+  } else if (isWindows) {
+    if (heroDlWin) heroDlWin.classList.add("is-detected");
+    if (winDetectedBadge) winDetectedBadge.hidden = false;
+    if (pricingDlWin) pricingDlWin.classList.add("is-detected");
+  }
 
   // Dynamic Release CDN Resolution (Localhost uses local files; production uses GitHub Releases CDN)
   const isLocalHost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const macDownloadLink = document.getElementById("dl-mac-btn");
-  const winDownloadLink = document.getElementById("dl-win-btn");
   const githubRepo = window.SPEAKLY_GITHUB_REPO || "https://github.com/speakly-ai/speakly";
   const releaseTag = "v1.0.0";
 
-  if (!isLocalHost && macDownloadLink && winDownloadLink) {
-    macDownloadLink.href = `${githubRepo}/releases/download/${releaseTag}/Speakly-1.0.0-mac-arm64.dmg`;
-    winDownloadLink.href = `${githubRepo}/releases/download/${releaseTag}/Speakly-Setup-1.0.0-win.exe`;
+  const macDownloadLinks = [
+    heroDlMac,
+    pricingDlMac,
+    document.getElementById("dl-mac-btn")
+  ].filter(Boolean);
+
+  const winDownloadLinks = [
+    heroDlWin,
+    pricingDlWin,
+    document.getElementById("dl-win-btn")
+  ].filter(Boolean);
+
+  const winPortableLinks = [
+    document.getElementById("guide-win-portable-btn"),
+    document.getElementById("dl-win-portable-btn")
+  ].filter(Boolean);
+
+  if (!isLocalHost) {
+    const macCdnUrl = `${githubRepo}/releases/download/${releaseTag}/Speakly-1.0.0-mac-arm64.dmg`;
+    const winCdnUrl = `${githubRepo}/releases/download/${releaseTag}/Speakly-Setup-1.0.0-win.exe`;
+    const portableCdnUrl = `${githubRepo}/releases/download/${releaseTag}/Speakly-1.0.0-win-portable.exe`;
+
+    macDownloadLinks.forEach(el => { el.href = macCdnUrl; });
+    winDownloadLinks.forEach(el => { el.href = winCdnUrl; });
+    winPortableLinks.forEach(el => { if (el) el.href = portableCdnUrl; });
   }
+
+  // 20-Second First-Launch Guide Tab Switcher
+  const guideTabBtns = document.querySelectorAll(".guide-tab-btn");
+  const macPanel = document.getElementById("guide-panel-mac");
+  const winPanel = document.getElementById("guide-panel-win");
+
+  function switchGuideTab(targetPlatform) {
+    guideTabBtns.forEach(btn => {
+      const isTarget = btn.getAttribute("data-guide-tab") === targetPlatform;
+      btn.classList.toggle("active", isTarget);
+      btn.setAttribute("aria-selected", isTarget ? "true" : "false");
+    });
+
+    if (macPanel) {
+      macPanel.classList.toggle("active", targetPlatform === "mac");
+      macPanel.hidden = targetPlatform !== "mac";
+    }
+    if (winPanel) {
+      winPanel.classList.toggle("active", targetPlatform === "win");
+      winPanel.hidden = targetPlatform !== "win";
+    }
+  }
+
+  // Set default tab based on user's OS
+  if (isWindows) {
+    switchGuideTab("win");
+  } else {
+    switchGuideTab("mac");
+  }
+
+  guideTabBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+      const platform = btn.getAttribute("data-guide-tab");
+      if (platform) switchGuideTab(platform);
+    });
+  });
+
+  // Terminal CLI Command Copy button
+  const copyMacTermBtn = document.getElementById("copy-mac-term-btn");
+  const copyTermText = document.getElementById("copy-term-text");
+  if (copyMacTermBtn) {
+    copyMacTermBtn.addEventListener("click", async () => {
+      const command = "xattr -cr /Applications/Speakly.app";
+      try {
+        await navigator.clipboard.writeText(command);
+        if (copyTermText) copyTermText.textContent = "✓ Copied!";
+        copyMacTermBtn.classList.add("copied");
+        setTimeout(() => {
+          if (copyTermText) copyTermText.textContent = "Copy Command";
+          copyMacTermBtn.classList.remove("copied");
+        }, 2200);
+      } catch (err) {
+        // Fallback for older browsers
+        const textarea = document.createElement("textarea");
+        textarea.value = command;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textarea);
+        if (copyTermText) copyTermText.textContent = "✓ Copied!";
+        setTimeout(() => {
+          if (copyTermText) copyTermText.textContent = "Copy Command";
+        }, 2200);
+      }
+    });
+  }
+
+  // Friendly toast when downloading
+  function showDownloadToast(osName) {
+    let toast = document.getElementById("speakly-dl-toast");
+    if (!toast) {
+      toast = document.createElement("div");
+      toast.id = "speakly-dl-toast";
+      toast.className = "speakly-dl-toast";
+      document.body.appendChild(toast);
+    }
+    toast.innerHTML = `
+      <div class="toast-content">
+        <span class="toast-duck">🦆</span>
+        <div>
+          <strong>Downloading Speakly for ${osName}!</strong>
+          <span>First-time launch on Early Access? Check the 20-second "Open Anyway" guide.</span>
+        </div>
+      </div>
+      <a href="#first-launch-guide" class="toast-action-btn">View 20s Guide</a>
+    `;
+    toast.classList.add("visible");
+    setTimeout(() => {
+      toast.classList.remove("visible");
+    }, 6000);
+  }
+
+  // Attach download listener for friendly toast
+  macDownloadLinks.forEach(link => {
+    link.addEventListener("click", () => {
+      showDownloadToast("macOS");
+    });
+  });
+
+  winDownloadLinks.forEach(link => {
+    link.addEventListener("click", () => {
+      showDownloadToast("Windows");
+    });
+  });
+
+  // Download Sheet Modal Logic
+  const modal = document.getElementById("download-modal");
+  const closeModalBtn = document.getElementById("close-modal-btn");
+  const modalViewGuideBtn = document.getElementById("modal-view-guide-btn");
 
   document.querySelectorAll("[data-open-modal='download']").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -937,6 +1092,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  if (modalViewGuideBtn) {
+    modalViewGuideBtn.addEventListener("click", () => {
+      if (modal) modal.hidden = true;
+      const guideElem = document.getElementById("first-launch-guide");
+      if (guideElem) {
+        guideElem.scrollIntoView({ behavior: "smooth" });
+      }
+    });
+  }
+
   if (modal) {
     modal.addEventListener("click", (e) => {
       if (e.target === modal) modal.hidden = true;
@@ -944,7 +1109,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Auto-close modal after user clicks download
-  document.querySelectorAll(".modal-os-card").forEach((link) => {
+  document.querySelectorAll(".modal-os-card, .modal-portable-link").forEach((link) => {
     link.addEventListener("click", () => {
       setTimeout(() => {
         if (modal) modal.hidden = true;

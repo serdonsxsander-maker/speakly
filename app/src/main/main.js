@@ -18,6 +18,15 @@ const {
 } = require('electron');
 
 const { createClient } = require('@supabase/supabase-js');
+
+// Load environment variables from backend/.env and root .env for dev / key sync
+try {
+  require('dotenv').config({ path: path.resolve(__dirname, '../../../../.env') });
+  require('dotenv').config({ path: path.resolve(__dirname, '../../../../backend/.env'), override: true });
+  require('dotenv').config({ path: path.resolve(process.cwd(), '../.env') });
+  require('dotenv').config({ path: path.resolve(process.cwd(), '../backend/.env'), override: true });
+} catch (_) {}
+
 const store = require('./store');
 const { transcribeAudio, validateApiKey } = require('./transcribe');
 const { pasteAtCursor } = require('./paster');
@@ -732,6 +741,9 @@ function applyCloudPreferences(user) {
   if (Array.isArray(cloudPrefs.dictionary) && cloudPrefs.dictionary.length > 0) {
     store.setDictionary(cloudPrefs.dictionary);
   }
+  if (meta.speakly_subscription) {
+    store.setSubscription(meta.speakly_subscription);
+  }
 }
 
 function registerIpcHandlers() {
@@ -1008,8 +1020,74 @@ function registerIpcHandlers() {
 
   ipcMain.handle('voxflow:auth-logout', () => {
     store.setAuth({ user: null, accessToken: '', refreshToken: '' });
+    store.setSubscription({ plan: 'free', status: 'trial', customerPortalUrl: '', renewsAt: null });
     broadcastState();
     return buildPublicState();
+  });
+
+  ipcMain.handle('voxflow:open-checkout', async () => {
+    const state = store.getState();
+    const user = state.auth?.user;
+    const accessToken = state.auth?.accessToken;
+    let checkoutUrl = 'https://speakly.lemonsqueezy.com/buy/speakly-pro';
+
+    try {
+      if (accessToken) {
+        const backendUrl = (process.env.SPEAKLY_BACKEND_URL || (app.isPackaged || process.env.NODE_ENV !== 'development' ? 'https://speakly-backend.onrender.com' : 'http://localhost:8787')).replace(/\/+$/, '');
+        const res = await fetch(`${backendUrl}/api/v1/billing/checkout`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({ returnUrl: 'https://speakly.app' })
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.checkoutUrl) checkoutUrl = json.checkoutUrl;
+        }
+      } else {
+        const urlObj = new URL(checkoutUrl);
+        if (user?.email) urlObj.searchParams.set('checkout[email]', user.email);
+        if (user?.id) urlObj.searchParams.set('checkout[custom][user_id]', user.id);
+        checkoutUrl = urlObj.toString();
+      }
+    } catch (_) {
+      try {
+        const urlObj = new URL(checkoutUrl);
+        if (user?.email) urlObj.searchParams.set('checkout[email]', user.email);
+        if (user?.id) urlObj.searchParams.set('checkout[custom][user_id]', user.id);
+        checkoutUrl = urlObj.toString();
+      } catch (_) {}
+    }
+
+    shell.openExternal(checkoutUrl);
+    return { success: true, url: checkoutUrl };
+  });
+
+  ipcMain.handle('voxflow:open-billing-portal', async () => {
+    const state = store.getState();
+    const accessToken = state.auth?.accessToken;
+    let portalUrl = state.subscription?.customerPortalUrl || 'https://speakly.lemonsqueezy.com/billing';
+
+    try {
+      if (accessToken) {
+        const backendUrl = (process.env.SPEAKLY_BACKEND_URL || (app.isPackaged || process.env.NODE_ENV !== 'development' ? 'https://speakly-backend.onrender.com' : 'http://localhost:8787')).replace(/\/+$/, '');
+        const res = await fetch(`${backendUrl}/api/v1/billing/portal`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.portalUrl) portalUrl = json.portalUrl;
+        }
+      }
+    } catch (_) {}
+
+    shell.openExternal(portalUrl);
+    return { success: true, url: portalUrl };
   });
 
   ipcMain.handle('voxflow:update-settings', (_event, patch) => {

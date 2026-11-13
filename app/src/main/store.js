@@ -55,10 +55,18 @@ const DEFAULT_MODES = [
 ];
 
 function readLegacyEnvKey(varName = 'OPENAI_API_KEY') {
+  if (process.env[varName]) {
+    const val = process.env[varName].trim();
+    if (val && !val.includes('your-key-here')) return val;
+  }
   try {
     const candidates = [
-      path.resolve(process.cwd(), '..', '.env'),
-      path.resolve(__dirname, '..', '..', '..', '.env')
+      path.resolve(__dirname, '..', '..', '..', 'backend', '.env'),
+      path.resolve(__dirname, '..', '..', '..', '.env'),
+      path.resolve(process.cwd(), 'backend', '.env'),
+      path.resolve(process.cwd(), '..', 'backend', '.env'),
+      path.resolve(process.cwd(), '.env'),
+      path.resolve(process.cwd(), '..', '.env')
     ];
     for (const envPath of candidates) {
       if (fs.existsSync(envPath)) {
@@ -129,6 +137,12 @@ function getDefaultState() {
       accessToken: '',
       refreshToken: ''
     },
+    subscription: {
+      plan: 'free', // 'free' | 'pro'
+      status: 'trial', // 'trial' | 'active' | 'cancelled' | 'inactive'
+      customerPortalUrl: '',
+      renewsAt: null
+    },
     stats: {
       wordsDictated: 0,
       secondsRecorded: 0,
@@ -145,7 +159,9 @@ class Store {
   }
 
   init() {
-    const userDataPath = app.getPath('userData');
+    const userDataPath = app?.getPath
+      ? app.getPath('userData')
+      : path.join(os.homedir(), process.platform === 'darwin' ? 'Library/Application Support/Speakly' : '.speakly');
     this._filePath = path.join(userDataPath, 'voxflow-state.json');
     const defaults = getDefaultState();
 
@@ -157,6 +173,7 @@ class Store {
           dictionary: Array.isArray(parsed.dictionary) ? parsed.dictionary : defaults.dictionary,
           customModes: Array.isArray(parsed.customModes) ? parsed.customModes : [],
           auth: { ...defaults.auth, ...(parsed.auth || {}) },
+          subscription: { ...defaults.subscription, ...(parsed.subscription || {}) },
           stats: { ...defaults.stats, ...(parsed.stats || {}) },
           history: Array.isArray(parsed.history) ? parsed.history.slice(0, 20) : []
         };
@@ -167,6 +184,17 @@ class Store {
           const val = String(this._data.settings[field] || '');
           if (REVOKED_KEY_PREFIXES.some((prefix) => val.startsWith(prefix))) {
             this._data.settings[field] = '';
+          }
+        }
+
+        // Auto-import / sync fresh keys from .env or backend/.env if available and not revoked
+        for (const field of ['openaiApiKey', 'groqApiKey']) {
+          const envVar = field === 'openaiApiKey' ? 'OPENAI_API_KEY' : 'GROQ_API_KEY';
+          const envKey = readLegacyEnvKey(envVar);
+          if (envKey && !REVOKED_KEY_PREFIXES.some((prefix) => envKey.startsWith(prefix))) {
+            if (!this._data.settings[field] || this._data.settings[field] !== envKey) {
+              this._data.settings[field] = envKey;
+            }
           }
         }
         if (this._data.settings.provider !== 'local' && !this._data.settings.openaiApiKey && !this._data.settings.groqApiKey) {
@@ -288,6 +316,18 @@ class Store {
       user: authData?.user || null,
       accessToken: authData?.accessToken || '',
       refreshToken: authData?.refreshToken || ''
+    };
+    this.save();
+    return this.getState();
+  }
+
+  setSubscription(subData) {
+    if (!this._data) this.init();
+    this._data.subscription = {
+      plan: subData?.plan || 'free',
+      status: subData?.status || 'trial',
+      customerPortalUrl: subData?.customerPortalUrl || subData?.customer_portal_url || '',
+      renewsAt: subData?.renewsAt || subData?.renews_at || null
     };
     this.save();
     return this.getState();

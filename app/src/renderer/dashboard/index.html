@@ -323,12 +323,29 @@
             </div>
           </div>
 
-          <div id="account-logged-in" hidden style="display: flex; justify-content: space-between; align-items: center; padding-top: 6px; border-top: 1px solid rgba(148, 163, 184, 0.14);">
-            <div>
-              <span class="muted-text" style="font-size: 11.5px; display: block;">Signed in Email</span>
-              <strong id="account-user-email" style="font-size: 14px;">user@example.com</strong>
+          <div id="account-logged-in" hidden style="display: flex; flex-direction: column; gap: 12px; padding-top: 10px; border-top: 1px solid rgba(148, 163, 184, 0.14);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <span class="muted-text" style="font-size: 11.5px; display: block;">Signed in Email</span>
+                <strong id="account-user-email" style="font-size: 14px;">user@example.com</strong>
+              </div>
+              <button type="button" id="auth-logout-btn" class="btn btn-ghost btn-sm">Log Out</button>
             </div>
-            <button type="button" id="auth-logout-btn" class="btn btn-ghost btn-sm">Log Out</button>
+
+            <!-- Lemon Squeezy Subscription & Billing Management -->
+            <div id="subscription-status-card" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between;">
+              <div>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <strong style="font-size: 13.5px;">Subscription</strong>
+                  <span id="sub-plan-badge" class="perm-badge" style="background: rgba(255,208,0,0.15); color: #ffd000; border-color: rgba(255,208,0,0.3);">Early Access Trial</span>
+                </div>
+                <p id="sub-plan-desc" class="muted-text" style="font-size: 12px; margin: 4px 0 0;">Sub-second Groq LPU transcription active.</p>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button type="button" id="btn-upgrade-pro" class="btn btn-primary btn-sm" style="background: #ffd000; color: #06080e; font-weight: 700; border: none; cursor: pointer;">Upgrade to Pro ($10/mo)</button>
+                <button type="button" id="btn-manage-billing" class="btn btn-secondary btn-sm" hidden style="cursor: pointer;">Manage Billing &amp; VAT</button>
+              </div>
+            </div>
           </div>
         </section>
 

@@ -16,7 +16,7 @@ const { app } = require('electron');
 const PRODUCTION_BACKEND_URL = 'https://speakly-backend.onrender.com';
 const DEV_BACKEND_URL = 'http://localhost:8787';
 const BACKEND_URL = (process.env.SPEAKLY_BACKEND_URL ||
-  (app.isPackaged || process.env.NODE_ENV !== 'development' ? PRODUCTION_BACKEND_URL : DEV_BACKEND_URL)).replace(/\/+$/, '');
+  (app?.isPackaged || process.env.NODE_ENV !== 'development' ? PRODUCTION_BACKEND_URL : DEV_BACKEND_URL)).replace(/\/+$/, '');
 const LOCAL_MODEL_FILENAME = 'ggml-small-q5_1.bin';
 const LOCAL_MODEL_URL = `https://huggingface.co/ggerganov/whisper.cpp/resolve/main/${LOCAL_MODEL_FILENAME}`;
 
@@ -373,7 +373,11 @@ async function callWhisperStt({ baseUrl, apiKey, sttModel, audioBuffer, mimeType
 async function transcribeDirect({ audioBuffer, mimeType, settings, dictionary, mode, activeContext = '' }) {
   const providerKey = settings.provider === 'groq' ? 'groq' : 'openai';
   const providerCfg = PROVIDERS[providerKey];
-  const apiKey = (providerKey === 'groq' ? settings.groqApiKey : settings.openaiApiKey || '').trim();
+  let apiKey = (providerKey === 'groq' ? settings.groqApiKey : settings.openaiApiKey || '').trim();
+  if (!apiKey) {
+    const envVar = providerKey === 'groq' ? 'GROQ_API_KEY' : 'OPENAI_API_KEY';
+    apiKey = (process.env[envVar] || '').trim();
+  }
 
   if (!apiKey) {
     throw new Error('No API key configured. Enter a key in Settings or connect to Speakly Cloud.');
@@ -529,7 +533,10 @@ async function transcribeAudio({ audioBuffer, mimeType = 'audio/wav', settings, 
 
   // 1. If the user has configured an API key for their selected provider (Groq or OpenAI),
   // use their selected provider & AI formatting mode directly!
-  const activeKey = settings.provider === 'groq' ? settings.groqApiKey : settings.openaiApiKey;
+  const activeKey =
+    (settings.provider === 'groq' ? settings.groqApiKey : settings.openaiApiKey) ||
+    (settings.provider === 'groq' ? process.env.GROQ_API_KEY : process.env.OPENAI_API_KEY) ||
+    '';
   if (activeKey && activeKey.trim()) {
     try {
       return await transcribeDirect({ audioBuffer, mimeType, settings, dictionary, mode, activeContext });

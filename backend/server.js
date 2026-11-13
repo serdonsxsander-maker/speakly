@@ -19,7 +19,7 @@ const crypto = require('crypto');
 
 // Load environment variables from parent and local .env files if present (for local development)
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
-require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+require('dotenv').config({ path: path.resolve(__dirname, '.env'), override: true });
 
 const { createClient } = require('@supabase/supabase-js');
 

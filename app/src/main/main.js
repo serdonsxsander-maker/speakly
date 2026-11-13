@@ -1033,7 +1033,7 @@ function registerIpcHandlers() {
 
     try {
       if (accessToken) {
-        const backendUrl = (process.env.SPEAKLY_BACKEND_URL || (app.isPackaged || process.env.NODE_ENV !== 'development' ? 'https://speakly-backend.onrender.com' : 'http://localhost:8787')).replace(/\/+$/, '');
+        const backendUrl = (process.env.SPEAKLY_BACKEND_URL || (app.isPackaged || process.env.NODE_ENV !== 'development' ? 'https://speakly-backend-ie1b.onrender.com' : 'http://localhost:8787')).replace(/\/+$/, '');
         const res = await fetch(`${backendUrl}/api/v1/billing/checkout`, {
           method: 'POST',
           headers: {
@@ -1072,7 +1072,7 @@ function registerIpcHandlers() {
 
     try {
       if (accessToken) {
-        const backendUrl = (process.env.SPEAKLY_BACKEND_URL || (app.isPackaged || process.env.NODE_ENV !== 'development' ? 'https://speakly-backend.onrender.com' : 'http://localhost:8787')).replace(/\/+$/, '');
+        const backendUrl = (process.env.SPEAKLY_BACKEND_URL || (app.isPackaged || process.env.NODE_ENV !== 'development' ? 'https://speakly-backend-ie1b.onrender.com' : 'http://localhost:8787')).replace(/\/+$/, '');
         const res = await fetch(`${backendUrl}/api/v1/billing/portal`, {
           method: 'GET',
           headers: {

@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Ping Speakly Cloud Health Endpoint
         env:
-          TARGET_URL: ${{ vars.SPEAKLY_BACKEND_URL || 'https://speakly-backend.onrender.com' }}
+          TARGET_URL: ${{ vars.SPEAKLY_BACKEND_URL || 'https://speakly-backend-ie1b.onrender.com' }}
         run: |
           HEALTH_URL="${TARGET_URL%/}/health"
           echo "Pinging: $HEALTH_URL"

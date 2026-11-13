@@ -17,13 +17,14 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 
+const envPort = process.env.PORT;
 // Load environment variables from parent and local .env files if present (for local development)
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
-require('dotenv').config({ path: path.resolve(__dirname, '.env'), override: true });
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 const { createClient } = require('@supabase/supabase-js');
 
-const PORT = parseInt(process.env.PORT || '8787', 10);
+const PORT = parseInt(envPort || process.env.PORT || '8787', 10);
 const NODE_ENV = process.env.NODE_ENV || 'development';
 const GROQ_API_KEY = (process.env.GROQ_API_KEY || '').trim();
 const OPENAI_API_KEY = (process.env.OPENAI_API_KEY || '').trim();
@@ -1010,8 +1011,17 @@ const server = http.createServer(async (req, res) => {
   res.end(JSON.stringify({ success: false, error: 'Endpoint not found' }));
 });
 
-server.listen(PORT, () => {
-  console.log(`\n🔒 Speakly Cloud AI Backend running on port ${PORT}`);
+process.on('uncaughtException', (err) => {
+  console.error('[FATAL] Uncaught Exception:', err);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[FATAL] Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`\n🔒 Speakly Cloud AI Backend running on 0.0.0.0:${PORT}`);
   console.log(`   Environment:   ${NODE_ENV}`);
   console.log(`   Auth Policy:   STRICT - Supabase Authenticated Users Only (No Guest AI Access)`);
   console.log(`   Rate Limiter:  Active (${MAX_REQUESTS_PER_USER} req/min per user)`);

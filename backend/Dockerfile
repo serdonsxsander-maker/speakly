@@ -11,8 +11,8 @@ COPY server.js ./
 
 # Set environment
 ENV NODE_ENV=production
-ENV PORT=8787
 
-EXPOSE 8787
+# Render automatically injects PORT (default 10000)
+EXPOSE 10000 8787
 
 CMD ["node", "server.js"]

@@ -13,7 +13,7 @@ const { app } = require('electron');
 
 // Production Speakly backend (Render service "speakly-backend" in backend/render.yaml).
 // Packaged apps always talk to production; `npm run dev` talks to a local backend.
-const PRODUCTION_BACKEND_URL = 'https://speakly-backend.onrender.com';
+const PRODUCTION_BACKEND_URL = 'https://speakly-backend-ie1b.onrender.com';
 const DEV_BACKEND_URL = 'http://localhost:8787';
 const BACKEND_URL = (process.env.SPEAKLY_BACKEND_URL ||
   (app?.isPackaged || process.env.NODE_ENV !== 'development' ? PRODUCTION_BACKEND_URL : DEV_BACKEND_URL)).replace(/\/+$/, '');

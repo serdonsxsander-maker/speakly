@@ -39,6 +39,6 @@
 - **Desktop Client**: Electron (non-focus-stealing floating HUD pill `focusable: false` + Dashboard window). Builds: `app/` → `npm run dist:mac` / `dist:win` → `app/dist/`.
 - **Audio Capture**: 16kHz mono PCM stream via `navigator.mediaDevices` with real-time `AnalyserNode` frequency feedback.
 - **Inference Engine**: Primary Groq LPU (`whisper-large-v3-turbo` + `llama-3.3-70b-versatile`, median latency ~0.29s) with OpenAI Whisper fallback, **called from the backend only**.
-- **Backend**: `backend/server.js` (Render service `speakly-backend`). Packaged apps default to `https://speakly-backend.onrender.com` (`app/src/main/transcribe.js`). Enforces Supabase JWT authentication, sliding-window rate limiting, and 25MB body limit. Ready for Render deployment with keep-alive pinger.
+- **Backend**: `backend/server.js` deployed live on Render at `https://speakly-backend-ie1b.onrender.com` (`app/src/main/transcribe.js`). Enforces Supabase JWT authentication, sliding-window rate limiting (45 req/min), 25MB body limit, and Groq LPU engine. 5-minute keep-alive ping running on `/health`.
 - **Auto-Paste**: Native OS key simulation (`Cmd+V` / `Ctrl+V`) with automatic 600ms clipboard backup and restoration.
 - **Cloud Sync**: Supabase (project `lwiznvgeemrkrildyyvw`) Auth and User Preferences sync for personal dictionary, hotkeys, and AI modes. Feedback goes into the `public.feedback` table (migration in `supabase/migrations/`).

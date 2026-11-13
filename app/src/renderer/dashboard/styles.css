@@ -1252,3 +1252,48 @@ dialog::backdrop {
   width: 100%;
   margin-top: 8px;
 }
+
+/* Language Selector Styling */
+.language-field-group {
+  position: relative;
+}
+
+.language-select-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.language-select-styled {
+  background: var(--bg-surface-elevated, var(--bg-elevated));
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-primary);
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.15s ease;
+  line-height: 1.5;
+}
+
+.language-select-styled:hover {
+  border-color: var(--brand);
+}
+
+.language-select-styled optgroup {
+  background: #06080E;
+  color: var(--matrix-gold, #ffd000);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 8px 4px 4px;
+}
+
+.language-select-styled option {
+  background: var(--bg-elevated, #111728);
+  color: var(--text-main, #f1f5f9);
+  font-size: 13.5px;
+  padding: 8px 12px;
+}

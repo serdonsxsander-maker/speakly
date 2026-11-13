@@ -397,6 +397,62 @@
               </div>
             </label>
           </div>
+
+          <!-- Spoken Language Selector with Flags -->
+          <div class="field-group language-field-group" style="margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--border-subtle);">
+            <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+              <label for="language-select" style="font-weight: 700; font-size: 13.5px; display: flex; align-items: center; gap: 8px;">
+                <span>🌐</span> Spoken Language &amp; Vocabulary Target
+              </label>
+              <span class="muted-text" style="font-size: 12px;">Auto-detect or lock to your native language</span>
+            </div>
+
+            <div class="language-select-wrapper">
+              <select id="language-select" class="language-select-styled">
+                <option value="">🌐 Auto-Detect Spoken Language (Multilingual Auto-Switch)</option>
+
+                <optgroup label="─── Most Popular ───">
+                  <option value="en">🇬🇧 / 🇺🇸 English (US &amp; UK)</option>
+                  <option value="nl">🇧🇪 / 🇳🇱 Nederlands (Vlaams &amp; Hollands)</option>
+                  <option value="fr">🇫🇷 / 🇧🇪 Français (French)</option>
+                  <option value="de">🇩🇪 Deutsch (German)</option>
+                  <option value="es">🇪🇸 Español (Spanish)</option>
+                </optgroup>
+
+                <optgroup label="─── European Languages ───">
+                  <option value="it">🇮🇹 Italiano (Italian)</option>
+                  <option value="pt">🇵🇹 / 🇧🇷 Português (Portuguese)</option>
+                  <option value="pl">🇵🇱 Polski (Polish)</option>
+                  <option value="sv">🇸🇪 Svenska (Swedish)</option>
+                  <option value="da">🇩🇰 Dansk (Danish)</option>
+                  <option value="no">🇳🇴 Norsk (Norwegian)</option>
+                  <option value="fi">🇫🇮 Suomi (Finnish)</option>
+                  <option value="el">🇬🇷 Ελληνικά (Greek)</option>
+                  <option value="cs">🇨🇿 Čeština (Czech)</option>
+                  <option value="ro">🇷🇴 Română (Romanian)</option>
+                  <option value="hu">🇭🇺 Magyar (Hungarian)</option>
+                  <option value="uk">🇺🇦 Українська (Ukrainian)</option>
+                  <option value="tr">🇹🇷 Türkçe (Turkish)</option>
+                  <option value="ru">🇷🇺 Русский (Russian)</option>
+                </optgroup>
+
+                <optgroup label="─── Asian &amp; Middle Eastern ───">
+                  <option value="ja">🇯🇵 日本語 (Japanese)</option>
+                  <option value="ko">🇰🇷 한국어 (Korean)</option>
+                  <option value="zh">🇨🇳 中文 (Mandarin Chinese)</option>
+                  <option value="ar">🇸🇦 العربية (Arabic)</option>
+                  <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+                  <option value="he">🇮🇱 עברית (Hebrew)</option>
+                  <option value="id">🇮🇩 Bahasa Indonesia</option>
+                  <option value="vi">🇻🇳 Tiếng Việt (Vietnamese)</option>
+                </optgroup>
+              </select>
+            </div>
+
+            <p class="muted-text" style="font-size: 12px; margin-top: 8px; line-height: 1.4;">
+              💡 <strong>Pro Tip:</strong> Locking your language (e.g. 🇧🇪 Nederlands or 🇬🇧 English) speeds up Whisper transcription by eliminating language-probing latency and guarantees heavy accents and local dialect terms are recognized flawlessly!
+            </p>
+          </div>
         </section>
 
         <!-- Keyboard Trigger -->

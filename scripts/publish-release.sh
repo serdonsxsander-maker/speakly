@@ -52,5 +52,5 @@ else
   echo "  git tag $TAG"
   echo "  git push origin $TAG"
   echo "And drag the 4 installer files from app/dist/ directly into the GitHub Releases web UI at:"
-  echo "  https://github.com/<YOUR_USER>/<YOUR_REPO>/releases/new?tag=$TAG"
+  echo "  https://github.com/serdonsxsander-maker/speakly/releases/new?tag=$TAG"
 fi

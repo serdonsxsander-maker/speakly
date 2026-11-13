@@ -941,7 +941,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Dynamic Release CDN Resolution (Localhost uses local files; production uses GitHub Releases CDN)
   const isLocalHost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const githubRepo = window.SPEAKLY_GITHUB_REPO || "https://github.com/speakly-ai/speakly";
+  const githubRepo = window.SPEAKLY_GITHUB_REPO || "https://github.com/serdonsxsander-maker/speakly";
   const releaseTag = "v1.0.0";
 
   const macDownloadLinks = [

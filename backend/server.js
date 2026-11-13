@@ -37,6 +37,19 @@ const LEMONSQUEEZY_STORE_ID = (process.env.LEMONSQUEEZY_STORE_ID || '').trim();
 const LEMONSQUEEZY_VARIANT_ID = (process.env.LEMONSQUEEZY_VARIANT_ID || '').trim();
 const LEMONSQUEEZY_CHECKOUT_URL = (process.env.LEMONSQUEEZY_CHECKOUT_URL || 'https://speakly.lemonsqueezy.com/buy/speakly-pro').trim();
 
+// Ensure WebSocket exists for Supabase Realtime client in older/minimal container runtimes
+if (typeof globalThis.WebSocket === 'undefined') {
+  try {
+    globalThis.WebSocket = class DummyWebSocket {
+      constructor() {}
+      addEventListener() {}
+      removeEventListener() {}
+      close() {}
+      send() {}
+    };
+  } catch (_) {}
+}
+
 // Initialize Supabase Client
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {

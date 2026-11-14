@@ -970,7 +970,217 @@
       box-shadow: 0 30px 80px rgba(0, 0, 0, 0.95);
     }
 
+    /* =========================================================================
+       PRICING SECTION — AWESOME-LANDING-PAGES (SAAS-AI / SAASYDARK STYLE)
+       ========================================================================= */
+    .pricing-section {
+      padding: 60px 0 100px;
+      position: relative;
+    }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      align-items: stretch;
+      margin-top: 48px;
+    }
+
+    .pricing-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px 28px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+      backdrop-filter: blur(12px);
+    }
+
+    .pricing-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--border-hover);
+    }
+
+    .pricing-featured {
+      border: 2px solid var(--accent-gold);
+      background: linear-gradient(180deg, rgba(22, 26, 38, 0.95) 0%, rgba(26, 22, 10, 0.95) 100%);
+      box-shadow: 0 12px 40px rgba(255, 208, 0, 0.12);
+    }
+
+    .pricing-featured:hover {
+      border-color: #ffe04d;
+      box-shadow: 0 16px 50px rgba(255, 208, 0, 0.2);
+    }
+
+    .pricing-badge {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, #FFD000, #FF6B00);
+      color: #07080C;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 999px;
+      box-shadow: 0 4px 14px rgba(255, 208, 0, 0.35);
+      white-space: nowrap;
+    }
+
+    .pricing-badge-secondary {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: var(--accent-cyan);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 4px 14px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .pricing-header {
+      margin-bottom: 24px;
+    }
+
+    .pricing-tier-name {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 8px;
+    }
+
+    .pricing-desc {
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+      margin: 0 0 20px;
+      min-height: 40px;
+    }
+
+    .price-wrap {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .price-val {
+      font-size: 44px;
+      font-weight: 800;
+      color: #fff;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .price-period {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .pricing-features {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+      font-size: 13.5px;
+    }
+
+    .pricing-features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    .pricing-features li.active {
+      color: #fff;
+    }
+
+    .pricing-features li .check-icon {
+      color: var(--accent-gold);
+      font-weight: 800;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .pricing-features li.disabled {
+      color: var(--text-muted);
+      opacity: 0.6;
+    }
+
+    .pricing-features li .cross-icon {
+      color: var(--text-muted);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .pricing-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      padding: 13px 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .pricing-btn-primary {
+      background: linear-gradient(135deg, #FFD000, #FF6B00);
+      color: #07080C;
+      box-shadow: 0 4px 18px rgba(255, 208, 0, 0.25);
+    }
+
+    .pricing-btn-primary:hover {
+      filter: brightness(1.1);
+      transform: scale(1.02);
+      box-shadow: 0 6px 24px rgba(255, 208, 0, 0.35);
+    }
+
+    .pricing-btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: #fff;
+    }
+
+    .pricing-btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--border-hover);
+      transform: scale(1.02);
+    }
+
     /* Mobile Queries */
+    @media (max-width: 960px) {
+      .pricing-grid {
+        grid-template-columns: 1fr;
+        max-width: 440px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+    }
+
     @media (max-width: 860px) {
       .nav-menu { display: none; }
       .studio-split { grid-template-columns: 1fr; }
@@ -1017,6 +1227,7 @@
     <nav class="nav-menu">
       <a href="#demo" class="nav-link">Live Studio</a>
       <a href="#features" class="nav-link">Superpowers</a>
+      <a href="#pricing" class="nav-link">Pricing</a>
       <a href="#about" class="nav-link">Why I Built This</a>
       <a href="#faq" class="nav-link">FAQ</a>
     </nav>
@@ -1274,6 +1485,176 @@
             — <strong style="color: #fff;">Xsander</strong>, Solo Maker based in Belgium 🇧🇪
           </div>
         </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       PRICING OVERVIEW SECTION — AWESOME-LANDING-PAGES (SAAS-AI / SAASYDARK STYLE)
+       ========================================================================= -->
+  <section class="pricing-section" id="pricing">
+    <div class="container">
+      <div style="text-align: center; max-width: 680px; margin: 0 auto 16px;">
+        <span class="section-kicker">TRANSPARENT PRICING</span>
+        <h2 style="font-size: clamp(32px, 4vw, 44px); font-weight: 800; letter-spacing: -0.03em; margin: 0 0 14px;">
+          Speak fast. <span class="serif-accent gradient-gold">Pay fair.</span>
+        </h2>
+        <p style="font-size: 15px; color: var(--text-secondary); line-height: 1.6; margin: 0;">
+          Start free with 3,000 words every month. Upgrade when your typing replacement workflow scales. No credit card required to start.
+        </p>
+      </div>
+
+      <div class="pricing-grid">
+        
+        <!-- Card 1: Free Early Access -->
+        <div class="pricing-card">
+          <div class="pricing-header">
+            <h3 class="pricing-tier-name">Free Starter</h3>
+            <p class="pricing-desc">
+              For casual typers, students, and experiencing sub-300ms voice dictation across all your apps.
+            </p>
+            <div class="price-wrap">
+              <span class="price-val">0€</span>
+              <span class="price-period">/ month · forever free</span>
+            </div>
+            <ul class="pricing-features">
+              <li class="active">
+                <span class="check-icon">✓</span>
+                <span><strong>3,000 words</strong> / month (resets every 30 days)</span>
+              </li>
+              <li class="active">
+                <span class="check-icon">✓</span>
+                <span><strong>All 5 AI Writing Modes</strong> (Smart Polish, Dev, Email, Notes, Verbatim)</span>
+              </li>
+              <li class="active">
+                <span class="check-icon">✓</span>
+                <span>Direct in-app pasting (Slack, Cursor, Gmail, Terminal)</span>
+              </li>
+              <li class="active">
+                <span class="check-icon">✓</span>
+                <span>Sub-300ms Groq Whisper LPU voice engine</span>
+              </li>
+              <li class="active">
+                <span class="check-icon">✓</span>
+                <span>Floating non-activating Rubber Ducky HUD</span>
+              </li>
+              <li class="disabled">
+                <span class="cross-icon">✕</span>
+                <span>Personal Custom Dictionary (Pro only)</span>
+              </li>
+              <li class="disabled">
+                <span class="cross-icon">✕</span>
+                <span>Priority server queue routing</span>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <a href="#hero-cta-group" class="pricing-btn pricing-btn-secondary">Get Started Free</a>
+          </div>
+        </div>
+
+        <!-- Card 2: Speakly Pro (Featured) -->
+        <div class="pricing-card pricing-featured">
+          <div class="pricing-badge">★ MOST POPULAR</div>
+          <div class="pricing-header">
+            <h3 class="pricing-tier-name">
+              <span>Speakly Pro</span>
+              <span style="color: var(--accent-gold); font-size: 16px;">✦</span>
+            </h3>
+            <p class="pricing-desc">
+              For developers, founders, and power typers who dictate 4+ hours a day and need infinite words.
+            </p>
+            <div class="price-wrap">
+              <span class="price-val">10€</span>
+              <span class="price-period">/ month · EU VAT incl.</span>
+            </div>
+            <ul class="pricing-features">
+              <li class="active">
+                <span class="check-icon" style="color: var(--accent-green);">✓</span>
+                <span><strong>Unlimited words</strong> (dictate as much as you speak)</span>
+              </li>
+              <li class="active">
+                <span class="check-icon" style="color: var(--accent-green);">✓</span>
+                <span><strong>Personal Dictionary &amp; Library</strong> (code tokens, acronyms, names)</span>
+              </li>
+              <li class="active">
+                <span class="check-icon" style="color: var(--accent-green);">✓</span>
+                <span><strong>Priority Groq LPU routing</strong> (guaranteed sub-290ms latency)</span>
+              </li>
+              <li class="active">
+                <span class="check-icon" style="color: var(--accent-green);">✓</span>
+                <span><strong>All 5 AI Writing Modes</strong> + custom prompt tuning</span>
+              </li>
+              <li class="active">
+                <span class="check-icon" style="color: var(--accent-green);">✓</span>
+                <span>Cancel anytime in 1 click (self-serve portal)</span>
+              </li>
+              <li class="active">
+                <span class="check-icon" style="color: var(--accent-green);">✓</span>
+                <span>Early access to upcoming mobile &amp; cloud sync</span>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <a href="https://speakly.lemonsqueezy.com/buy/speakly-pro" target="_blank" class="pricing-btn pricing-btn-primary">Upgrade to Pro (10€/mo) →</a>
+          </div>
+        </div>
+
+        <!-- Card 3: Annual Pro (Best Value) -->
+        <div class="pricing-card">
+          <div class="pricing-badge-secondary">SAVE 20%</div>
+          <div class="pricing-header">
+            <h3 class="pricing-tier-name">Annual Pro</h3>
+            <p class="pricing-desc">
+              Two full months free for committed keyboard workers who want maximum long-term productivity.
+            </p>
+            <div class="price-wrap">
+              <span class="price-val">8€</span>
+              <span class="price-period">/ mo (96€ billed yearly)</span>
+            </div>
+            <ul class="pricing-features">
+              <li class="active">
+                <span class="check-icon">✓</span>
+                <span><strong>Everything in Speakly Pro</strong></span>
+              </li>
+              <li class="active">
+                <span class="check-icon">✓</span>
+                <span><strong>2 full months free</strong> every year</span>
+              </li>
+              <li class="active">
+                <span class="check-icon">✓</span>
+                <span>Unlimited words &amp; custom dictionary</span>
+              </li>
+              <li class="active">
+                <span class="check-icon">✓</span>
+                <span>Priority roadmap voting &amp; feature requests</span>
+              </li>
+              <li class="active">
+                <span class="check-icon">✓</span>
+                <span>Direct Slack/Discord access to the founder</span>
+              </li>
+              <li class="active">
+                <span class="check-icon">✓</span>
+                <span>Official EU VAT compliant invoice for business</span>
+              </li>
+            </ul>
+          </div>
+          <div>
+            <a href="https://speakly.lemonsqueezy.com/buy/speakly-pro-annual" target="_blank" class="pricing-btn pricing-btn-secondary">Get Annual Pro (96€/yr) →</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Micro Reassurance Strip -->
+      <div style="margin-top: 32px; text-align: center; display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; font-size: 13px; color: var(--text-muted);">
+        <span>🔒 Merchant of Record via Lemon Squeezy</span>
+        <span>•</span>
+        <span>⚡ Instant activation</span>
+        <span>•</span>
+        <span>🇪🇺 Automatic EU/Belgian VAT compliance</span>
+        <span>•</span>
+        <span>🤝 30-Day Money-Back Guarantee</span>
       </div>
     </div>
   </section>

@@ -3,1224 +3,1275 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Speakly — Rubber Ducky AI. Speak at 158 WPM. Paste clean text anywhere.</title>
-  <meta name="description" content="Sub-second AI voice dictation for developers. Speak naturally, paste clean prompts into Cursor, VS Code, and terminal in under 300ms using Groq LPUs." />
-  <meta name="theme-color" content="#06080e" />
+  <title>Speakly — Speak 3x Faster Than You Type</title>
+  <meta name="description" content="AI voice-to-text built for high-volume typers and developers. Speak at 150 WPM, paste clean text straight into Cursor, Slack, and Gmail in 0.29s." />
+  <meta name="theme-color" content="#07080C" />
 
-  <!-- Open Graph / Facebook / LinkedIn / Discord -->
+  <!-- Open Graph -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="Speakly — Rubber Ducky AI Voice Dictation for Developers" />
-  <meta property="og:description" content="Speak messy, paste clean code prompts into Cursor, VS Code, and terminal in ~290ms using Groq LPUs. Download for macOS and Windows." />
+  <meta property="og:title" content="Speakly — Voice Faster Than Typing" />
+  <meta property="og:description" content="Hold your hotkey, talk naturally, paste clean writing in every app. Free Early Access on macOS and Windows." />
   <meta property="og:image" content="assets/icon.png" />
+  <meta name="twitter:card" content="summary_large_image" />
 
-  <!-- Twitter / X -->
-  <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="Speakly — Rubber Ducky AI Voice Dictation" />
-  <meta name="twitter:description" content="Sub-second AI voice dictation for developers. Groq LPUs, zero audio retention. Early access available now." />
-  <meta name="twitter:image" content="assets/icon.png" />
-
+  <!-- MotionSites Calibrated Typography Stack -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@1&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="icon" type="image/png" href="assets/icon.png" />
 
-  <!-- Lemon Squeezy Native Checkout & Recurring Affiliate Tracking (Zero-fee MoR, handles EU/Belgian VAT) -->
-  <script src="https://assets.lemonsqueezy.com/lemon.js" defer></script>
+  <style>
+    /* =========================================================================
+       MOTIONSITES CRAFT TOKENS & RESET (PREVENT WHITE FLASH)
+       ========================================================================= */
+    :root {
+      --bg: #07080C;
+      --surface: #0E1017;
+      --surface-elevated: #141722;
+      --surface-card: rgba(16, 19, 28, 0.72);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(255, 255, 255, 0.16);
+      --border-gold: rgba(255, 208, 0, 0.35);
+
+      --text-primary: #FFFFFF;
+      --text-secondary: #94A3B8;
+      --text-muted: #64748B;
+
+      --accent-gold: #FFD000;
+      --accent-orange: #FF6B00;
+      --accent-cyan: #38BDF8;
+      --accent-green: #22C55E;
+
+      --ease-motion: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    html, body {
+      background: var(--bg) !important;
+      color: var(--text-primary);
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      scroll-behavior: smooth;
+    }
+
+    *, *::before, *::after {
+      box-sizing: inherit;
+    }
+
+    code, kbd {
+      font-family: "JetBrains Mono", monospace;
+    }
+
+    kbd {
+      display: inline-block;
+      padding: 2px 7px;
+      font-size: 0.82em;
+      font-weight: 600;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-bottom-width: 2px;
+      border-radius: 6px;
+    }
+
+    /* Container */
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Typography Utilities */
+    .font-serif-italic {
+      font-family: "Instrument Serif", Georgia, serif;
+      font-style: italic;
+      font-weight: 400;
+    }
+
+    .gradient-gold {
+      background: linear-gradient(135deg, #FFFFFF 15%, #FFD000 65%, #FF6B00 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* =========================================================================
+       PINNED TRANSLUCENT NAVIGATION
+       ========================================================================= */
+    .nav-wrapper {
+      position: fixed;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 36px);
+      max-width: 1060px;
+      height: 60px;
+      z-index: 100;
+      background: rgba(14, 16, 23, 0.72);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid var(--border);
+      border-radius: 9999px;
+      padding: 0 16px 0 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+    }
+
+    .brand-lockup {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: #fff;
+    }
+
+    .brand-duck-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px;
+    }
+
+    .brand-title {
+      font-weight: 800;
+      font-size: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-tag {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 2px 7px;
+      border-radius: 9999px;
+      background: rgba(255, 208, 0, 0.15);
+      color: var(--accent-gold);
+      border: 1px solid rgba(255, 208, 0, 0.3);
+    }
+
+    .nav-menu {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .nav-link {
+      font-size: 13.5px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.18s ease;
+    }
+
+    .nav-link:hover {
+      color: #fff;
+    }
+
+    .nav-cta-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 18px;
+      border-radius: 9999px;
+      background: linear-gradient(135deg, #FFD000 0%, #F59E0B 100%);
+      color: #000;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      border: none;
+      box-shadow: 0 4px 14px rgba(255, 208, 0, 0.3);
+      transition: transform 0.15s var(--ease-motion), box-shadow 0.2s ease;
+    }
+
+    .nav-cta-btn:active {
+      transform: scale(0.97);
+    }
+
+    /* =========================================================================
+       HERO SECTION
+       ========================================================================= */
+    .hero-section {
+      position: relative;
+      padding: 130px 0 64px;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .ambient-glow {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 750px;
+      height: 480px;
+      background: radial-gradient(circle, rgba(255, 208, 0, 0.14) 0%, rgba(56, 189, 248, 0.04) 50%, transparent 70%);
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 14px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+
+    .pulse-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-gold);
+      box-shadow: 0 0 8px var(--accent-gold);
+    }
+
+    .hero-h1 {
+      font-size: clamp(44px, 7vw, 84px);
+      font-weight: 800;
+      line-height: 1.04;
+      letter-spacing: -0.04em;
+      margin: 0 0 22px;
+      color: #fff;
+    }
+
+    .hero-h1 .serif-accent {
+      font-size: 1.08em;
+      letter-spacing: -0.02em;
+    }
+
+    .hero-lede {
+      max-width: 640px;
+      margin: 0 auto 36px;
+      font-size: 17.5px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+
+    .hero-cta-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .btn-hero-dl {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      padding: 13px 26px;
+      border-radius: 14px;
+      text-decoration: none;
+      position: relative;
+      transition: transform 0.16s var(--ease-motion), background-color 0.2s ease, box-shadow 0.2s ease;
+      user-select: none;
+    }
+
+    .btn-hero-dl:active {
+      transform: scale(0.97);
+    }
+
+    .btn-hero-mac {
+      background: #FFFFFF;
+      color: #000000;
+      box-shadow: 0 10px 30px rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-hero-mac:hover {
+      background: #F1F5F9;
+      box-shadow: 0 12px 36px rgba(255, 255, 255, 0.25);
+    }
+
+    .btn-hero-win {
+      background: rgba(255, 255, 255, 0.06);
+      color: #FFFFFF;
+      border: 1px solid var(--border-hover);
+    }
+
+    .btn-hero-win:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .detected-tag {
+      position: absolute;
+      top: -8px;
+      right: 12px;
+      font-size: 9.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      background: var(--accent-gold);
+      color: #000;
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+
+    .hero-trust {
+      font-size: 12.5px;
+      color: var(--text-muted);
+      margin-bottom: 56px;
+    }
+
+    /* =========================================================================
+       THE SIGNATURE LIVE INTERACTIVE STUDIO STAGE
+       ========================================================================= */
+    .studio-shell {
+      max-width: 980px;
+      margin: 0 auto;
+      border: 1px solid var(--border-hover);
+      border-radius: 24px;
+      background: var(--surface);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.85);
+      overflow: hidden;
+      text-align: left;
+    }
+
+    .studio-titlebar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      background: rgba(255, 255, 255, 0.02);
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+    }
+
+    .window-dots {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+    }
+    .dot.red { background: #FF5F56; }
+    .dot.yellow { background: #FFBD2E; }
+    .dot.green { background: #27C93F; }
+
+    .context-pills {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+    }
+
+    .pill-tab {
+      padding: 5px 12px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid transparent;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .pill-tab:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .pill-tab.active {
+      background: rgba(255, 208, 0, 0.14);
+      color: var(--accent-gold);
+      border-color: rgba(255, 208, 0, 0.35);
+    }
+
+    .latency-readout {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-mono;
+      color: var(--accent-cyan);
+    }
+
+    .latency-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent-cyan);
+      box-shadow: 0 0 6px var(--accent-cyan);
+    }
+
+    .studio-split {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      padding: 24px;
+      gap: 16px;
+      min-height: 290px;
+    }
+
+    .studio-col {
+      background: rgba(10, 12, 18, 0.65);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .studio-col.col-clean {
+      border-color: rgba(255, 208, 0, 0.25);
+      background: rgba(255, 208, 0, 0.02);
+    }
+
+    .col-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .col-kicker {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+    }
+
+    .col-kicker.gold {
+      color: var(--accent-gold);
+    }
+
+    .col-metric {
+      font-size: 11px;
+      font-mono;
+      color: var(--text-secondary);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    .col-metric.green {
+      color: var(--accent-green);
+      background: rgba(34, 197, 94, 0.1);
+    }
+
+    .stream-text, .clean-text {
+      flex: 1;
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--text-primary);
+      min-height: 110px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .stream-text {
+      color: #CBD5E1;
+    }
+
+    .stream-text del {
+      color: #EF4444;
+      background: rgba(239, 68, 68, 0.12);
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+
+    .stream-text .filler {
+      color: #F59E0B;
+      background: rgba(245, 158, 11, 0.12);
+      padding: 1px 4px;
+      border-radius: 3px;
+    }
+
+    .col-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 16px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .btn-ptt {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 14px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--border-hover);
+      color: #fff;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+
+    .btn-ptt:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .mic-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #EF4444;
+      box-shadow: 0 0 6px #EF4444;
+    }
+
+    .studio-bridge {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .ducky-orb {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 208, 0, 0.25) 0%, rgba(14, 16, 24, 0.9) 70%);
+      border: 1px solid var(--border-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px;
+      box-shadow: 0 0 20px rgba(255, 208, 0, 0.2);
+    }
+
+    .btn-copy {
+      padding: 3px 9px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-copy:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    /* =========================================================================
+       APP MARQUEE STRIP
+       ========================================================================= */
+    .app-strip-section {
+      padding: 40px 0;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.4);
+      text-align: center;
+    }
+
+    .strip-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+
+    .strip-logos {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 36px;
+      flex-wrap: wrap;
+      opacity: 0.7;
+    }
+
+    .strip-logo-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    /* =========================================================================
+       BENTO GRID SUPERPOWERS
+       ========================================================================= */
+    .features-section {
+      padding: 88px 0;
+    }
+
+    .section-kicker {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent-gold);
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .section-title {
+      font-size: clamp(28px, 4.5vw, 44px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 48px;
+      text-align: center;
+    }
+
+    .bento-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 20px;
+    }
+
+    .bento-span-7 { grid-column: span 7; }
+    .bento-span-5 { grid-column: span 5; }
+    .bento-span-6 { grid-column: span 6; }
+
+    .bento-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .bento-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-2px);
+    }
+
+    .card-kicker {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent-gold);
+      margin-bottom: 8px;
+    }
+
+    .card-title {
+      font-size: 21px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+
+    .card-copy {
+      font-size: 14.5px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+
+    .card-widget {
+      border-radius: 12px;
+      background: rgba(10, 12, 18, 0.8);
+      border: 1px solid var(--border);
+      padding: 16px;
+    }
+
+    /* =========================================================================
+       MAKER STORY CARD
+       ========================================================================= */
+    .maker-section {
+      padding: 20px 0 80px;
+    }
+
+    .maker-card {
+      background: linear-gradient(135deg, rgba(22, 26, 38, 0.7) 0%, rgba(14, 16, 24, 0.9) 100%);
+      border: 1px solid var(--border-hover);
+      border-radius: 24px;
+      padding: 36px 40px;
+      display: flex;
+      gap: 28px;
+      align-items: center;
+    }
+
+    .maker-badge-duck {
+      width: 72px;
+      height: 72px;
+      border-radius: 20px;
+      background: radial-gradient(circle, rgba(255, 208, 0, 0.25) 0%, rgba(10, 12, 18, 0.9) 70%);
+      border: 1px solid var(--border-gold);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      flex-shrink: 0;
+    }
+
+    /* =========================================================================
+       20-SECOND SETUP SECTION
+       ========================================================================= */
+    .setup-section {
+      padding: 80px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .setup-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+
+    .setup-card {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+    }
+
+    .setup-num {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(255, 208, 0, 0.14);
+      color: var(--accent-gold);
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+    }
+
+    .setup-card h4 {
+      font-size: 16px;
+      font-weight: 700;
+      margin: 0 0 8px;
+    }
+
+    .setup-card p {
+      font-size: 13.5px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin: 0;
+    }
+
+    .terminal-box {
+      background: rgba(10, 12, 18, 0.85);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    /* =========================================================================
+       FAQ SECTION
+       ========================================================================= */
+    .faq-section {
+      padding: 80px 0;
+    }
+
+    .faq-container {
+      max-width: 720px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .faq-item {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px 22px;
+      cursor: pointer;
+      user-select: none;
+      transition: border-color 0.15s ease;
+    }
+
+    .faq-item:hover {
+      border-color: var(--border-hover);
+    }
+
+    .faq-q {
+      font-size: 15px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .faq-a {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height 0.3s ease, opacity 0.3s ease, margin-top 0.3s ease;
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+    }
+
+    .faq-item.active .faq-a {
+      max-height: 200px;
+      opacity: 1;
+      margin-top: 10px;
+    }
+
+    .faq-item.active .faq-chevron {
+      transform: rotate(180deg);
+    }
+
+    /* =========================================================================
+       BOTTOM CTA
+       ========================================================================= */
+    .bottom-cta {
+      padding: 96px 0;
+      border-top: 1px solid var(--border);
+      background: radial-gradient(circle at center, rgba(255, 208, 0, 0.08) 0%, transparent 65%);
+      text-align: center;
+    }
+
+    .cta-h2 {
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin: 0 0 14px;
+    }
+
+    /* =========================================================================
+       PERSISTENT FLOATING HUD PILL
+       ========================================================================= */
+    .ducky-pill-hud {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 990;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      height: 50px;
+      padding: 0 18px 0 12px;
+      background: rgba(14, 16, 24, 0.88);
+      backdrop-filter: blur(24px) saturate(180%);
+      -webkit-backdrop-filter: blur(24px) saturate(180%);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 9999px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.75), 0 0 0 1px rgba(255, 208, 0, 0.15);
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.15s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .ducky-pill-hud:active {
+      transform: translateX(-50%) scale(0.97);
+    }
+
+    .ducky-pill-mascot {
+      width: 32px;
+      height: 32px;
+    }
+
+    .ducky-pill-waveform {
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      height: 18px;
+    }
+
+    .wave-bar {
+      width: 3px;
+      height: 6px;
+      background: var(--text-muted);
+      border-radius: 2px;
+      transition: height 0.12s ease, background-color 0.2s ease;
+    }
+
+    .ducky-pill-hud.state-listening .wave-bar {
+      background: var(--accent-gold);
+      animation: wavePulse 0.7s infinite alternate ease-in-out;
+    }
+    .ducky-pill-hud.state-listening .wave-bar:nth-child(2) { animation-delay: 0.15s; }
+    .ducky-pill-hud.state-listening .wave-bar:nth-child(3) { animation-delay: 0.3s; }
+    .ducky-pill-hud.state-listening .wave-bar:nth-child(4) { animation-delay: 0.45s; }
+    .ducky-pill-hud.state-listening .wave-bar:nth-child(5) { animation-delay: 0.6s; }
+
+    @keyframes wavePulse {
+      0% { height: 4px; }
+      100% { height: 18px; }
+    }
+
+    .ducky-pill-hud.state-listening {
+      border-color: var(--accent-gold);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 24px rgba(255, 208, 0, 0.4);
+    }
+
+    .ducky-pill-hud.state-thinking {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 24px rgba(56, 189, 248, 0.4);
+    }
+
+    .ducky-pill-hud.state-solved {
+      border-color: var(--accent-green);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 24px rgba(34, 197, 94, 0.4);
+    }
+
+    /* Modal Backdrop */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-backdrop[hidden] {
+      display: none;
+    }
+
+    .modal-sheet {
+      background: #0E1017;
+      border: 1px solid var(--border-hover);
+      border-radius: 24px;
+      max-width: 480px;
+      width: 100%;
+      padding: 32px;
+      position: relative;
+      text-align: center;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.95);
+    }
+
+    /* Mobile Queries */
+    @media (max-width: 860px) {
+      .nav-menu { display: none; }
+      .studio-split { grid-template-columns: 1fr; }
+      .studio-bridge { display: none; }
+      .bento-span-7, .bento-span-5, .bento-span-6 { grid-column: span 12; }
+      .setup-grid { grid-template-columns: 1fr; }
+      .terminal-box { flex-direction: column; align-items: flex-start; }
+      .maker-card { flex-direction: column; text-align: center; }
+    }
+  </style>
 </head>
 <body>
 
   <!-- =========================================================================
        PERSISTENT INTERACTIVE RUBBER DUCKY FLOATING PILL HUD (Bottom Center)
-       1:1 Replica of Speakly's non-focus-stealing desktop pill
        ========================================================================= -->
-  <div id="floating-ducky-pill" class="ducky-pill-hud state-idle" role="button" tabindex="0" aria-label="Test live Rubber Ducky AI dictation">
-    <div class="ducky-pill-mascot" id="hud-mascot">
-      <!-- Populated dynamically with Official Rubber Ducky SVG (Listening / Thinking / Solved) -->
-    </div>
-    <div class="ducky-pill-waveform" id="hud-waveform">
+  <div id="floating-ducky-pill" class="ducky-pill-hud state-idle" role="button" tabindex="0" title="Click or Hold Space to test dictation">
+    <div class="ducky-pill-mascot" id="hud-mascot"></div>
+    <div class="ducky-pill-waveform">
       <span class="wave-bar"></span>
       <span class="wave-bar"></span>
       <span class="wave-bar"></span>
       <span class="wave-bar"></span>
       <span class="wave-bar"></span>
     </div>
-    <div class="ducky-pill-status" id="hud-status-text">
-      Hold <kbd>Space</kbd> or Click to Dictate
+    <div style="font-size: 13px; font-weight: 600; color: #fff;" id="hud-status-text">
+      Hold <kbd>Space</kbd> to Dictate
     </div>
-    <div class="ducky-pill-badge" id="hud-engine-badge">Groq 0.3s</div>
+    <div style="font-size: 10px; font-weight: 700; text-transform: uppercase; background: rgba(255, 208, 0, 0.15); color: #FFD000; padding: 2px 7px; border-radius: 9999px; border: 1px solid rgba(255, 208, 0, 0.3);">
+      0.3s
+    </div>
   </div>
 
   <!-- =========================================================================
-       APPLE TRANSLUCENT GLOBAL NAVIGATION BAR
+       PINNED TRANSLUCENT NAVIGATION
        ========================================================================= -->
-  <header class="apple-global-nav">
-    <div class="nav-inner">
-      <a href="#landing" class="brand-lockup" data-nav-view="landing">
-        <div class="brand-duck-mini" id="nav-duck-svg"></div>
-        <div class="brand-titles">
-          <span class="brand-name">Speakly</span>
-          <span class="brand-sub">Rubber Ducky AI</span>
-        </div>
-      </a>
+  <header class="nav-wrapper">
+    <a href="#" class="brand-lockup">
+      <div class="brand-duck-logo" id="nav-duck-svg"></div>
+      <span class="brand-title">Speakly</span>
+      <span class="brand-tag">Early Access</span>
+    </a>
 
-      <nav class="view-switcher" role="tablist" aria-label="Website Sections">
-        <button class="view-tab active" data-view="landing" role="tab" aria-selected="true">
-          Overview
-        </button>
-        <button class="view-tab" data-view="brandkit" role="tab" aria-selected="false">
-          Branding Kit &amp; Icons
-          <span class="tab-pill">Rate 6 Options</span>
-        </button>
-        <button class="view-tab" data-view="playground" role="tab" aria-selected="false">
-          Live Desktop App
-          <span class="tab-pill">Interactive</span>
-        </button>
-        <button class="view-tab" data-view="films" role="tab" aria-selected="false">
-          Launch Films
-          <span class="tab-pill">30s Ads</span>
-        </button>
-        <button class="view-tab" data-view="pricing" role="tab" aria-selected="false">
-          Pricing &amp; Specs
-        </button>
-      </nav>
+    <nav class="nav-menu">
+      <a href="#demo" class="nav-link">Live Studio</a>
+      <a href="#features" class="nav-link">Superpowers</a>
+      <a href="#about" class="nav-link">Why I Built This</a>
+      <a href="#faq" class="nav-link">FAQ</a>
+    </nav>
 
-      <div class="nav-actions">
-        <button class="btn-secondary-glass" data-open-view="playground">
-          Try in Browser
-        </button>
-        <button class="btn-primary-duck" data-open-modal="download">
-          Download Free
-        </button>
-      </div>
-    </div>
+    <a href="downloads/Speakly-1.0.0-mac-arm64.dmg" download class="nav-cta-btn" id="nav-cta-btn">
+      <span id="nav-cta-icon"></span>
+      <span id="nav-cta-text">Download Free</span>
+    </a>
   </header>
 
   <!-- =========================================================================
-       VIEW 1: APPLE KEYNOTE LANDING PAGE (Default Active View)
-       Built with apple-design + design-taste-frontend + cinematic-scroll-storytelling + copywriting
+       HERO SECTION — MOTIONSITES SPEC CALIBRATION
        ========================================================================= -->
-  <main id="view-landing" class="page-view active">
-
-    <!-- HERO SECTION + "ONE LIVE THING" INTERACTIVE SANDBOX -->
-    <section class="hero-section">
-      <div class="hero-ambient-glow"></div>
-      <div class="container">
-        <div class="hero-eyebrow-pill">
-          <span class="eyebrow-dot"></span>
-          <span>Early Access · Voice-to-Prompt Engine for Developers</span>
-          <span class="eyebrow-sep">·</span>
-          <span class="eyebrow-highlight">Groq LPU 0.29s Latency</span>
-        </div>
-
-        <h1 class="hero-display" data-split-reveal>
-          Speak messy logic at 158 WPM.<br />
-          <span class="text-gradient-duck">Paste clean prompts into Cursor &amp; Terminal.</span>
-        </h1>
-
-        <p class="hero-lead">
-          Hold <kbd>Right ⌘</kbd> on Mac or <kbd>Right Ctrl</kbd> on Windows. Ramble your thoughts, correct yourself mid-sentence, and your Rubber Ducky strips filler words and formats technical names before pasting directly at your cursor in 290ms. No focus stealing. No API setup.
-        </p>
-
-        <!-- Two Prominent Direct Download Buttons + OS Auto-Detection -->
-        <div class="hero-cta-container">
-          <div class="hero-cta-row">
-            <!-- Mac Direct Download Button -->
-            <a href="../app/dist/Speakly-1.0.0-mac-arm64.dmg" download="Speakly-1.0.0-mac-arm64.dmg" class="btn-hero-dl btn-hero-mac" id="hero-dl-mac">
-              <div class="btn-dl-icon">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.33c.64-.78 1.08-1.86.96-2.94-.93.04-2.06.62-2.72 1.4-.58.68-1.1 1.79-.96 2.84 1.04.08 2.08-.52 2.72-1.3z"/>
-                </svg>
-              </div>
-              <div class="btn-dl-copy">
-                <span class="btn-dl-main">Download for Mac</span>
-                <span class="btn-dl-sub">Apple Silicon (M1–M4) &amp; Intel · .dmg</span>
-              </div>
-              <span class="detected-badge" id="mac-detected-badge" hidden>Detected</span>
-            </a>
-
-            <!-- Windows Direct Download Button -->
-            <a href="../app/dist/Speakly-Setup-1.0.0-win.exe" download="Speakly-Setup-1.0.0-win.exe" class="btn-hero-dl btn-hero-win" id="hero-dl-win">
-              <div class="btn-dl-icon">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.951-1.801"/>
-                </svg>
-              </div>
-              <div class="btn-dl-copy">
-                <span class="btn-dl-main">Download for Windows</span>
-                <span class="btn-dl-sub">Windows 10 &amp; 11 · 64-bit .exe</span>
-              </div>
-              <span class="detected-badge" id="win-detected-badge" hidden>Detected</span>
-            </a>
-
-            <!-- Watch 30s Film Secondary Button -->
-            <button class="btn-hero-secondary" id="hero-watch-film-btn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
-              Watch 30s Film
-            </button>
-          </div>
-
-          <!-- Micro-callout for the 20-second First-Launch Guide -->
-          <div class="hero-subhint">
-            <span class="subhint-dot"></span>
-            <span>Early Access ad-hoc build · </span>
-            <a href="#first-launch-guide" class="subhint-link">See 20-second macOS "Open Anyway" &amp; Windows SmartScreen guide ↓</a>
-          </div>
-        </div>
-
-        <!-- "ONE LIVE THING" (design-taste-frontend): Real Interactive Push-to-Talk Studio -->
-        <div class="live-studio-shell" data-ui="interactive-dictation-studio">
-          <div class="studio-topbar">
-            <div class="window-dots">
-              <span class="dot-red"></span>
-              <span class="dot-yellow"></span>
-              <span class="dot-green"></span>
-            </div>
-            <div class="studio-mode-pills" role="tablist" aria-label="AI Formatting Mode">
-              <button class="mode-chip active" data-sample="smart_polish">✨ Smart Polish</button>
-              <button class="mode-chip" data-sample="email">✉️ Professional Email</button>
-              <button class="mode-chip" data-sample="notes">📋 Actionable Notes</button>
-              <button class="mode-chip" data-sample="code">⌨️ AI Prompt / Dev</button>
-              <button class="mode-chip" data-sample="verbatim">⚡ Fast Verbatim</button>
-            </div>
-            <div class="studio-latency-readout">
-              <span class="status-led"></span>
-              <span id="studio-latency-num">0.29s Groq LPU</span>
-            </div>
-          </div>
-
-          <div class="studio-split-body">
-            <!-- Left Pane: Raw Spoken Audio Stream -->
-            <div class="studio-pane pane-raw">
-              <div class="pane-header">
-                <span class="pane-label">1. WHAT YOU SAY OUT LOUD (158 WPM)</span>
-                <span class="pane-badge-muted">Whisper Large v3 Turbo</span>
-              </div>
-              <div class="spoken-transcript-box" id="live-raw-box">
-                <!-- Populated dynamically with strikethrough self-corrections -->
-              </div>
-              <div class="pane-footer">
-                <button class="ptt-trigger-btn" id="studio-ptt-btn">
-                  <span class="ptt-mic-dot"></span>
-                  <span id="ptt-btn-label">Simulate Push-to-Talk (<kbd>Space</kbd>)</span>
-                </button>
-                <span class="ptt-hint">Hold <kbd>Spacebar</kbd> anywhere on this page to test</span>
-              </div>
-            </div>
-
-            <!-- Center Arrow / Duck Transformer -->
-            <div class="studio-divider-duck">
-              <div class="divider-duck-orb" id="studio-duck-orb"></div>
-              <div class="divider-arrow">→</div>
-            </div>
-
-            <!-- Right Pane: Clean Pasted Output at Cursor -->
-            <div class="studio-pane pane-clean">
-              <div class="pane-header">
-                <span class="pane-label" id="clean-target-app">2. PASTED INTO SLACK AT CURSOR</span>
-                <span class="pane-badge-gold" id="clean-mode-badge">Smart Polish Active</span>
-              </div>
-              <div class="clean-output-box" id="live-clean-box" contenteditable="true" spellcheck="false">
-                <!-- Populated dynamically -->
-              </div>
-              <div class="pane-footer">
-                <div class="saved-metric">
-                  <span>Clipboard preserved automatically</span>
-                  <span class="metric-pill" id="time-saved-pill">Saved 24 sec on this message</span>
-                </div>
-                <button class="copy-clean-btn" id="copy-clean-output">Copy Output</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Telemetry Proof Strip -->
-        <div class="telemetry-strip">
-          <div class="telemetry-item">
-            <span class="telemetry-num">158 <small>WPM</small></span>
-            <span class="telemetry-label">Natural speaking speed vs. 42 WPM typing</span>
-          </div>
-          <div class="telemetry-divider"></div>
-          <div class="telemetry-item">
-            <span class="telemetry-num">0.3<small>s</small></span>
-            <span class="telemetry-label">End-to-end Groq LPU transcription + LLM polish</span>
-          </div>
-          <div class="telemetry-divider"></div>
-          <div class="telemetry-item">
-            <span class="telemetry-num">4.2 <small>hrs</small></span>
-            <span class="telemetry-label">Average keyboard time saved every single week</span>
-          </div>
-          <div class="telemetry-divider"></div>
-          <div class="telemetry-item">
-            <span class="telemetry-num">100<small>%</small></span>
-            <span class="telemetry-label">Clipboard restored right after auto-paste</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- SCROLL-SCRUBBED HARDWARE / ZERO FOCUS STEALING SECTION -->
-    <section class="keynote-scrub-section" id="scrub-hardware">
-      <div class="container">
-        <div class="section-header-block">
-          <span class="section-kicker">ZERO CONTEXT SWITCHING</span>
-          <h2 class="section-display" data-split-reveal>
-            Lives above your dock.<br />Never steals your window focus.
-          </h2>
-          <p class="section-sub">
-            Other voice tools force you to copy-paste from a separate window or break your active IDE cursor. Speakly's 46-pixel floating pill stays completely non-activating (`setFocusable(false)`), injecting polished text via native OS keystrokes (`⌘V` / `Ctrl+V`) while restoring your previous clipboard in 600ms.
-          </p>
-        </div>
-
-        <div class="hardware-stage" id="hardware-scrub-stage">
-          <!-- Interactive App Context Switcher -->
-          <div class="context-target-bar">
-            <span class="context-bar-label">Target active window:</span>
-            <button class="context-target-btn active" data-target-window="cursor">Cursor IDE</button>
-            <button class="context-target-btn" data-target-window="slack">Slack Thread</button>
-            <button class="context-target-btn" data-target-window="gmail">Apple Mail / Gmail</button>
-            <button class="context-target-btn" data-target-window="linear">Linear Issue</button>
-          </div>
-
-          <div class="macos-screen-frame">
-            <div class="macos-menubar">
-              <div class="menubar-left">
-                <span></span>
-                <strong id="menubar-app-name">Cursor</strong>
-                <span>File</span>
-                <span>Edit</span>
-                <span>Selection</span>
-                <span>View</span>
-              </div>
-              <div class="menubar-right">
-                <span class="menubar-duck-tray">🦆 Speakly Ready (Right ⌘)</span>
-                <span>Wi-Fi</span>
-                <span>100%</span>
-                <span>Thu 9:41 AM</span>
-              </div>
-            </div>
-
-            <div class="macos-desktop-canvas" id="desktop-target-canvas">
-              <!-- Active Window Content rendered by JS -->
-              <div class="target-app-window" id="target-window-content"></div>
-
-              <!-- Floating Non-Activating Rubber Ducky Pill inside Screen -->
-              <div class="inscreen-duck-pill" id="inscreen-pill">
-                <div class="inscreen-duck-svg" id="inscreen-duck-icon"></div>
-                <div class="inscreen-pill-waves">
-                  <span></span><span></span><span></span><span></span><span></span>
-                </div>
-                <span class="inscreen-pill-label" id="inscreen-pill-text">Listening…</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 3-Step Physical Hotkey Timeline -->
-          <div class="hotkey-steps-grid">
-            <div class="hotkey-step-card active" data-step="1">
-              <div class="step-index">01</div>
-              <h3>Hold <kbd>Right ⌘</kbd> or <kbd>Right Ctrl</kbd></h3>
-              <p>Keep your cursor inside your code editor, email client, or chat box. The Rubber Ducky wakes with headphones on and streams 16kHz PCM audio.</p>
-            </div>
-            <div class="hotkey-step-card" data-step="2">
-              <div class="step-index">02</div>
-              <h3>Change your mind mid-sentence</h3>
-              <p>Say <em>"Let's meet Tuesday at 2pm—wait no, make it Thursday at 3:30pm."</em> Speakly's LLM context layer resolves self-corrections before pasting.</p>
-            </div>
-            <div class="hotkey-step-card" data-step="3">
-              <div class="step-index">03</div>
-              <h3>Release to paste &amp; restore clipboard</h3>
-              <p>Within 300ms of releasing the key, clean text lands at your cursor and whatever link or image was on your clipboard is safely put back.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- STICKY CARD STACK SECTION (cinematic-scroll-storytelling): 5 AI FORMATTING MODES -->
-    <section class="sticky-stack-section" data-sticky-stack>
-      <div class="container">
-        <div class="section-header-block">
-          <span class="section-kicker">5 BUILT-IN AI MODES + CUSTOM PROMPTS</span>
-          <h2 class="section-display" data-split-reveal>
-            One voice.<br />Five distinct writing brains.
-          </h2>
-          <p class="section-sub">
-            Switch modes with a single click or build your own custom system prompt. Every mode injects your Personal Dictionary so company names, acronyms, and teammates are spelled right on the first try.
-          </p>
-        </div>
-
-        <div class="sticky-cards-container">
-          <!-- Card 1: Smart Polish -->
-          <article class="sticky-mode-card" style="--card-index: 0;">
-            <div class="mode-card-meta">
-              <span class="mode-tag">MODE 01 · DEFAULT</span>
-              <span class="mode-engine">Whisper + Llama 3.3 70B</span>
-            </div>
-            <div class="mode-card-grid">
-              <div class="mode-card-copy">
-                <h3>✨ Smart Polish</h3>
-                <p>Strips out "um", "uh", false starts, and mid-sentence backtracking while keeping your exact tone and vocabulary intact.</p>
-                <ul class="mode-check-list">
-                  <li>Resolves time &amp; number corrections automatically</li>
-                  <li>Fixes punctuation and capitalization without sounding robotic</li>
-                  <li>Ideal for Slack, iMessage, and daily communication</li>
-                </ul>
-              </div>
-              <div class="mode-card-compare">
-                <div class="compare-bubble raw">
-                  <span class="bubble-tag">SPOKEN</span>
-                  <p>"Hey Sarah um can we push the design review to 2pm wait no actually 3:30pm because I'm still finishing the Figma tokens"</p>
-                </div>
-                <div class="compare-bubble clean">
-                  <span class="bubble-tag gold">PASTED BY DUCKY</span>
-                  <p>"Hey Sarah, can we push the design review to 3:30 PM? I'm still finishing the Figma tokens."</p>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <!-- Card 2: Professional Email -->
-          <article class="sticky-mode-card" style="--card-index: 1;">
-            <div class="mode-card-meta">
-              <span class="mode-tag">MODE 02 · EXECUTIVE</span>
-              <span class="mode-engine">Structured Greeting &amp; Sign-off</span>
-            </div>
-            <div class="mode-card-grid">
-              <div class="mode-card-copy">
-                <h3>✉️ Professional Email</h3>
-                <p>Speak a stream-of-consciousness update in 8 seconds and get a structured, warm, ready-to-send email with clear paragraphs.</p>
-                <ul class="mode-check-list">
-                  <li>Turns casual spoken thoughts into client-ready prose</li>
-                  <li>Preserves every specific date, metric, and deliverable</li>
-                  <li>Zero cliché AI openings like "I hope this email finds you well"</li>
-                </ul>
-              </div>
-              <div class="mode-card-compare">
-                <div class="compare-bubble raw">
-                  <span class="bubble-tag">SPOKEN</span>
-                  <p>"Tell Marcus we shipped the v2.4 macOS notarized build this morning, latency is down to 290 milliseconds, ask him if his team can test before Friday"</p>
-                </div>
-                <div class="compare-bubble clean">
-                  <span class="bubble-tag gold">PASTED BY DUCKY</span>
-                  <p>"Hi Marcus,<br><br>We shipped the notarized macOS v2.4 build this morning, bringing end-to-end latency down to 290ms.<br><br>Could your team run a quick test pass before Friday?<br><br>Best,"</p>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <!-- Card 3: Actionable Notes -->
-          <article class="sticky-mode-card" style="--card-index: 2;">
-            <div class="mode-card-meta">
-              <span class="mode-tag">MODE 03 · STRUCTURED LISTS</span>
-              <span class="mode-engine">Markdown Bullet Formatter</span>
-            </div>
-            <div class="mode-card-grid">
-              <div class="mode-card-copy">
-                <h3>📋 Actionable Notes</h3>
-                <p>Brain-dump after a call or standup. Speakly organizes your spoken recap into clean Markdown bullet points with owners and deadlines.</p>
-                <ul class="mode-check-list">
-                  <li>Ready for Notion, Obsidian, Linear, or GitHub Issues</li>
-                  <li>Groups rambling thoughts into scannable action items</li>
-                  <li>Automatic bolding on key deliverables</li>
-                </ul>
-              </div>
-              <div class="mode-card-compare">
-                <div class="compare-bubble raw">
-                  <span class="bubble-tag">SPOKEN</span>
-                  <p>"Okay post-call notes first we need to lock the Supabase RLS policies today second Alex is updating the Groq fallback logic and third launch video goes live Thursday"</p>
-                </div>
-                <div class="compare-bubble clean">
-                  <span class="bubble-tag gold">PASTED BY DUCKY</span>
-                  <p>• <strong>Supabase Security:</strong> Lock RLS policies today<br>• <strong>Engine Fallback:</strong> Alex updating Groq fallback logic<br>• <strong>Marketing Launch:</strong> 30s launch video goes live Thursday</p>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <!-- Card 4: AI Prompt / Dev -->
-          <article class="sticky-mode-card" style="--card-index: 3;">
-            <div class="mode-card-meta">
-              <span class="mode-tag">MODE 04 · CURSOR &amp; CLAUDE CODE</span>
-              <span class="mode-engine">Technical Spec Structuring</span>
-            </div>
-            <div class="mode-card-grid">
-              <div class="mode-card-copy">
-                <h3>⌨️ AI Prompt / Dev</h3>
-                <p>Built for engineers prompting Cursor, Claude Code, or Antigravity. Speak your architectural intent out loud at 160 WPM instead of typing walls of context.</p>
-                <ul class="mode-check-list">
-                  <li>Recognizes file names, hooks, SQL tables, and CLI flags</li>
-                  <li>Structures spoken requirements into Goal, Constraints, and Edge Cases</li>
-                  <li>Pairs with Personal Dictionary for custom repo identifiers</li>
-                </ul>
-              </div>
-              <div class="mode-card-compare">
-                <div class="compare-bubble raw">
-                  <span class="bubble-tag">SPOKEN</span>
-                  <p>"Refactor main dot js so globalShortcut register uses Right Command on darwin and Right Control on win32 and make sure clipboard restore waits 600ms"</p>
-                </div>
-                <div class="compare-bubble clean">
-                  <span class="bubble-tag gold">PASTED BY DUCKY</span>
-                  <p>"Refactor <code>main.js</code> hotkey registration:<br>1. Bind <code>Right Command</code> on <code>darwin</code> and <code>Right Control</code> on <code>win32</code>.<br>2. Preserve clipboard contents and restore 600ms after native paste."</p>
-                </div>
-              </div>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <!-- ASYMMETRIC BENTO ARCHITECTURE: GROQ LPU VS OPENAI + PERSONAL DICTIONARY -->
-    <section class="architecture-bento-section">
-      <div class="container">
-        <div class="section-header-block">
-          <span class="section-kicker">DUAL-ENGINE ARCHITECTURE</span>
-          <h2 class="section-display" data-split-reveal>
-            Powered by Groq LPU silicon<br />and OpenAI Cloud.
-          </h2>
-        </div>
-
-        <div class="bento-grid-asymmetric">
-          <!-- Large Card: Groq LPU vs OpenAI Speed Benchmark -->
-          <div class="bento-card bento-span-7">
-            <div class="bento-eyebrow">ULTRA-LOW LATENCY INFERENCE</div>
-            <h3>0.3 seconds from key release to pasted text.</h3>
-            <p>Powered by <strong>Groq LPU Turbo</strong> (`whisper-large-v3-turbo` + `llama-3.3-70b-versatile`) with automated cloud fallback. Zero API keys required — sub-second voice-to-code processing runs fully managed on our backend.</p>
-
-            <div class="latency-bars-widget">
-              <div class="latency-row">
-                <div class="latency-meta">
-                  <strong>🦆 Speakly + Groq LPU Turbo</strong>
-                  <span class="latency-time gold">0.29s total</span>
-                </div>
-                <div class="latency-track">
-                  <div class="latency-fill fill-groq" style="width: 14%;"></div>
-                </div>
-              </div>
-              <div class="latency-row">
-                <div class="latency-meta">
-                  <span>🦆 Speakly + OpenAI Cloud</span>
-                  <span class="latency-time">0.78s total</span>
-                </div>
-                <div class="latency-track">
-                  <div class="latency-fill fill-openai" style="width: 36%;"></div>
-                </div>
-              </div>
-              <div class="latency-row">
-                <div class="latency-meta">
-                  <span>Traditional OS Dictation + Manual Fixing</span>
-                  <span class="latency-time muted">4.80s+</span>
-                </div>
-                <div class="latency-track">
-                  <div class="latency-fill fill-legacy" style="width: 94%;"></div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Right Card: Interactive Live Personal Dictionary -->
-          <div class="bento-card bento-span-5">
-            <div class="bento-eyebrow">CUSTOM VOCABULARY INJECTION</div>
-            <h3>Personal Dictionary that never misspells a teammate.</h3>
-            <p>Add your product names, internal codenames, or technical terms once. Speakly injects them into both Whisper acoustic hints and the LLM polish pass.</p>
-
-            <div class="mini-dict-interactive">
-              <div class="dict-pills-list" id="landing-dict-pills">
-                <span class="dict-vocab-tag">Speakly</span>
-                <span class="dict-vocab-tag">Supabase RLS</span>
-                <span class="dict-vocab-tag">Groq LPU</span>
-                <span class="dict-vocab-tag">Antigravity</span>
-                <span class="dict-vocab-tag">Xsander</span>
-              </div>
-              <form class="dict-quick-form" id="landing-dict-form">
-                <input type="text" id="landing-dict-input" placeholder="Add a custom word (e.g. Kubernetes)..." maxlength="32" />
-                <button type="submit">+ Add</button>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- =========================================================================
-         20-SECOND FIRST-LAUNCH GUIDE: MACOS "OPEN ANYWAY" & WINDOWS SMARTSCREEN
-         ========================================================================= -->
-    <section class="first-launch-section" id="first-launch-guide">
-      <div class="container">
-        <div class="section-header-block text-center">
-          <span class="section-kicker">⏱️ 20-SECOND FIRST-LAUNCH GUIDE</span>
-          <h2 class="section-display" data-split-reveal>
-            macOS "Open Anyway" &amp; Windows SmartScreen
-          </h2>
-          <p class="section-sub">
-            Speakly is 100% free during Early Access. Because we haven't paid Apple's $99/yr or Microsoft's $400/yr certificate fees yet, your OS will show a standard first-time warning. Here is how to launch in under 20 seconds:
-          </p>
-        </div>
-
-        <!-- Interactive OS Switcher Tabs -->
-        <div class="guide-tabs-bar" role="tablist" aria-label="First-Time Launch Guide by Platform">
-          <button class="guide-tab-btn active" id="tab-btn-mac" data-guide-tab="mac" role="tab" aria-selected="true">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.33c.64-.78 1.08-1.86.96-2.94-.93.04-2.06.62-2.72 1.4-.58.68-1.1 1.79-.96 2.84 1.04.08 2.08-.52 2.72-1.3z"/></svg>
-            <span>macOS Gatekeeper ("Open Anyway")</span>
-            <span class="tab-badge-gold">Apple Silicon &amp; Intel</span>
-          </button>
-          <button class="guide-tab-btn" id="tab-btn-win" data-guide-tab="win" role="tab" aria-selected="false">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.951-1.801"/></svg>
-            <span>Windows SmartScreen ("Run Anyway")</span>
-            <span class="tab-badge-blue">Windows 10 &amp; 11</span>
-          </button>
-        </div>
-
-        <!-- TAB CONTENT: MACOS -->
-        <div class="guide-tab-panel active" id="guide-panel-mac" role="tabpanel">
-          <div class="guide-grid">
-            <!-- Left: Visual Simulation of macOS Gatekeeper Alert -->
-            <div class="os-sim-card mac-sim">
-              <div class="sim-header mac-sim-header">
-                <div class="mac-traffic-dots">
-                  <span class="dot-red"></span>
-                  <span class="dot-yellow"></span>
-                  <span class="dot-green"></span>
-                </div>
-                <span class="sim-title">macOS Security &amp; Gatekeeper</span>
-              </div>
-              <div class="sim-dialog-mac">
-                <div class="sim-dialog-icon">
-                  <div class="dialog-duck-badge">🦆</div>
-                  <div class="dialog-warn-badge">⚠️</div>
-                </div>
-                <div class="sim-dialog-content">
-                  <h4>"Speakly" cannot be opened because Apple cannot check it for malicious software.</h4>
-                  <p class="sim-dialog-desc">This software needs to be updated. Contact the developer for more information.</p>
-                  <div class="sim-dialog-actions">
-                    <span class="sim-btn-ghost">Move to Trash</span>
-                    <span class="sim-btn-primary highlight-pulse">Open Anyway</span>
-                  </div>
-                </div>
-              </div>
-              <div class="sim-footer-note">
-                <span class="note-pill">1-TIME APPROVAL</span>
-                <span>macOS remembers your permission permanently. You won't see this again.</span>
-              </div>
-            </div>
-
-            <!-- Right: 3 Clear Steps for Developers -->
-            <div class="guide-steps-card">
-              <div class="guide-step-item">
-                <div class="step-badge">1</div>
-                <div class="step-body">
-                  <h4>Right-Click &amp; Open (Fastest · 5 seconds)</h4>
-                  <p>In Finder <kbd>/Applications</kbd>, <strong>Right-click</strong> (or hold <kbd>Control</kbd> + click) <strong>Speakly.app</strong> and click <strong>Open</strong> in the menu.</p>
-                </div>
-              </div>
-
-              <div class="guide-step-item">
-                <div class="step-badge">2</div>
-                <div class="step-body">
-                  <h4>Click "Open Anyway"</h4>
-                  <p>A confirmation modal will appear. Click the prominent <strong>Open Anyway</strong> button. Speakly launches immediately into your menu bar.</p>
-                </div>
-              </div>
-
-              <div class="guide-step-item">
-                <div class="step-badge">3</div>
-                <div class="step-body">
-                  <h4>Or macOS Sequoia System Settings</h4>
-                  <p>Open <strong>System Settings → Privacy &amp; Security</strong>, scroll down to <em>Security</em>, and click <strong>"Open Anyway"</strong> next to Speakly.</p>
-                </div>
-              </div>
-
-              <!-- Terminal Power User Box -->
-              <div class="terminal-quick-box">
-                <div class="term-header">
-                  <span class="term-tag">⌨️ DEVELOPER CLI 1-LINER</span>
-                  <button class="copy-term-btn" id="copy-mac-term-btn" type="button" title="Copy command to clipboard">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                    <span id="copy-term-text">Copy Command</span>
-                  </button>
-                </div>
-                <code>xattr -cr /Applications/Speakly.app</code>
-              </div>
-
-              <div class="guide-links-footer">
-                <a href="setup-guide.html" target="_blank" class="guide-detail-link">
-                  <span>Open comprehensive macOS Setup &amp; Accessibility Guide (2 min)</span>
-                  <span class="link-arrow">→</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- TAB CONTENT: WINDOWS -->
-        <div class="guide-tab-panel" id="guide-panel-win" role="tabpanel" hidden>
-          <div class="guide-grid">
-            <!-- Left: Visual Simulation of Windows SmartScreen -->
-            <div class="os-sim-card win-sim">
-              <div class="sim-header win-header">
-                <div class="win-shield-icon">🛡️</div>
-                <span class="sim-title">Windows Defender SmartScreen</span>
-              </div>
-              <div class="sim-dialog-win">
-                <div class="sim-win-banner">
-                  <div class="win-banner-title">Windows protected your PC</div>
-                  <p class="win-banner-desc">Microsoft Defender SmartScreen prevented an unrecognized app from starting. Running this app might put your PC at risk.</p>
-                  <div class="win-more-info-link highlight-pulse">
-                    <u>More info</u> (in Dutch: "Meer informatie")
-                  </div>
-                </div>
-                <div class="sim-win-details">
-                  <div class="win-app-row"><strong>App:</strong> Speakly-Setup-1.0.0-win.exe</div>
-                  <div class="win-app-row"><strong>Publisher:</strong> Unknown publisher</div>
-                </div>
-                <div class="sim-win-actions">
-                  <span class="sim-btn-win-ghost">Don't run</span>
-                  <span class="sim-btn-win-primary highlight-pulse">Run anyway</span>
-                </div>
-              </div>
-              <div class="sim-footer-note win-footer-note">
-                <span class="note-pill blue">1-TIME APPROVAL</span>
-                <span>Windows permanently approves Speakly after you click "Run anyway".</span>
-              </div>
-            </div>
-
-            <!-- Right: 2 Clear Steps for Windows -->
-            <div class="guide-steps-card">
-              <div class="guide-step-item">
-                <div class="step-badge win-badge">1</div>
-                <div class="step-body">
-                  <h4>Click "More info"</h4>
-                  <p>When the blue Windows Defender SmartScreen window pops up, click the underlined text link <strong>"More info"</strong> (or <em>"Meer informatie"</em>).</p>
-                </div>
-              </div>
-
-              <div class="guide-step-item">
-                <div class="step-badge win-badge">2</div>
-                <div class="step-body">
-                  <h4>Click "Run anyway"</h4>
-                  <p>A new button appears in the bottom right corner labeled <strong>"Run anyway"</strong> (or <em>"Toch uitvoeren"</em>). Click it to complete installation.</p>
-                </div>
-              </div>
-
-              <!-- Portable Option Callout -->
-              <div class="portable-callout-card">
-                <div class="portable-header">
-                  <span class="badge-blue-pill">ZERO INSTALL ALTERNATIVE</span>
-                  <h4>Prefer No Installation at All?</h4>
-                </div>
-                <p>Download our standalone portable binary. No setup wizard or admin privileges required:</p>
-                <a href="../app/dist/Speakly-1.0.0-win-portable.exe" download="Speakly-1.0.0-win-portable.exe" class="portable-dl-btn" id="guide-win-portable-btn">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.951-1.801"/></svg>
-                  <span>Download Portable .exe (81 MB)</span>
-                </a>
-              </div>
-
-              <div class="guide-links-footer">
-                <a href="setup-guide-windows.html" target="_blank" class="guide-detail-link win-link">
-                  <span>Open volledige Windows Handleiding &amp; Microfoon Gids (2 min)</span>
-                  <span class="link-arrow">→</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- EMBEDDED 30s VIDEO SHOWCASE PREVIEW ON LANDING PAGE -->
-    <section class="landing-films-preview">
-      <div class="container">
-        <div class="films-header-row">
-          <div>
-            <span class="section-kicker">PRODUCTION LAUNCH FILMS</span>
-            <h2 class="section-display" data-split-reveal>See Rubber Ducky AI in action.</h2>
-          </div>
-          <button class="btn-secondary-glass" data-open-view="films">
-            Open Full Ad &amp; Video Studio →
-          </button>
-        </div>
-
-        <div class="dual-video-grid">
-          <!-- Video 1: 30s Remotion Launch Film -->
-          <div class="film-showcase-card">
-            <div class="film-card-header">
-              <div>
-                <span class="film-badge">STYLE #2 · REMOTION 30s COMMERCIAL</span>
-                <h3>Speakly Launch Film (1920×1080 · 30s)</h3>
-              </div>
-              <a href="assets/videos/02-remotion-30s.mp4" download class="film-dl-link">Download MP4</a>
-            </div>
-            <div class="video-frame-wrapper">
-              <video controls preload="metadata" loop playsinline src="assets/videos/02-remotion-30s.mp4"></video>
-            </div>
-          </div>
-
-          <!-- Video 2: 30s iMessage Ad Creative -->
-          <div class="film-showcase-card">
-            <div class="film-card-header">
-              <div>
-                <span class="film-badge">STYLE #3 · AD-CREATIVE iMESSAGE 30s AD</span>
-                <h3>"Why Do You Reply So Fast?" (1920×1080 · 30s)</h3>
-              </div>
-              <a href="assets/videos/03-ad-creative-30s.mp4" download class="film-dl-link">Download MP4</a>
-            </div>
-            <div class="video-frame-wrapper">
-              <video controls preload="metadata" loop playsinline src="assets/videos/03-ad-creative-30s.mp4"></video>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- =========================================================================
-       VIEW 1B: INTERACTIVE RUBBER DUCKY BRANDING KIT & APP ICON RATING STUDIO
-       Built with brand-identity + brand-guidelines + svg-logo-designer + logo-generator
-       ========================================================================= -->
-  <section id="view-brandkit" class="page-view" hidden>
-    <div class="container brandkit-view-container">
-      <div class="section-header-block">
-        <span class="section-kicker">RUBBER DUCKY BRAND IDENTITY &amp; ICON STUDIO</span>
-        <h2 class="section-display">Rate 6 Rubber Ducky Branding Kits &amp; Home Screen Icons</h2>
-        <p class="section-sub">
-          Built using our newly installed <code>brand-identity</code>, <code>brand-guidelines</code>, <code>svg-logo-designer</code>, and <code>logo-generator</code> skills. Preview how each Rubber Ducky icon looks on your macOS Dock / Home Screen, test the color palettes live across the UI, and rate your favorites from 1 to 5 stars.
-        </p>
+  <section class="hero-section">
+    <div class="ambient-glow"></div>
+    <div class="container hero-content">
+      
+      <div class="eyebrow-pill">
+        <span class="pulse-dot"></span>
+        <span>Sub-300ms Voice Engine</span>
+        <span style="opacity: 0.25;">|</span>
+        <span style="color: var(--accent-gold); font-weight: 600;">Free on macOS &amp; Windows</span>
       </div>
 
-      <!-- BEFORE vs AFTER APPLICATION ICON FIX SHOWCASE -->
-      <div class="icon-fix-comparison-card">
-        <div class="icon-fix-copy">
-          <span class="bento-eyebrow">FIXED HOME SCREEN &amp; DOCK APPLICATION ICON</span>
-          <h3>No more overlapping colors or buried eyes.</h3>
-          <p>
-            Previously, the PNG icon generator in <code>app/src/main/tray-icons.js</code> used a depth-alpha rejection check (<code>if (alpha &gt; rgba[idx + 3])</code>) that blocked later layers from drawing over opaque yellow pixels—erasing the duck's eye and leaving a floating orange beak oval. And in the dashboard sidebar, the yellow duck SVG was placed on a yellow gradient box.
-          </p>
-          <ul class="mode-check-list">
-            <li>Replaced broken alpha comparison with true <strong>Porter-Duff Source-Over alpha compositing</strong></li>
-            <li>Ordered Painter's layers cleanly: <em>Obsidian Squircle → Acoustic Ripple → Orange Beak → Plump Body → Head → Sculpted Wing → Rosy Cheek → Eye + Double Sparkle → Studio Headphones</em></li>
-            <li>Placed the Home Screen &amp; Sidebar Rubber Ducky inside a high-contrast <strong>Obsidian Slate Squircle (`#0F121C`)</strong> with a warm golden rim so yellow and orange pop cleanly</li>
-          </ul>
+      <h1 class="hero-h1">
+        Speak 3x faster<br />
+        <span class="serif-accent gradient-gold">than you type.</span>
+      </h1>
+
+      <p class="hero-lede">
+        Hold your hotkey, ramble your thoughts, and Speakly strips the filler words, resolves mid-sentence corrections, and pastes clean writing directly at your cursor in 0.29s. Zero window switching.
+      </p>
+
+      <!-- Primary OS-Aware Download CTAs -->
+      <div class="hero-cta-group">
+        
+        <!-- Mac Button -->
+        <a href="downloads/Speakly-1.0.0-mac-arm64.dmg" download="Speakly-1.0.0-mac-arm64.dmg" class="btn-hero-dl btn-hero-mac" id="hero-dl-mac">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.33c.64-.78 1.08-1.86.96-2.94-.93.04-2.06.62-2.72 1.4-.58.68-1.1 1.79-.96 2.84 1.04.08 2.08-.52 2.72-1.3z"/>
+          </svg>
+          <div style="text-align: left;">
+            <div style="font-size: 14.5px; font-weight: 700; line-height: 1.2;">Download for Mac</div>
+            <div style="font-size: 11px; opacity: 0.65; font-weight: 500;">Apple Silicon &amp; Intel · .dmg</div>
+          </div>
+          <span class="detected-tag" id="mac-detected-badge" hidden>Detected</span>
+        </a>
+
+        <!-- Windows Button -->
+        <a href="downloads/Speakly-Setup-1.0.0-win.exe" download="Speakly-Setup-1.0.0-win.exe" class="btn-hero-dl btn-hero-win" id="hero-dl-win">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="currentColor" style="color: var(--accent-cyan);">
+            <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.951-1.801"/>
+          </svg>
+          <div style="text-align: left;">
+            <div style="font-size: 14.5px; font-weight: 700; line-height: 1.2;">Download for Windows</div>
+            <div style="font-size: 11px; opacity: 0.65; font-weight: 500;">Windows 10 &amp; 11 · 64-bit .exe</div>
+          </div>
+          <span class="detected-tag" id="win-detected-badge" hidden style="background: var(--accent-cyan);">Detected</span>
+        </a>
+
+      </div>
+
+      <div class="hero-trust">
+        <span>✓ 100% Free during Early Access</span>
+        <span style="opacity: 0.3; margin: 0 6px;">·</span>
+        <span>✓ No credit card required</span>
+        <span style="opacity: 0.3; margin: 0 6px;">·</span>
+        <span>✓ Works in all applications</span>
+      </div>
+
+      <!-- =========================================================================
+           THE LIVE INTERACTIVE STUDIO STAGE
+           ========================================================================= -->
+      <div class="studio-shell" id="demo">
+        <div class="studio-titlebar">
+          <div class="window-dots">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+          </div>
+
+          <div class="context-pills">
+            <button class="pill-tab active" data-ctx="slack">💬 Slack</button>
+            <button class="pill-tab" data-ctx="email">✉️ Client Email</button>
+            <button class="pill-tab" data-ctx="dev">⌨️ Dev / Cursor</button>
+            <button class="pill-tab" data-ctx="notes">📋 Meeting Notes</button>
+          </div>
+
+          <div class="latency-readout">
+            <span class="latency-dot"></span>
+            <span>0.29s latency</span>
+          </div>
         </div>
 
-        <div class="icon-fix-visuals">
-          <div class="icon-compare-box broken">
-            <span class="compare-label-pill bad">BEFORE (Overlapping / Broken Z-Order)</span>
-            <div class="broken-icon-simulation" aria-label="Previous broken icon simulation">
-              <svg viewBox="0 0 120 120" width="110" height="110">
-                <rect x="6" y="6" width="108" height="108" rx="25" fill="#141820"/>
-                <!-- Disconnected orange oval + headless yellow blob with no eye -->
-                <ellipse cx="22" cy="50" rx="10.5" ry="5.6" fill="#FF6B00"/>
-                <ellipse cx="89" cy="63" rx="16" ry="10.5" fill="#FFD000"/>
-                <ellipse cx="63" cy="73" rx="33" ry="24.5" fill="#FFD000"/>
-                <ellipse cx="63" cy="73" rx="16.5" ry="11.2" fill="#F5B800"/>
-              </svg>
+        <div class="studio-split">
+          
+          <!-- Left Column -->
+          <div class="studio-col">
+            <div class="col-header">
+              <span class="col-kicker">1. WHAT YOU SPOKE (MESSY &amp; FAST)</span>
+              <span class="col-metric">150 WPM</span>
             </div>
-            <p class="compare-caption">Eye erased by head circle; beak floating; yellow-on-yellow in sidebar</p>
-          </div>
-
-          <div class="icon-compare-arrow">→</div>
-
-          <div class="icon-compare-box fixed">
-            <span class="compare-label-pill good">FIXED NOW (Clean Layering &amp; Contrast)</span>
-            <img src="assets/icon.png" alt="Fixed Speakly Rubber Ducky App Icon" width="110" height="110" class="fixed-icon-img" />
-            <p class="compare-caption">Crisp Porter-Duff compositing, expressive eye, studio headphones &amp; dark squircle</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- LIVE HOME SCREEN / DOCK PREVIEW BAR -->
-      <div class="dock-preview-stage">
-        <div class="dock-stage-header">
-          <span class="pane-label">LIVE HOME SCREEN &amp; MACOS DOCK ICON PREVIEW (CLICK ANY OPTION TO INSPECT)</span>
-          <span class="pane-badge-gold" id="active-kit-indicator">Currently Active: Option 04 — LPU Cyber-Matrix</span>
-        </div>
-        <div class="macos-dock-shelf" id="brandkit-dock-shelf">
-          <!-- Populated dynamically by app.js with all 6 Rubber Ducky App Icons -->
-        </div>
-      </div>
-
-      <!-- 6 BRANDING KIT OPTIONS GRID WITH INTERACTIVE 5-STAR RATING -->
-      <div class="brandkit-options-grid" id="brandkit-cards-grid">
-        <!-- Populated dynamically by app.js -->
-      </div>
-
-      <!-- RATING SUMMARY BAR -->
-      <div class="brandkit-Leaderboard-bar">
-        <div>
-          <h4>Your Branding Kit Ratings Summary</h4>
-          <p id="brandkit-rating-summary-text">Click the stars (★) on any option above to rate it, or click "Apply Theme Live" to preview its palette across this website.</p>
-        </div>
-        <button class="btn-primary-duck" id="copy-ratings-btn">Copy My Ratings Summary</button>
-      </div>
-    </div>
-  </section>
-
-  <!-- =========================================================================
-       VIEW 2: INTERACTIVE SPEAKLY DESKTOP APP REPLICA ("PLAYGROUND")
-       Let users experience the actual Speakly Dashboard right inside the website
-       ========================================================================= -->
-  <section id="view-playground" class="page-view" hidden>
-    <div class="container playground-container">
-      <div class="playground-intro-bar">
-        <div>
-          <span class="section-kicker">INTERACTIVE PRODUCT REPLICA</span>
-          <h2>Test the Speakly Desktop Dashboard in your browser.</h2>
-        </div>
-        <p class="playground-hint">Click through tabs, add dictionary words, switch AI engines, or run a live dictation simulation.</p>
-      </div>
-
-      <!-- Full Desktop App Window Replica -->
-      <div class="desktop-replica-window">
-        <!-- Sidebar -->
-        <aside class="replica-sidebar">
-          <div class="replica-brand">
-            <div class="replica-duck-logo" id="replica-sidebar-duck"></div>
-            <div>
-              <div class="replica-title">Speakly</div>
-              <div class="replica-subtitle">Rubber Ducky AI v2.0</div>
+            <div class="stream-text" id="live-spoken-box">
+              "Hey team <span class="filler">um</span> I just tested the new build on Mac, let's <del>deploy at 2pm</del> <span class="filler">wait no</span> actually 4:30pm after QA finishes."
             </div>
-          </div>
-
-          <nav class="replica-nav">
-            <button class="replica-nav-btn active" data-replica-tab="home">
-              <span>🏠</span> Overview &amp; Live Log
-            </button>
-            <button class="replica-nav-btn" data-replica-tab="modes">
-              <span>✨</span> AI Formatting Modes
-            </button>
-            <button class="replica-nav-btn" data-replica-tab="dictionary">
-              <span>📖</span> Personal Dictionary
-            </button>
-            <button class="replica-nav-btn" data-replica-tab="settings">
-              <span>⚙️</span> Engine &amp; Hotkeys
-            </button>
-          </nav>
-
-          <div class="replica-hotkey-box">
-            <div class="hk-title">PUSH-TO-TALK HOTKEY</div>
-            <div class="hk-key" id="replica-active-hotkey">Right ⌘ Command</div>
-            <div class="hk-sub">Hands-free: ⌘ + Shift + Space</div>
-          </div>
-        </aside>
-
-        <!-- Main Workspace -->
-        <div class="replica-main">
-          <!-- TAB 1: HOME / OVERVIEW -->
-          <div class="replica-panel active" id="replica-tab-home">
-            <div class="replica-panel-header">
-              <div>
-                <h3>Good afternoon, Xsander 👋</h3>
-                <p>Hold <kbd>Spacebar</kbd> or click "Run Live Dictation" to log a new transcription.</p>
-              </div>
-              <button class="btn-primary-duck" id="replica-trigger-dictation">
-                🎙️ Run Live Dictation
+            <div class="col-footer">
+              <button class="btn-ptt" id="btn-ptt-trigger">
+                <span class="mic-dot"></span>
+                <span>Hold Space to Speak</span>
               </button>
-            </div>
-
-            <div class="replica-stats-grid">
-              <div class="replica-stat-card">
-                <span class="r-stat-label">WORDS DICTATED</span>
-                <strong class="r-stat-val" id="rep-stat-words">14,820</strong>
-                <span class="r-stat-sub">+340 today</span>
-              </div>
-              <div class="replica-stat-card">
-                <span class="r-stat-label">AVERAGE SPEED</span>
-                <strong class="r-stat-val gold">158 WPM</strong>
-                <span class="r-stat-sub">3.7× faster than typing</span>
-              </div>
-              <div class="replica-stat-card">
-                <span class="r-stat-label">TIME SAVED</span>
-                <strong class="r-stat-val" id="rep-stat-saved">4.2 hrs</strong>
-                <span class="r-stat-sub">This week</span>
-              </div>
-              <div class="replica-stat-card">
-                <span class="r-stat-label">ACTIVE ENGINE</span>
-                <strong class="r-stat-val" id="rep-stat-engine">Groq LPU</strong>
-                <span class="r-stat-sub">0.29s avg latency</span>
-              </div>
-            </div>
-
-            <h4 class="replica-section-title">Recent Dictation History</h4>
-            <div class="replica-history-list" id="replica-history-feed">
-              <!-- Populated by JS -->
+              <span style="font-size: 11px; color: var(--text-muted);">Hold key anywhere</span>
             </div>
           </div>
 
-          <!-- TAB 2: AI MODES -->
-          <div class="replica-panel" id="replica-tab-modes" hidden>
-            <div class="replica-panel-header">
-              <div>
-                <h3>AI Formatting Modes</h3>
-                <p>Choose how your Rubber Ducky processes raw speech before pasting at your cursor.</p>
-              </div>
-            </div>
+          <!-- Center Audio Orb -->
+          <div class="studio-bridge">
+            <div class="ducky-orb" id="stage-duck-orb"></div>
+            <span style="color: var(--accent-gold); font-weight: 700; opacity: 0.6;">→</span>
+          </div>
 
-            <div class="replica-modes-grid" id="replica-modes-selector">
-              <div class="rep-mode-item active" data-rep-mode="smart_polish">
-                <div class="rep-mode-top">
-                  <strong>✨ Smart Polish</strong>
-                  <span class="rep-badge">Active</span>
-                </div>
-                <p>Removes filler words ("um", "like") and resolves mid-sentence self-corrections automatically.</p>
-              </div>
-              <div class="rep-mode-item" data-rep-mode="verbatim">
-                <div class="rep-mode-top">
-                  <strong>⚡ Fast Verbatim</strong>
-                  <span class="rep-badge">Whisper Only</span>
-                </div>
-                <p>Pure acoustic transcription with clean punctuation. Skips LLM rewrite for 0.18s speed.</p>
-              </div>
-              <div class="rep-mode-item" data-rep-mode="email">
-                <div class="rep-mode-top">
-                  <strong>✉️ Professional Email</strong>
-                  <span class="rep-badge">Executive</span>
-                </div>
-                <p>Structures casual spoken thoughts into clear paragraphs with greeting and sign-off.</p>
-              </div>
-              <div class="rep-mode-item" data-rep-mode="notes">
-                <div class="rep-mode-top">
-                  <strong>📋 Actionable Notes</strong>
-                  <span class="rep-badge">Markdown</span>
-                </div>
-                <p>Converts voice brain-dumps into organized Markdown bullet lists.</p>
-              </div>
-              <div class="rep-mode-item" data-rep-mode="code">
-                <div class="rep-mode-top">
-                  <strong>⌨️ AI Prompt / Dev</strong>
-                  <span class="rep-badge">Technical</span>
-                </div>
-                <p>Formats spoken instructions into structured prompts for Cursor, Claude Code, and terminals.</p>
-              </div>
+          <!-- Right Column -->
+          <div class="studio-col col-clean">
+            <div class="col-header">
+              <span class="col-kicker gold">2. PASTED DIRECTLY AT CURSOR</span>
+              <span class="col-metric green">✓ Smart Polish</span>
             </div>
-
-            <div class="custom-prompt-card">
-              <label for="custom-system-prompt">Custom Mode System Prompt (Live Editable)</label>
-              <textarea id="custom-system-prompt" rows="3">Rewrite the dictated transcript into concise changelog release notes with [Added], [Fixed], and [Improved] tags. Never invent features.</textarea>
+            <div class="clean-text" id="live-clean-box" contenteditable="true" spellcheck="false">
+              Hey team — I just tested the new build on Mac. Let's deploy at 4:30 PM after QA finishes.
+            </div>
+            <div class="col-footer">
+              <span style="font-size: 12px; color: var(--accent-green); font-weight: 500;">⚡ Saved 24 seconds of typing</span>
+              <button class="btn-copy" id="btn-copy-clean">Copy</button>
             </div>
           </div>
 
-          <!-- TAB 3: PERSONAL DICTIONARY -->
-          <div class="replica-panel" id="replica-tab-dictionary" hidden>
-            <div class="replica-panel-header">
-              <div>
-                <h3>Personal Dictionary</h3>
-                <p>Words added here are injected into Whisper and Llama 3.3 70B so custom jargon is never autocorrected away.</p>
-              </div>
-            </div>
-
-            <form class="rep-dict-add-bar" id="rep-dict-form">
-              <input type="text" id="rep-dict-input" placeholder="Enter a name, acronym, or technical term (e.g. PostgreSQL, Xsander, Speakly)..." required />
-              <button type="submit" class="btn-primary-duck">+ Add to Dictionary</button>
-            </form>
-
-            <div class="rep-dict-tags-cloud" id="rep-dict-cloud">
-              <!-- Populated by JS -->
-            </div>
-          </div>
-
-          <!-- TAB 4: SETTINGS & ENGINE -->
-          <div class="replica-panel" id="replica-tab-settings" hidden>
-            <div class="replica-panel-header">
-              <div>
-                <h3>Cloud Engine &amp; Hotkey Preferences</h3>
-                <p>Configure your inference provider, push-to-talk trigger, and clipboard behavior.</p>
-              </div>
-            </div>
-
-            <div class="rep-settings-list">
-              <div class="rep-setting-row">
-                <div>
-                  <strong>AI Inference Provider</strong>
-                  <p>Groq LPU delivers ~0.3s latency at 1/8th cost; OpenAI supports 99+ languages.</p>
-                </div>
-                <select id="rep-engine-select" class="rep-select">
-                  <option value="Groq LPU">⚡ Groq LPU Turbo (Whisper v3 Turbo + Llama 3.3 70B)</option>
-                  <option value="OpenAI Cloud">🌐 OpenAI Cloud (Whisper-1 + GPT-4o-mini)</option>
-                </select>
-              </div>
-
-              <div class="rep-setting-row">
-                <div>
-                  <strong>Push-to-Talk Hotkey</strong>
-                  <p>Hold down to listen, release to paste at cursor.</p>
-                </div>
-                <select id="rep-hotkey-select" class="rep-select">
-                  <option value="Right ⌘ Command">Right ⌘ Command (macOS Recommended)</option>
-                  <option value="Right Option ⌥">Right Option ⌥</option>
-                  <option value="Right Control">Right Control (Windows Default)</option>
-                  <option value="Fn / Globe Key">Fn / Globe Key</option>
-                </select>
-              </div>
-
-              <div class="rep-setting-row">
-                <div>
-                  <strong>Automatic Clipboard Restoration</strong>
-                  <p>Saves your current clipboard before pasting and restores it 600ms later.</p>
-                </div>
-                <input type="checkbox" checked class="rep-toggle" />
-              </div>
-            </div>
-          </div>
         </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       APP MARQUEE STRIP
+       ========================================================================= -->
+  <section class="app-strip-section">
+    <div class="container">
+      <div class="strip-label">Works seamlessly across every text field on your computer</div>
+      <div class="strip-logos">
+        <div class="strip-logo-item">💬 Slack</div>
+        <div class="strip-logo-item">⌨️ Cursor</div>
+        <div class="strip-logo-item">✉️ Gmail</div>
+        <div class="strip-logo-item">📋 Notion</div>
+        <div class="strip-logo-item">🎯 Linear</div>
+        <div class="strip-logo-item">💻 Terminal</div>
+        <div class="strip-logo-item">📄 Docs &amp; Word</div>
       </div>
     </div>
   </section>
 
   <!-- =========================================================================
-       VIEW 3: AD & LAUNCH FILM STUDIO (All 6 Rendered Videos)
+       BENTO GRID SUPERPOWERS
        ========================================================================= -->
-  <section id="view-films" class="page-view" hidden>
-    <div class="container films-view-container">
-      <div class="section-header-block">
-        <span class="section-kicker">SPEAKLY VIDEO PRODUCTION SUITE</span>
-        <h2 class="section-display">30-Second Commercials &amp; 4-Skill Comparison</h2>
-        <p class="section-sub">
-          Watch the two flagship 30-second commercials built with <code>remotion-best-practices</code> and <code>ad-creative</code>, plus the 4 original 5-second skill benchmarks.
-        </p>
-      </div>
+  <section class="features-section" id="features">
+    <div class="container">
+      <span class="section-kicker" style="text-align: center;">UNSTOPPABLE SPEED</span>
+      <h2 class="section-title">Everything you need to talk all day.</h2>
 
-      <!-- Featured 30-Second Ads -->
-      <div class="dual-video-grid featured-30s-grid">
-        <div class="film-showcase-card highlight-gold">
-          <div class="film-card-header">
-            <div>
-              <span class="film-badge">FLAGSHIP #1 · REMOTION-BEST-PRACTICES (30s)</span>
-              <h3>Speakly 30s Product Launch Commercial</h3>
-              <p class="film-desc">6 spring-driven acts: Keyboard bottleneck hook → 3D Mascot reveal → Live Slack self-correction → 5 AI Modes → 158 WPM vs 42 WPM chart → End card.</p>
-            </div>
-            <a href="assets/videos/02-remotion-30s.mp4" download class="film-dl-link">⬇ MP4 (8.1 MB)</a>
+      <div class="bento-grid">
+        
+        <!-- Bento 1: Zero Focus Stealing (Span 7) -->
+        <div class="bento-card bento-span-7">
+          <div>
+            <div class="card-kicker">Zero Context Switching</div>
+            <h3 class="card-title">Lives above your dock. Pastes at your cursor.</h3>
+            <p class="card-copy">
+              Other tools force you into a separate window to copy-paste. Speakly's tiny 46px floating HUD stays completely non-activating (`setFocusable(false)`), injecting clean writing via native keystrokes (`⌘V` / `Ctrl+V`) directly into whichever text field you were already in.
+            </p>
           </div>
-          <div class="video-frame-wrapper">
-            <video controls preload="metadata" playsinline src="assets/videos/02-remotion-30s.mp4"></video>
+          <div class="card-widget" style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 13px; color: var(--text-secondary);">Target cursor in: <strong style="color: #fff;">Cursor / Slack / Gmail</strong></span>
+            <span style="font-size: 12px; color: var(--accent-green); font-family: 'JetBrains Mono', monospace;">Clipboard Restored (600ms)</span>
           </div>
         </div>
 
-        <div class="film-showcase-card highlight-gold">
-          <div class="film-card-header">
-            <div>
-              <span class="film-badge">FLAGSHIP #2 · AD-CREATIVE iMESSAGE REVEAL (30s)</span>
-              <h3>"How Did You Type That Whole Spec in 4 Seconds?"</h3>
-              <p class="film-desc">Authentic iOS dark-mode iMessage story with live Mid-Sentence Self-Correction inside the composer bar, Groq 0.3s proof, and instant developer prompt pasting.</p>
-            </div>
-            <a href="assets/videos/03-ad-creative-30s.mp4" download class="film-dl-link">⬇ MP4 (3.3 MB)</a>
+        <!-- Bento 2: Speaks Human (Span 5) -->
+        <div class="bento-card bento-span-5">
+          <div>
+            <div class="card-kicker" style="color: var(--accent-cyan);">Intelligent Polish</div>
+            <h3 class="card-title">Change your mind mid-sentence.</h3>
+            <p class="card-copy">
+              Say <em>"Let's meet Monday—wait no, Wednesday at 2pm."</em> Speakly automatically cleans the backtrack before pasting.
+            </p>
           </div>
-          <div class="video-frame-wrapper">
-            <video controls preload="metadata" playsinline src="assets/videos/03-ad-creative-30s.mp4"></video>
+          <div class="card-widget" style="font-size: 12.5px; display: flex; flex-direction: column; gap: 8px;">
+            <div style="color: var(--text-muted);">"Let's meet Monday <del style="color: #ef4444;">wait no</del> Wednesday"</div>
+            <div style="color: #fff; font-weight: 600;">"Let's meet Wednesday at 2:00 PM."</div>
           </div>
         </div>
-      </div>
 
-      <!-- 4 Original 5-Second Skill Benchmarks -->
-      <h3 class="sub-gallery-heading">Original 4 Video Skills Comparison (5-Second Spots)</h3>
-      <div class="quad-video-grid">
-        <div class="mini-film-card">
-          <span class="mini-film-tag">01 · hyperframes</span>
-          <h4>HTML/GSAP Timeline</h4>
-          <video controls preload="metadata" loop muted playsinline src="assets/videos/01-hyperframes-launch.mp4"></video>
+        <!-- Bento 3: 5 Formatting Modes (Span 5) -->
+        <div class="bento-card bento-span-5">
+          <div>
+            <div class="card-kicker">5 Formatting Modes</div>
+            <h3 class="card-title">Tailored for every task.</h3>
+            <p class="card-copy">
+              Switch modes with a single click or shortcut: Smart Polish, Executive Email, AI Prompt/Dev, Actionable Notes, or Fast Verbatim.
+            </p>
+          </div>
+          <div class="card-widget" style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; font-weight: 500;">
+            <div style="color: var(--accent-gold);">✨ Smart Polish (Everyday Chat)</div>
+            <div style="color: #CBD5E1;">✉️ Executive Email (Clean Paragraphs)</div>
+            <div style="color: #CBD5E1;">⌨️ AI Prompt / Dev (Clean Markdown)</div>
+            <div style="color: #CBD5E1;">📋 Actionable Notes (Bullet Points)</div>
+          </div>
         </div>
-        <div class="mini-film-card">
-          <span class="mini-film-tag">02 · remotion-best-practices</span>
-          <h4>Spring Physics UI</h4>
-          <video controls preload="metadata" loop muted playsinline src="assets/videos/02-remotion-best-practices.mp4"></video>
+
+        <!-- Bento 4: Personal Vocabulary (Span 7) -->
+        <div class="bento-card bento-span-7">
+          <div>
+            <div class="card-kicker" style="color: var(--accent-green);">Acoustic Precision</div>
+            <h3 class="card-title">Personal Dictionary that never misspells.</h3>
+            <p class="card-copy">
+              Add internal product codenames, company acronyms, or teammates once. Speakly injects them into acoustic hints and the polish pass so they land spelled right every time.
+            </p>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <span style="background: rgba(255, 208, 0, 0.15); border: 1px solid rgba(255, 208, 0, 0.3); color: var(--accent-gold); font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 9999px;">Speakly</span>
+            <span style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: #fff; font-size: 12px; padding: 4px 12px; border-radius: 9999px;">Kubernetes</span>
+            <span style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: #fff; font-size: 12px; padding: 4px 12px; border-radius: 9999px;">Supabase RLS</span>
+            <span style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: #fff; font-size: 12px; padding: 4px 12px; border-radius: 9999px;">Tailwind</span>
+            <span style="background: rgba(255, 255, 255, 0.05); border: 1px solid var(--border); color: #fff; font-size: 12px; padding: 4px 12px; border-radius: 9999px;">Xsander</span>
+          </div>
         </div>
-        <div class="mini-film-card">
-          <span class="mini-film-tag">03 · ad-creative</span>
-          <h4>iMessage Thread Hook</h4>
-          <video controls preload="metadata" loop muted playsinline src="assets/videos/03-ad-creative-imessage.mp4"></video>
-        </div>
-        <div class="mini-film-card">
-          <span class="mini-film-tag">04 · ai-video-generation</span>
-          <h4>3D Acoustic Wire-Glow</h4>
-          <video controls preload="metadata" loop muted playsinline src="assets/videos/04-ai-video-wireglow.mp4"></video>
-        </div>
+
       </div>
     </div>
   </section>
 
   <!-- =========================================================================
-       VIEW 4: PRICING & TECHNICAL SPECIFICATIONS
+       BUILDER-TO-BUILDER RELATIONSHIP STORY
        ========================================================================= -->
-  <section id="view-pricing" class="page-view" hidden>
-    <div class="container pricing-view-container">
-      <div class="section-header-block text-center">
-        <span class="section-kicker">EARLY ACCESS · NO CREDIT CARD REQUIRED</span>
-        <h2 class="section-display">Zero-setup voice intelligence.<br />100% Free during Early Access.</h2>
-        <p class="section-sub">
-          We are focused on building the fastest voice-to-code engine on Earth. While in Early Access, Speakly is completely free with unlimited sub-second dictations. No payment info or personal API keys required.
-        </p>
-      </div>
-
-      <div class="pricing-cards-grid" style="max-width: 620px; margin: 0 auto 48px;">
-        <!-- Single Focused Early Access Tier -->
-        <div class="pricing-card featured-pro" style="width: 100%;">
-          <div class="pricing-tier-badge gold">EARLY ACCESS PASS · 100% FREE</div>
-          <h3>Speakly for Desktop</h3>
-          <div class="pricing-amount">
-            <span class="price-big">$0</span>
-            <span class="price-period">/ month during Early Access</span>
-          </div>
-          <p class="pricing-desc">
-            Full access to the non-focus-stealing Rubber Ducky assistant across all your apps on macOS &amp; Windows.<br />
-            <em style="color: var(--text-secondary); display: block; margin-top: 6px; font-size: 13px;">(When managed subscriptions launch, early access testers keep preferred $10/mo pricing, similar to Wispr Flow).</em>
+  <section class="maker-section" id="about">
+    <div class="container">
+      <div class="maker-card">
+        <div class="maker-badge-duck">🦆</div>
+        <div>
+          <span class="section-kicker">WHY I BUILT THIS</span>
+          <h3 style="font-size: 22px; font-weight: 800; margin: 0 0 10px; color: #fff;">
+            "I built Speakly because typing 8 hours a day was killing my wrists."
+          </h3>
+          <p style="font-size: 14.5px; line-height: 1.6; color: var(--text-secondary); margin: 0 0 10px;">
+            I was spending whole days coding and writing messages, dealing with hand fatigue, and losing my train of thought every time I had to stop and fix typos. Every voice tool I tested forced me into a separate window to copy-paste or felt sluggish. Speakly is the lightweight, private, sub-300ms companion I built for myself. If you live at your keyboard, I hope it gives you your hours back.
           </p>
-          <ul class="pricing-features">
-            <li>✓ Unlimited sub-second push-to-talk dictation on macOS &amp; Windows</li>
-            <li>✓ 0.29s Groq LPU inference (no personal API key needed, fully managed)</li>
-            <li>✓ Automatic removal of filler words ("um", "uh") &amp; mid-sentence self-corrections</li>
-            <li>✓ All 5 AI Formatting Modes including <strong>AI Prompt / Dev Mode</strong> for Cursor &amp; Claude</li>
-            <li>✓ Personal Dictionary for technical terms, codenames &amp; acronyms</li>
-            <li>✓ Supabase Cloud Sync for your dictionary and preferences</li>
-            <li>✓ Direct in-app feedback button with 24h founder response</li>
-          </ul>
-
-          <!-- Two Prominent Direct Download Buttons in Pricing -->
-          <div class="pricing-dl-actions">
-            <a href="../app/dist/Speakly-1.0.0-mac-arm64.dmg" download="Speakly-1.0.0-mac-arm64.dmg" class="btn-pricing-dl btn-pricing-mac" id="pricing-dl-mac">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.33c.64-.78 1.08-1.86.96-2.94-.93.04-2.06.62-2.72 1.4-.58.68-1.1 1.79-.96 2.84 1.04.08 2.08-.52 2.72-1.3z"/></svg>
-              <span>Download for Mac (.dmg)</span>
-            </a>
-            <a href="../app/dist/Speakly-Setup-1.0.0-win.exe" download="Speakly-Setup-1.0.0-win.exe" class="btn-pricing-dl btn-pricing-win" id="pricing-dl-win">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.951-1.801"/></svg>
-              <span>Download for Windows (.exe)</span>
-            </a>
-          </div>
-
-          <div class="pricing-card-note">
-            <span>First time launching on macOS or Windows? </span>
-            <a href="#first-launch-guide" class="pricing-guide-jump">View 20-second "Open Anyway" guide →</a>
-          </div>
-        </div>
-      </div>
-
-      <!-- Technical Specs Table -->
-      <div class="specs-table-card">
-        <h3>Technical Architecture &amp; System Specifications</h3>
-        <div class="specs-grid">
-          <div class="spec-row">
-            <span class="spec-key">Supported Platforms</span>
-            <span class="spec-val">macOS 13+ (Apple Silicon M1–M4 &amp; Intel) · Windows 10/11 (64-bit)</span>
-          </div>
-          <div class="spec-row">
-            <span class="spec-key">Acoustic Capture</span>
-            <span class="spec-val">16kHz Mono PCM (`navigator.mediaDevices`) with 60fps real-time frequency analysis</span>
-          </div>
-          <div class="spec-row">
-            <span class="spec-key">Primary Fast Engine</span>
-            <span class="spec-val">Groq LPU (`whisper-large-v3-turbo` + `llama-3.3-70b-versatile`) · ~290ms median</span>
-          </div>
-          <div class="spec-row">
-            <span class="spec-key">Multilingual Engine</span>
-            <span class="spec-val">Groq LPU (`whisper-large-v3`) with OpenAI Whisper fallback · 99+ languages supported</span>
-          </div>
-          <div class="spec-row">
-            <span class="spec-key">Window Focus Handling</span>
-            <span class="spec-val">Non-focus-stealing Electron overlay (`alwaysOnTop: screen-saver`, `focusable: false`)</span>
-          </div>
-          <div class="spec-row">
-            <span class="spec-key">Clipboard Safety</span>
-            <span class="spec-val">Snapshots prior clipboard state before native keystroke paste and restores after 600ms</span>
+          <div style="font-size: 12.5px; color: var(--text-muted);">
+            — <strong style="color: #fff;">Xsander</strong>, Solo Maker based in Belgium 🇧🇪
           </div>
         </div>
       </div>
@@ -1228,80 +1279,468 @@
   </section>
 
   <!-- =========================================================================
-       APPLE SHEET MODAL: DIRECT DOWNLOAD
-       Follows apple-design spring sheet rules
+       20-SECOND FIRST LAUNCH REASSURANCE
        ========================================================================= -->
-  <div class="apple-modal-backdrop" id="download-modal" hidden>
-    <div class="apple-sheet-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <button class="modal-close-btn" id="close-modal-btn" aria-label="Close">✕</button>
-      <div class="modal-duck-hero" id="modal-duck-svg"></div>
-      <span class="section-kicker">DIRECT DOWNLOAD · EARLY ACCESS</span>
-      <h3 id="modal-title">Download Speakly for Desktop</h3>
-      <p>Choose your operating system below. Direct download links with zero configuration needed.</p>
-
-      <div class="modal-dl-grid">
-        <a href="../app/dist/Speakly-1.0.0-mac-arm64.dmg" download="Speakly-1.0.0-mac-arm64.dmg" class="modal-os-card" id="dl-mac-btn">
-          <div class="modal-card-top">
-            <strong> macOS (.dmg)</strong>
-            <span class="modal-dl-badge">Direct DL</span>
-          </div>
-          <span>Apple Silicon (M1–M4) &amp; Intel · 106 MB</span>
-        </a>
-        <a href="../app/dist/Speakly-Setup-1.0.0-win.exe" download="Speakly-Setup-1.0.0-win.exe" class="modal-os-card" id="dl-win-btn">
-          <div class="modal-card-top">
-            <strong>⊞ Windows Setup (.exe)</strong>
-            <span class="modal-dl-badge blue">Direct DL</span>
-          </div>
-          <span>Windows 10 &amp; 11 (64-bit) · 89 MB</span>
-        </a>
+  <section class="setup-section">
+    <div class="container">
+      <div style="text-align: center; margin-bottom: 40px;">
+        <span class="section-kicker" style="color: var(--accent-cyan);">ZERO HASSLE SETUP</span>
+        <h2 style="font-size: 32px; font-weight: 800; margin: 0 0 8px;">Ready in under 20 seconds.</h2>
+        <p style="font-size: 14px; color: var(--text-secondary); margin: 0;">
+          Speakly is free during Early Access. Here is how to launch your build:
+        </p>
       </div>
 
-      <div class="modal-portable-box">
-        <a href="../app/dist/Speakly-1.0.0-win-portable.exe" download="Speakly-1.0.0-win-portable.exe" class="modal-portable-link" id="dl-win-portable-btn">
-          <span>📦 Zero-install Windows portable version: <strong>Download Portable .exe (81 MB)</strong> →</span>
-        </a>
-      </div>
-
-      <!-- Quick 20-second setup notice inside modal -->
-      <div class="modal-guide-callout">
-        <span class="guide-callout-icon">⏱️</span>
-        <div class="guide-callout-info">
-          <strong>First time launching an unsigned Early Access build?</strong>
-          <span>macOS "Open Anyway" &amp; Windows SmartScreen bypass take under 20 seconds.</span>
+      <div class="setup-grid">
+        <div class="setup-card">
+          <div class="setup-num">1</div>
+          <h4>Download &amp; Move</h4>
+          <p>Drag Speakly to <kbd>/Applications</kbd> on Mac or run the installer on Windows.</p>
         </div>
-        <button type="button" class="modal-guide-action-btn" id="modal-view-guide-btn">View Guide</button>
+
+        <div class="setup-card">
+          <div class="setup-num">2</div>
+          <h4>First-Time Open</h4>
+          <p>Right-Click Speakly → <strong>Open</strong> (or click "Open Anyway" in System Settings).</p>
+        </div>
+
+        <div class="setup-card">
+          <div class="setup-num">3</div>
+          <h4>Hold Hotkey &amp; Talk</h4>
+          <p>Hold <kbd>Right ⌘</kbd> on Mac or <kbd>Right Ctrl</kbd> on Windows and start speaking in any app.</p>
+        </div>
       </div>
 
-      <div style="text-align: center; margin-top: 18px; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
-        <a href="setup-guide.html" target="_blank" style="color: #facc15; font-size: 13px; text-decoration: none; font-weight: 600;">📖 macOS Setup Guide (2 min) →</a>
-        <a href="setup-guide-windows.html" target="_blank" style="color: #38bdf8; font-size: 13px; text-decoration: none; font-weight: 600;">📖 Windows Handleiding (2 min) →</a>
+      <div class="terminal-box">
+        <div style="font-size: 13px; color: var(--text-secondary);">
+          💡 <strong>Mac Power Users:</strong> Bypass Gatekeeper in 1 second via Terminal:
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <code style="font-size: 12.5px; color: var(--accent-gold); background: #000; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border);">xattr -cr /Applications/Speakly.app</code>
+          <button class="btn-copy" id="btn-copy-cli" style="padding: 6px 12px;">Copy</button>
+        </div>
       </div>
     </div>
-  </div>
+  </section>
+
+  <!-- =========================================================================
+       FAQ SECTION
+       ========================================================================= -->
+  <section class="faq-section" id="faq">
+    <div class="container">
+      <div style="text-align: center; margin-bottom: 36px;">
+        <span class="section-kicker">QUESTIONS &amp; ANSWERS</span>
+        <h2 style="font-size: 32px; font-weight: 800; margin: 0;">Frequently Asked Questions</h2>
+      </div>
+
+      <div class="faq-container">
+        
+        <div class="faq-item">
+          <div class="faq-q">
+            <span>Is Speakly really 100% free right now?</span>
+            <span class="faq-chevron" style="transition: transform 0.2s ease;">▼</span>
+          </div>
+          <div class="faq-a">
+            Yes! During our public Early Access period, Speakly is completely free with unlimited sub-second dictations. You don't need a credit card or your own API keys.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q">
+            <span>How does Speakly paste without stealing window focus?</span>
+            <span class="faq-chevron" style="transition: transform 0.2s ease;">▼</span>
+          </div>
+          <div class="faq-a">
+            The floating pill window is built with Electron's `setFocusable(false)`. When you release your hotkey, Speakly injects the text using native OS keystrokes (`⌘V` / `Ctrl+V`) directly into whichever text field you were already typing in.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q">
+            <span>What happens to images or links on my clipboard?</span>
+            <span class="faq-chevron" style="transition: transform 0.2s ease;">▼</span>
+          </div>
+          <div class="faq-a">
+            Speakly automatically snapshots whatever was on your clipboard before pasting, and restores it in 600ms. Your screenshots, links, and copied code snippets stay completely safe.
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <div class="faq-q">
+            <span>Which languages does Speakly support?</span>
+            <span class="faq-chevron" style="transition: transform 0.2s ease;">▼</span>
+          </div>
+          <div class="faq-a">
+            Speakly natively supports over 99 languages, including English, Dutch, French, German, Spanish, and Italian. It detects your spoken language automatically.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       BOTTOM CONVERSION ANCHOR CTA
+       ========================================================================= -->
+  <section class="bottom-cta">
+    <div class="container">
+      <div style="font-size: 40px; margin-bottom: 12px;">🦆</div>
+      <h2 class="cta-h2">Stop typing for 4 hours a day.</h2>
+      <p style="font-size: 16px; color: var(--text-secondary); max-width: 500px; margin: 0 auto 32px;">
+        Join hundreds of early testers speaking at 150 WPM. Free on macOS &amp; Windows.
+      </p>
+
+      <div class="hero-cta-group" style="margin-bottom: 16px;">
+        <a href="downloads/Speakly-1.0.0-mac-arm64.dmg" download class="btn-hero-dl btn-hero-mac">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.33c.64-.78 1.08-1.86.96-2.94-.93.04-2.06.62-2.72 1.4-.58.68-1.1 1.79-.96 2.84 1.04.08 2.08-.52 2.72-1.3z"/>
+          </svg>
+          <span style="font-weight: 700;">Download for Mac (.dmg)</span>
+        </a>
+
+        <a href="downloads/Speakly-Setup-1.0.0-win.exe" download class="btn-hero-dl btn-hero-win">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="color: var(--accent-cyan);">
+            <path d="M0 3.449L9.75 2.1v9.451H0m10.949-9.602L24 0v11.4H10.949M0 12.6h9.75v9.451L0 20.699M10.949 12.6H24V24l-12.951-1.801"/>
+          </svg>
+          <span style="font-weight: 700;">Download for Windows (.exe)</span>
+        </a>
+      </div>
+
+      <div style="font-size: 12.5px; color: var(--text-muted);">
+        <span>Looking for portable version? </span>
+        <a href="downloads/Speakly-1.0.0-win-portable.exe" download style="color: var(--accent-gold); text-decoration: underline;">Download Windows Portable .exe (81 MB)</a>
+      </div>
+    </div>
+  </section>
 
   <!-- =========================================================================
        FOOTER
        ========================================================================= -->
-  <footer class="apple-footer">
-    <div class="container footer-inner">
-      <div class="footer-left">
-        <span class="footer-brand">🦆 Speakly — Rubber Ducky AI</span>
-        <span class="footer-copy">Built with Apple HIG Physics (`apple-design`), Anti-Slop Art Direction (`design-taste-frontend`), GSAP + Lenis (`cinematic-scroll-storytelling`), and Conversion Copy (`copywriting`).</span>
+  <footer style="padding: 28px 0; border-top: 1px solid var(--border); font-size: 13px; color: var(--text-muted);">
+    <div class="container" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="color: var(--text-secondary); font-weight: 700;">🦆 Speakly</span>
+        <span>— Sub-second AI voice dictation for macOS &amp; Windows.</span>
       </div>
-      <div class="footer-links">
-        <button class="footer-link-btn" data-open-view="landing">Overview</button>
-        <button class="footer-link-btn" data-open-view="playground">Live Web App</button>
-        <button class="footer-link-btn" data-open-view="films">30s Launch Films</button>
-        <button class="footer-link-btn" data-open-view="pricing">Pricing &amp; Specs</button>
-        <a href="setup-guide.html" target="_blank" class="footer-link-btn" style="text-decoration: none;">Setup Guide</a>
+      <div style="display: flex; gap: 20px;">
+        <a href="setup-guide.html" target="_blank" style="color: var(--text-secondary); text-decoration: none;">macOS Setup</a>
+        <a href="setup-guide-windows.html" target="_blank" style="color: var(--text-secondary); text-decoration: none;">Windows Setup</a>
+        <a href="https://github.com/serdonsxsander-maker/speakly" target="_blank" style="color: var(--text-secondary); text-decoration: none;">GitHub</a>
       </div>
     </div>
   </footer>
 
-  <!-- GSAP + ScrollTrigger + Lenis Smooth Scroll (via lightweight CDN) -->
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.18/dist/lenis.min.js"></script>
-  <script src="app.js"></script>
+  <!-- =========================================================================
+       DOWNLOAD MODAL
+       ========================================================================= -->
+  <div class="modal-backdrop" id="download-modal" hidden>
+    <div class="modal-sheet">
+      <button id="btn-close-modal" style="position: absolute; top: 16px; right: 16px; width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.08); border: none; color: #fff; cursor: pointer;">✕</button>
+      <div style="font-size: 36px; margin-bottom: 8px;">🚀</div>
+      <div style="font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-gold); margin-bottom: 4px;">DOWNLOAD STARTED</div>
+      <h3 style="font-size: 20px; font-weight: 800; margin: 0 0 8px;">Welcome to Speakly Early Access</h3>
+      <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 20px;">
+        Your download should begin automatically. If not, click a direct mirror below:
+      </p>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+        <a href="downloads/Speakly-1.0.0-mac-arm64.dmg" download style="padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); text-align: left; text-decoration: none; color: #fff; display: block;">
+          <strong style="font-size: 12.5px; display: block;"> macOS (.dmg)</strong>
+          <span style="font-size: 11px; color: var(--text-muted);">Apple Silicon &amp; Intel</span>
+        </a>
+        <a href="downloads/Speakly-Setup-1.0.0-win.exe" download style="padding: 12px; border-radius: 12px; border: 1px solid var(--border); background: rgba(255,255,255,0.04); text-align: left; text-decoration: none; color: #fff; display: block;">
+          <strong style="font-size: 12.5px; display: block;">⊞ Windows (.exe)</strong>
+          <span style="font-size: 11px; color: var(--text-muted);">Windows 10 &amp; 11</span>
+        </a>
+      </div>
+
+      <div style="background: rgba(255, 208, 0, 0.08); border: 1px solid rgba(255, 208, 0, 0.25); border-radius: 12px; padding: 12px; text-align: left; margin-bottom: 20px;">
+        <div style="font-size: 12px; font-weight: 700; color: var(--accent-gold); margin-bottom: 2px;">⏱️ 20-Second First Launch</div>
+        <div style="font-size: 11.5px; color: var(--text-secondary);">On macOS, Right-Click Speakly → Open. On Windows, click "More info → Run anyway".</div>
+      </div>
+
+      <div style="display: flex; justify-content: center; gap: 20px; font-size: 12.5px;">
+        <a href="setup-guide.html" target="_blank" style="color: var(--accent-gold); text-decoration: none;">View macOS Guide →</a>
+        <a href="setup-guide-windows.html" target="_blank" style="color: var(--accent-cyan); text-decoration: none;">View Windows Guide →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MOTIONSITES ENGINE JAVASCRIPT
+       ========================================================================= -->
+  <script>
+    // 1. DUCKY SVG FACTORY
+    function getDuckySVG(state = "listening") {
+      let extras = "";
+      if (state === "listening") {
+        extras = `
+          <ellipse cx="32" cy="34" rx="4" ry="5.5" fill="#0F172A" />
+          <circle cx="30.5" cy="32" r="1.8" fill="#FFFFFF" />
+          <circle cx="33.5" cy="35.5" r="0.9" fill="#FFFFFF" />
+          <path d="M22 34 C22 15, 50 15, 50 34" fill="none" stroke="#3B82F6" stroke-width="4.5" stroke-linecap="round" />
+          <rect x="37" y="29" width="7.5" height="14" rx="3.75" fill="#2563EB" />
+          <rect x="38.8" y="31.5" width="4" height="9" rx="2" fill="#60A5FA" />
+        `;
+      } else if (state === "thinking") {
+        extras = `
+          <path d="M26 35 Q32 29 38 35" fill="none" stroke="#0F172A" stroke-width="3.2" stroke-linecap="round" />
+          <circle cx="58" cy="18" r="3.2" fill="#F59E0B" />
+          <circle cx="67" cy="11" r="5" fill="#38BDF8" />
+        `;
+      } else if (state === "solved") {
+        extras = `
+          <path d="M27 34 Q33 27 39 34" fill="none" stroke="#0F172A" stroke-width="3.2" stroke-linecap="round" />
+          <ellipse cx="28" cy="41" rx="4.5" ry="2.5" fill="#FF8A8A" opacity="0.8" />
+          <path d="M68 8 L70 15 L77 17 L70 19 L68 26 L66 19 L59 17 L66 15 Z" fill="#FBBF24" />
+        `;
+      }
+
+      return `
+        <svg viewBox="0 0 100 95" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+          <ellipse cx="52" cy="86" rx="30" ry="4" fill="#38BDF8" opacity="0.25" />
+          <path d="M18 36 Q7 38 11 45 Q21 47 27 42 Z" fill="#FF6B00" />
+          <ellipse cx="52" cy="62" rx="31" ry="23" fill="#FFD000" />
+          <path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000" />
+          <circle cx="36" cy="37" r="20.5" fill="#FFD000" />
+          <ellipse cx="34" cy="24" rx="10" ry="4.5" fill="#FFE866" opacity="0.55" />
+          <path d="M39 58 Q50 49 65 60 Q54 74 39 70 Z" fill="#F59E0B" />
+          ${extras}
+        </svg>
+      `;
+    }
+
+    // 2. CONTEXT SAMPLES
+    const SAMPLES = {
+      slack: {
+        raw: `"Hey team <span class="filler">um</span> I just tested the new build on Mac, let's <del>deploy at 2pm</del> <span class="filler">wait no</span> actually 4:30pm after QA finishes."`,
+        clean: `Hey team — I just tested the new build on Mac. Let's deploy at 4:30 PM after QA finishes.`
+      },
+      email: {
+        raw: `"<span class="filler">Uh</span> reply to David that we reviewed the partnership proposal, <del>everything looks good</del> our team is ready to move forward, ask if Wednesday at 2pm works for a quick 15-minute call."`,
+        clean: `Hi David,\n\nWe finished reviewing the partnership proposal. Our team is ready to move forward.\n\nDoes Wednesday at 2:00 PM work for a quick 15-minute alignment call?\n\nBest,\nXsander`
+      },
+      dev: {
+        raw: `"In <span class="filler">uh</span> audio recorder dot js refactor the media devices stream so it captures 16 kilohertz mono PCM and streams real-time frequency bars to the floating pill without blocking the UI thread."`,
+        clean: `Refactor \`audioRecorder.js\` audio pipeline:\n- Capture 16kHz mono PCM via \`navigator.mediaDevices.getUserMedia\`\n- Stream real-time frequency bars to the floating HUD pill\n- Ensure zero blocking on the Electron main UI thread`
+      },
+      notes: {
+        raw: `"Recap from the product sync <span class="filler">like</span> first fix clipboard restoration on Windows 11, second <del>redesign the logo</del> polish the 30-second video showcase, and third launch early access."`,
+        clean: `• Fix clipboard restoration on Windows 11\n• Polish 30-second video showcase\n• Launch early access to community`
+      }
+    };
+
+    let activeContext = "slack";
+    let isDictating = false;
+
+    function renderContext(key, animate = false) {
+      activeContext = key;
+      const sample = SAMPLES[key];
+      if (!sample) return;
+
+      const spokenBox = document.getElementById("live-spoken-box");
+      const cleanBox = document.getElementById("live-clean-box");
+
+      document.querySelectorAll(".pill-tab").forEach(tab => {
+        tab.classList.toggle("active", tab.dataset.ctx === key);
+      });
+
+      if (!animate) {
+        if (spokenBox) spokenBox.innerHTML = sample.raw;
+        if (cleanBox) cleanBox.textContent = sample.clean;
+      } else {
+        runVoiceSimulation(sample);
+      }
+    }
+
+    function runVoiceSimulation(sample) {
+      if (isDictating) return;
+      isDictating = true;
+
+      const spokenBox = document.getElementById("live-spoken-box");
+      const cleanBox = document.getElementById("live-clean-box");
+      const hudPill = document.getElementById("floating-ducky-pill");
+      const hudMascot = document.getElementById("hud-mascot");
+      const hudStatus = document.getElementById("hud-status-text");
+      const stageOrb = document.getElementById("stage-duck-orb");
+
+      if (hudPill) hudPill.className = "ducky-pill-hud state-listening";
+      if (hudMascot) hudMascot.innerHTML = getDuckySVG("listening");
+      if (stageOrb) stageOrb.innerHTML = getDuckySVG("listening");
+      if (hudStatus) hudStatus.textContent = "Listening to voice...";
+      if (spokenBox) spokenBox.innerHTML = '<span style="opacity: 0.5;">Streaming spoken thoughts...</span>';
+      if (cleanBox) cleanBox.textContent = "";
+
+      setTimeout(() => {
+        if (spokenBox) spokenBox.innerHTML = sample.raw;
+        if (hudPill) hudPill.className = "ducky-pill-hud state-thinking";
+        if (hudMascot) hudMascot.innerHTML = getDuckySVG("thinking");
+        if (stageOrb) stageOrb.innerHTML = getDuckySVG("thinking");
+        if (hudStatus) hudStatus.textContent = "Polishing thoughts in 0.29s...";
+
+        setTimeout(() => {
+          if (hudPill) hudPill.className = "ducky-pill-hud state-solved";
+          if (hudMascot) hudMascot.innerHTML = getDuckySVG("solved");
+          if (stageOrb) stageOrb.innerHTML = getDuckySVG("solved");
+          if (hudStatus) hudStatus.textContent = "Pasted cleanly at cursor!";
+
+          const text = sample.clean;
+          let idx = 0;
+          const typingTimer = setInterval(() => {
+            idx += 4;
+            if (cleanBox) cleanBox.textContent = text.slice(0, idx);
+            if (idx >= text.length) {
+              clearInterval(typingTimer);
+              if (cleanBox) cleanBox.textContent = text;
+              setTimeout(() => {
+                if (hudPill) hudPill.className = "ducky-pill-hud state-idle";
+                if (hudMascot) hudMascot.innerHTML = getDuckySVG("listening");
+                if (hudStatus) hudStatus.textContent = "Hold Space to Dictate";
+                isDictating = false;
+              }, 2200);
+            }
+          }, 16);
+        }, 300);
+      }, 450);
+    }
+
+    // 3. OS DETECTION
+    function runOSDetection() {
+      const ua = navigator.userAgent.toLowerCase();
+      const isWin = ua.includes("win");
+
+      const macBadge = document.getElementById("mac-detected-badge");
+      const winBadge = document.getElementById("win-detected-badge");
+      const navCta = document.getElementById("nav-cta-btn");
+      const navIcon = document.getElementById("nav-cta-icon");
+      const navText = document.getElementById("nav-cta-text");
+
+      if (isWin) {
+        if (winBadge) winBadge.hidden = false;
+        if (macBadge) macBadge.hidden = true;
+        if (navCta) navCta.href = "downloads/Speakly-Setup-1.0.0-win.exe";
+        if (navIcon) navIcon.textContent = "⊞";
+        if (navText) navText.textContent = "Download for Windows";
+      } else {
+        if (macBadge) macBadge.hidden = false;
+        if (winBadge) winBadge.hidden = true;
+        if (navCta) navCta.href = "downloads/Speakly-1.0.0-mac-arm64.dmg";
+        if (navIcon) navIcon.textContent = "";
+        if (navText) navText.textContent = "Download for Mac";
+      }
+    }
+
+    // 4. FAQ TOGGLES
+    function initFAQ() {
+      document.querySelectorAll(".faq-item").forEach(item => {
+        item.addEventListener("click", () => {
+          item.classList.toggle("active");
+        });
+      });
+    }
+
+    // 5. DOWNLOAD MODAL
+    function initModal() {
+      const modal = document.getElementById("download-modal");
+      const closeBtn = document.getElementById("btn-close-modal");
+
+      function openModal() {
+        if (modal) modal.hidden = false;
+      }
+      function closeModal() {
+        if (modal) modal.hidden = true;
+      }
+
+      if (closeBtn) closeBtn.addEventListener("click", closeModal);
+      if (modal) {
+        modal.addEventListener("click", e => {
+          if (e.target === modal) closeModal();
+        });
+      }
+
+      document.querySelectorAll('a[download]').forEach(link => {
+        link.addEventListener("click", () => {
+          setTimeout(openModal, 600);
+        });
+      });
+    }
+
+    // 6. CLIPBOARD UTILITIES
+    function initCopy() {
+      const cliBtn = document.getElementById("btn-copy-cli");
+      if (cliBtn) {
+        cliBtn.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText("xattr -cr /Applications/Speakly.app");
+            cliBtn.textContent = "Copied!";
+            setTimeout(() => { cliBtn.textContent = "Copy"; }, 2000);
+          } catch (err) {}
+        });
+      }
+
+      const cleanBtn = document.getElementById("btn-copy-clean");
+      if (cleanBtn) {
+        cleanBtn.addEventListener("click", async () => {
+          const box = document.getElementById("live-clean-box");
+          if (box) {
+            try {
+              await navigator.clipboard.writeText(box.textContent || "");
+              cleanBtn.textContent = "Copied!";
+              setTimeout(() => { cleanBtn.textContent = "Copy"; }, 2000);
+            } catch (err) {}
+          }
+        });
+      }
+    }
+
+    // 7. KEYBOARD SPACEBAR PTT
+    function initSpacebar() {
+      let spacePressed = false;
+      window.addEventListener("keydown", e => {
+        const tag = document.activeElement ? document.activeElement.tagName.toLowerCase() : "";
+        if (tag === "input" || tag === "textarea" || (document.activeElement && document.activeElement.isContentEditable)) return;
+
+        if (e.code === "Space" && !spacePressed) {
+          spacePressed = true;
+          e.preventDefault();
+          runVoiceSimulation(SAMPLES[activeContext]);
+        }
+      });
+
+      window.addEventListener("keyup", e => {
+        if (e.code === "Space") spacePressed = false;
+      });
+
+      const pttBtn = document.getElementById("btn-ptt-trigger");
+      if (pttBtn) pttBtn.addEventListener("click", () => runVoiceSimulation(SAMPLES[activeContext]));
+
+      const hudPill = document.getElementById("floating-ducky-pill");
+      if (hudPill) hudPill.addEventListener("click", () => runVoiceSimulation(SAMPLES[activeContext]));
+    }
+
+    // BOOTSTRAP
+    document.addEventListener("DOMContentLoaded", () => {
+      const navDuck = document.getElementById("nav-duck-svg");
+      const hudDuck = document.getElementById("hud-mascot");
+      const stageDuck = document.getElementById("stage-duck-orb");
+
+      if (navDuck) navDuck.innerHTML = getDuckySVG("solved");
+      if (hudDuck) hudDuck.innerHTML = getDuckySVG("listening");
+      if (stageDuck) stageDuck.innerHTML = getDuckySVG("solved");
+
+      runOSDetection();
+      renderContext("slack", false);
+      initFAQ();
+      initModal();
+      initCopy();
+      initSpacebar();
+
+      document.querySelectorAll(".pill-tab").forEach(tab => {
+        tab.addEventListener("click", () => {
+          renderContext(tab.dataset.ctx, true);
+        });
+      });
+    });
+  </script>
 </body>
 </html>

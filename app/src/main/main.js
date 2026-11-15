@@ -33,10 +33,17 @@ const { pasteAtCursor } = require('./paster');
 const { HotkeyManager, HOLD_KEY_MAP } = require('./hotkeys');
 const { createTrayIcon, createAppIconPngBuffer } = require('./tray-icons');
 
-const SUPABASE_URL = 'https://lwiznvgeemrkrildyyvw.supabase.co';
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://lwiznvgeemrkrildyyvw.supabase.co';
 const SUPABASE_ANON_KEY =
+  process.env.SUPABASE_ANON_KEY ||
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx3aXpudmdlZW1ya3JpbGR5eXZ3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMyODIyNzksImV4cCI6MjEwODg1ODI3OX0.eeh3Yp-ZkDKbZ-WyeZJ7ZtLXc86TeqbezFFp2QEhQo4';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+function getResolvedBackendUrl() {
+  if (process.env.SPEAKLY_BACKEND_URL) return process.env.SPEAKLY_BACKEND_URL.replace(/\/+$/, '');
+  const isProd = app?.isPackaged || process.env.NODE_ENV !== 'development';
+  return isProd ? 'https://speakly-backend-ie1b.onrender.com' : 'http://localhost:8787';
+}
 
 let dashboardWindow = null;
 let pillWindow = null;
@@ -335,15 +342,35 @@ function rebuildTrayMenu() {
   const modes = store.getAllModes();
   const hotkeyLabel = getHotkeyDisplayLabel(state.settings);
 
-  const modeItems = modes.map((m) => ({
-    label: m.name,
-    type: 'radio',
-    checked: state.settings.activeModeId === m.id,
-    click: () => {
-      store.updateSettings({ activeModeId: m.id });
-      broadcastState();
-    }
-  }));
+  const sub = state.subscription || {};
+  const isPro = sub.plan === 'pro' && (sub.status === 'active' || sub.status === 'on_trial');
+
+  const modeItems = modes.map((m) => {
+    const isFreeAllowed = m.id === 'smart' || m.id === 'raw';
+    const isLocked = !isPro && !isFreeAllowed;
+    return {
+      label: isLocked ? `${m.name} (🔒 Pro)` : m.name,
+      type: 'radio',
+      checked: state.settings.activeModeId === m.id,
+      click: () => {
+        if (isLocked) {
+          sendToPill('voxflow:pill-toast', {
+            kind: 'warning',
+            message: `${m.name} is a Pro mode. Upgrade for access.`
+          });
+          sendToDashboard('speakly:quota-exceeded', {
+            message: `${m.name} requires Speakly Pro.`,
+            limit: 3000,
+            current: 0
+          });
+          showDashboard();
+          return;
+        }
+        store.updateSettings({ activeModeId: m.id });
+        broadcastState();
+      }
+    };
+  });
 
   const menu = Menu.buildFromTemplate([
     {
@@ -458,6 +485,36 @@ async function insertFeedbackRow(accessToken, row) {
   return error || null;
 }
 
+async function getValidAccessToken() {
+  const state = store.getState();
+  const auth = state.auth || {};
+  if (auth.accessToken) return auth.accessToken;
+
+  if (auth.refreshToken) {
+    try {
+      const refreshClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+      });
+      const { data, error: refreshError } = await refreshClient.auth.refreshSession({
+        refresh_token: auth.refreshToken
+      });
+      if (!refreshError && data?.session) {
+        store.setAuth({
+          user: data.session.user || auth.user,
+          accessToken: data.session.access_token,
+          refreshToken: data.session.refresh_token || auth.refreshToken
+        });
+        broadcastState();
+        return data.session.access_token;
+      }
+    } catch (err) {
+      console.warn('[Auth Token Refresh Warning]:', err.message);
+    }
+  }
+
+  return '';
+}
+
 async function submitFeedback(payload) {
   const kind = FEEDBACK_KINDS.includes(payload?.kind) ? payload.kind : 'other';
   const message = typeof payload?.message === 'string' ? payload.message.trim() : '';
@@ -565,8 +622,28 @@ function captureActiveAppContext() {
         }
       }
     );
+  } else if (process.platform === 'win32') {
+    execFile(
+      'powershell',
+      [
+        '-NoProfile',
+        '-NonInteractive',
+        '-Command',
+        '$p = Get-Process | Where-Object { $_.MainWindowHandle -eq (Add-Type -MemberDefinition \'[DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();\' -Name "Win32" -Namespace "Win32" -PassThru)::GetForegroundWindow() } | Select-Object -First 1; if ($p) { "$($p.ProcessName) | $($p.MainWindowTitle)" }'
+      ],
+      { timeout: 1200 },
+      (err, stdout) => {
+        if (!err && stdout) {
+          lastActiveAppContext = String(stdout).trim().slice(0, 140);
+        }
+      }
+    );
   }
 }
+
+// 5 minutes max recording safety limit to protect API costs and avoid memory buildup
+const MAX_RECORDING_DURATION_MS = 5 * 60 * 1000;
+let recordingSafetyWatchdog = null;
 
 function triggerStartRecording({ source = 'hotkey' } = {}) {
   if (currentRecordingState !== 'idle') return;
@@ -593,6 +670,22 @@ function triggerStartRecording({ source = 'hotkey' } = {}) {
     triggerMode: state.settings.triggerMode
   });
 
+  // 5-minute safety shut-off watchdog (protects API costs and memory in case user forgets toggle is active)
+  if (recordingSafetyWatchdog) {
+    clearTimeout(recordingSafetyWatchdog);
+    recordingSafetyWatchdog = null;
+  }
+  recordingSafetyWatchdog = setTimeout(() => {
+    if (currentRecordingState === 'recording') {
+      console.warn('[Safety Watchdog] 5-minute maximum recording limit reached. Automatically stopping to protect API costs.');
+      sendToPill('voxflow:pill-toast', {
+        kind: 'warning',
+        message: 'Auto-stopped: 5 min limit reached'
+      });
+      triggerStopRecording();
+    }
+  }, MAX_RECORDING_DURATION_MS);
+
   // Asynchronously capture active app & window title while user speaks (0ms latency overhead)
   captureActiveAppContext();
 
@@ -618,6 +711,12 @@ let processingWatchdog = null;
 
 function triggerStopRecording() {
   if (currentRecordingState !== 'recording') return;
+
+  if (recordingSafetyWatchdog) {
+    clearTimeout(recordingSafetyWatchdog);
+    recordingSafetyWatchdog = null;
+  }
+
   currentRecordingState = 'processing';
   updateTrayIcon(false);
   rebuildTrayMenu();
@@ -646,6 +745,12 @@ function triggerStopRecording() {
 
 function triggerCancelRecording() {
   if (currentRecordingState === 'idle') return;
+
+  if (recordingSafetyWatchdog) {
+    clearTimeout(recordingSafetyWatchdog);
+    recordingSafetyWatchdog = null;
+  }
+
   currentRecordingState = 'idle';
   updateTrayIcon(false);
   if (hotkeyManager) hotkeyManager.notifyRecordingStoppedExternally();
@@ -1033,7 +1138,7 @@ function registerIpcHandlers() {
 
     try {
       if (accessToken) {
-        const backendUrl = (process.env.SPEAKLY_BACKEND_URL || (app.isPackaged || process.env.NODE_ENV !== 'development' ? 'https://speakly-backend-ie1b.onrender.com' : 'http://localhost:8787')).replace(/\/+$/, '');
+        const backendUrl = getResolvedBackendUrl();
         const res = await fetch(`${backendUrl}/api/v1/billing/checkout`, {
           method: 'POST',
           headers: {
@@ -1072,7 +1177,7 @@ function registerIpcHandlers() {
 
     try {
       if (accessToken) {
-        const backendUrl = (process.env.SPEAKLY_BACKEND_URL || (app.isPackaged || process.env.NODE_ENV !== 'development' ? 'https://speakly-backend-ie1b.onrender.com' : 'http://localhost:8787')).replace(/\/+$/, '');
+        const backendUrl = getResolvedBackendUrl();
         const res = await fetch(`${backendUrl}/api/v1/billing/portal`, {
           method: 'GET',
           headers: {
@@ -1253,6 +1358,14 @@ function registerIpcHandlers() {
     return updated;
   });
 
+  ipcMain.handle('voxflow:get-valid-token', async () => {
+    return getValidAccessToken();
+  });
+
+  ipcMain.handle('voxflow:get-backend-url', () => {
+    return getResolvedBackendUrl();
+  });
+
   ipcMain.handle('voxflow:check-permissions', () => {
     if (hotkeyManager && hotkeyManager.canUseLowLevelHook()) {
       hotkeyManager.configure(store.getState().settings);
@@ -1334,15 +1447,19 @@ function registerIpcHandlers() {
     try {
       const audioBuffer = Buffer.from(wavBytes);
       const activeMode = store.getActiveMode();
+      const predictedLangs = store.getPredictedLanguages();
 
-      const { rawText, finalText } = await transcribeAudio({
+      const token = await getValidAccessToken();
+
+      const { rawText, finalText, usage: returnedUsage } = await transcribeAudio({
         audioBuffer,
         mimeType: 'audio/wav',
         settings: state.settings,
         dictionary: state.dictionary,
         mode: activeMode,
         activeContext: lastActiveAppContext,
-        authToken: state.auth?.accessToken || ''
+        predictedLanguages: predictedLangs,
+        authToken: token
       });
 
       if (!finalText) {
@@ -1366,6 +1483,11 @@ function registerIpcHandlers() {
         provider: state.settings.provider
       });
 
+      // Broadcast latest usage to dashboard if returned by cloud
+      if (returnedUsage) {
+        sendToDashboard('speakly:usage-updated', returnedUsage);
+      }
+
       if (pasteResult.pasted) {
         sendToPill('voxflow:pill-toast', {
           kind: 'success',
@@ -1387,13 +1509,31 @@ function registerIpcHandlers() {
       finishIdle(1400);
     } catch (err) {
       console.error('Transcription pipeline error:', err);
-      sendToPill('voxflow:pill-toast', {
-        kind: 'error',
-        message: (err && err.message ? err.message : 'Transcription error').slice(0, 56)
-      });
-      sendToDashboard('voxflow:error', {
-        message: err && err.message ? err.message : 'Transcription failed.'
-      });
+      const isQuota = Boolean(err.quotaExceeded || (err.message && err.message.includes('quota reached')));
+
+      if (isQuota) {
+        sendToPill('voxflow:pill-toast', {
+          kind: 'warning',
+          message: 'Monthly cap reached, upgrade to Pro for unlimited usage'
+        });
+        sendToDashboard('speakly:quota-exceeded', {
+          message: err.message,
+          limit: err.quotaDetails?.limit || 3000,
+          current: err.quotaDetails?.current || 3000
+        });
+        if (dashboardWindow && !dashboardWindow.isDestroyed()) {
+          dashboardWindow.show();
+          dashboardWindow.focus();
+        }
+      } else {
+        sendToPill('voxflow:pill-toast', {
+          kind: 'error',
+          message: (err && err.message ? err.message : 'Transcription error').slice(0, 56)
+        });
+        sendToDashboard('voxflow:error', {
+          message: err && err.message ? err.message : 'Transcription failed.'
+        });
+      }
       finishIdle(2400);
     }
   });

@@ -55,7 +55,25 @@
   const statWords = document.getElementById('stat-words');
   const statSessions = document.getElementById('stat-sessions');
   const statTimeSaved = document.getElementById('stat-time-saved');
-  const statWpm = document.getElementById('stat-wpm');
+  const statQuotaValue = document.getElementById('stat-quota-value');
+  const statQuotaProgress = document.getElementById('stat-quota-progress');
+  const statQuotaFoot = document.getElementById('stat-quota-foot');
+  const settingsUsageText = document.getElementById('settings-usage-text');
+  const settingsUsageProgress = document.getElementById('settings-usage-progress');
+  const settingsUsageReset = document.getElementById('settings-usage-reset');
+  const settingsUsageResetDate = document.getElementById('settings-usage-reset-date');
+  const dictLockBanner = document.getElementById('dict-lock-banner');
+  const btnDictUpgradePro = document.getElementById('btn-dict-upgrade-pro');
+  const dictSubmitBtn = document.getElementById('dict-submit-btn');
+
+  // Rubber ducky quota modal elements
+  const quotaModal = document.getElementById('quota-modal');
+  const quotaDuckMascot = document.getElementById('quota-duck-mascot');
+  const quotaCloseBtn = document.getElementById('quota-close-btn');
+  const btnQuotaUpgradePro = document.getElementById('btn-quota-upgrade-pro');
+  const btnQuotaDismiss = document.getElementById('btn-quota-dismiss');
+
+  let currentUsage = { plan: 'free', wordsUsed: 0, wordLimit: 3000, periodEnd: null };
 
   const historyList = document.getElementById('history-list');
   const historyEmpty = document.getElementById('history-empty');
@@ -63,6 +81,10 @@
   const clearHistoryBtn = document.getElementById('clear-history-btn');
 
   const modesGrid = document.getElementById('modes-grid');
+  const settingsModesGrid = document.getElementById('settings-modes-grid');
+  const modesLockBanner = document.getElementById('modes-lock-banner');
+  const btnModesUpgradePro = document.getElementById('btn-modes-upgrade-pro');
+  const btnGotoModesTab = document.getElementById('btn-goto-modes-tab');
   const newModeBtn = document.getElementById('new-mode-btn');
 
   const dictionaryForm = document.getElementById('dictionary-form');
@@ -228,11 +250,177 @@
       statTimeSaved.textContent = `${Math.round(savedMinutes)} min`;
     }
 
-    if (secs >= 3 && words > 0) {
-      const wpm = Math.round(words / (secs / 60));
-      statWpm.textContent = `${Math.min(280, wpm)} WPM`;
-    } else {
-      statWpm.textContent = '— WPM';
+    renderUsageBar();
+  }
+
+  function renderUsageBar() {
+    const isPro = currentUsage.plan === 'pro';
+    const used = currentUsage.wordsUsed || 0;
+    const limit = currentUsage.wordLimit || 3000;
+
+    // Format reset date for free tier
+    let resetDateFormatted = '';
+    if (currentUsage.periodEnd) {
+      try {
+        const d = new Date(currentUsage.periodEnd);
+        resetDateFormatted = d.toLocaleDateString(undefined, {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+      } catch (_) {}
+    }
+
+    if (statQuotaValue) {
+      if (isPro) {
+        statQuotaValue.textContent = 'Unlimited';
+        statQuotaValue.style.color = '#34d399';
+        if (statQuotaProgress) {
+          statQuotaProgress.style.width = '100%';
+          statQuotaProgress.style.background = '#34d399';
+        }
+        if (statQuotaFoot) {
+          statQuotaFoot.textContent = '★ Speakly Pro (Unlimited Words)';
+        }
+      } else {
+        const pct = Math.min(100, Math.round((used / limit) * 100));
+        statQuotaValue.textContent = `${used.toLocaleString()} / ${limit.toLocaleString()}`;
+        statQuotaValue.style.color = used >= limit ? '#ef4444' : '#f4f4f5';
+        if (statQuotaProgress) {
+          statQuotaProgress.style.width = `${pct}%`;
+          statQuotaProgress.style.background = used >= limit ? '#ef4444' : '#ffd000';
+        }
+        if (statQuotaFoot) {
+          const remaining = limit - used > 0 ? (limit - used).toLocaleString() : 0;
+          if (resetDateFormatted) {
+            statQuotaFoot.textContent = `${remaining} free words · Refreshes ${resetDateFormatted}`;
+          } else {
+            statQuotaFoot.textContent = `${remaining} free words remaining`;
+          }
+        }
+      }
+    }
+
+    if (settingsUsageText && settingsUsageProgress) {
+      if (isPro) {
+        settingsUsageText.textContent = 'Unlimited words (Speakly Pro)';
+        settingsUsageText.style.color = '#34d399';
+        settingsUsageProgress.style.width = '100%';
+        settingsUsageProgress.style.background = '#34d399';
+        if (settingsUsageReset) settingsUsageReset.style.display = 'none';
+      } else {
+        const pct = Math.min(100, Math.round((used / limit) * 100));
+        settingsUsageText.textContent = `${used.toLocaleString()} / ${limit.toLocaleString()} words used this month`;
+        settingsUsageText.style.color = used >= limit ? '#ef4444' : '#f4f4f5';
+        settingsUsageProgress.style.width = `${pct}%`;
+        settingsUsageProgress.style.background = used >= limit ? '#ef4444' : '#ffd000';
+
+        if (settingsUsageReset && settingsUsageResetDate) {
+          if (resetDateFormatted) {
+            settingsUsageResetDate.textContent = resetDateFormatted;
+            settingsUsageReset.style.display = 'block';
+          } else {
+            settingsUsageReset.style.display = 'none';
+          }
+        }
+      }
+    }
+
+    // Personal Dictionary Lock Banner
+    if (dictLockBanner && dictInput && dictSubmitBtn) {
+      if (isPro) {
+        dictLockBanner.hidden = true;
+        dictInput.disabled = false;
+        dictSubmitBtn.disabled = false;
+        dictInput.placeholder = 'e.g. Acme Corp, PostgreSQL, ProductName, Alex Rivera';
+      } else {
+        dictLockBanner.hidden = false;
+        dictInput.disabled = true;
+        dictSubmitBtn.disabled = true;
+        dictInput.placeholder = '🔒 Personal Dictionary is locked on Free Tier (Upgrade to Pro)';
+      }
+    }
+  }
+
+  function getRubberDuckySVG(state = 'listening') {
+    let stateExtras = '';
+    if (state === 'listening') {
+      stateExtras = `
+        <ellipse cx="32" cy="34" rx="4" ry="5.5" fill="#0F172A" />
+        <circle cx="30.5" cy="32" r="1.8" fill="#FFFFFF" />
+        <circle cx="33.5" cy="35.5" r="0.9" fill="#FFFFFF" />
+        <path d="M22 34 C22 15, 50 15, 50 34" fill="none" stroke="#3B82F6" stroke-width="4.5" stroke-linecap="round" />
+        <rect x="37" y="29" width="7.5" height="14" rx="3.75" fill="#2563EB" />
+        <rect x="38.8" y="31.5" width="4" height="9" rx="2" fill="#60A5FA" />
+      `;
+    } else if (state === 'thinking') {
+      stateExtras = `
+        <path d="M26 35 Q32 29 38 35" fill="none" stroke="#0F172A" stroke-width="3.2" stroke-linecap="round" />
+        <circle cx="58" cy="18" r="3.2" fill="#F59E0B" />
+        <circle cx="67" cy="11" r="5" fill="#38BDF8" />
+      `;
+    } else if (state === 'solved') {
+      stateExtras = `
+        <path d="M27 34 Q33 27 39 34" fill="none" stroke="#0F172A" stroke-width="3.2" stroke-linecap="round" />
+        <ellipse cx="28" cy="41" rx="4.5" ry="2.5" fill="#FF8A8A" opacity="0.8" />
+        <path d="M68 8 L70 15 L77 17 L70 19 L68 26 L66 19 L59 17 L66 15 Z" fill="#FBBF24" />
+      `;
+    }
+
+    return `
+      <svg viewBox="0 0 100 95" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+        <ellipse cx="52" cy="86" rx="30" ry="4" fill="#38BDF8" opacity="0.25" />
+        <path d="M18 36 Q7 38 11 45 Q21 47 27 42 Z" fill="#FF6B00" />
+        <ellipse cx="52" cy="62" rx="31" ry="23" fill="#FFD000" />
+        <path d="M78 52 C88 42, 92 46, 82 62 Z" fill="#FFD000" />
+        <circle cx="36" cy="37" r="20.5" fill="#FFD000" />
+        <ellipse cx="34" cy="24" rx="10" ry="4.5" fill="#FFE866" opacity="0.55" />
+        <path d="M39 58 Q50 49 65 60 Q54 74 39 70 Z" fill="#F59E0B" />
+        ${stateExtras}
+      </svg>
+    `;
+  }
+
+  async function fetchUserUsage(token) {
+    let effectiveToken = token;
+    if (!effectiveToken && window.voxflow?.getValidToken) {
+      effectiveToken = await window.voxflow.getValidToken();
+    }
+    if (!effectiveToken) return;
+    try {
+      const backendUrl = window.voxflow?.getBackendUrl
+        ? await window.voxflow.getBackendUrl()
+        : 'https://speakly-backend-ie1b.onrender.com';
+      const res = await fetch(`${backendUrl}/api/v1/user/usage`, {
+        headers: { 'Authorization': `Bearer ${effectiveToken}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          currentUsage = {
+            plan: data.plan,
+            wordsUsed: data.wordsUsed,
+            wordLimit: data.wordLimit,
+            periodEnd: data.periodEnd
+          };
+          renderUsageBar();
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch user usage:', err.message);
+    }
+  }
+
+  function showQuotaExceededModal() {
+    if (quotaDuckMascot) {
+      quotaDuckMascot.innerHTML = getRubberDuckySVG('thinking');
+    }
+    if (quotaModal && typeof quotaModal.showModal === 'function') {
+      try {
+        if (!quotaModal.open) quotaModal.showModal();
+      } catch (_) {
+        quotaModal.show();
+      }
     }
   }
 
@@ -323,129 +511,202 @@
     }
   }
 
-  function renderModes(modes = [], activeModeId) {
-    modesGrid.replaceChildren();
+  function createModeCard(mode, activeModeId, isPro, gridId = 'modes') {
+    const isFreeTierAllowed = mode.id === 'smart' || mode.id === 'raw';
+    const isLocked = !isPro && !isFreeTierAllowed;
 
-    for (const mode of modes) {
-      const label = document.createElement('label');
-      label.className = 'mode-card';
+    const label = document.createElement('label');
+    label.className = `mode-card${isLocked ? ' is-locked' : ''}`;
 
-      const radio = document.createElement('input');
-      radio.type = 'radio';
-      radio.name = 'active_mode';
-      radio.value = mode.id;
-      radio.checked = mode.id === activeModeId;
-      radio.addEventListener('change', () => {
-        if (radio.checked) {
-          window.voxflow.updateSettings({ activeModeId: mode.id });
-        }
-      });
+    const radio = document.createElement('input');
+    radio.type = 'radio';
+    radio.name = `active_mode_${gridId}`;
+    radio.value = mode.id;
+    radio.checked = mode.id === activeModeId;
+    if (isLocked) {
+      radio.disabled = true;
+    }
 
-      const top = document.createElement('div');
-      top.className = 'mode-card-top';
+    const activateMode = () => {
+      if (isLocked) {
+        showQuotaExceededModal();
+        return;
+      }
+      window.voxflow.updateSettings({ activeModeId: mode.id });
+    };
 
-      const title = document.createElement('h2');
-      title.textContent = mode.name;
+    radio.addEventListener('change', () => {
+      if (radio.checked) activateMode();
+    });
 
-      const badge = document.createElement('span');
-      badge.className = 'pill-tag';
-      badge.textContent = mode.badge;
+    label.addEventListener('click', (e) => {
+      if (isLocked) {
+        e.preventDefault();
+        e.stopPropagation();
+        showQuotaExceededModal();
+      }
+    });
 
-      top.append(title, badge);
+    const top = document.createElement('div');
+    top.className = 'mode-card-top';
 
-      const desc = document.createElement('p');
-      desc.textContent = mode.description;
+    const titleWrap = document.createElement('div');
+    titleWrap.style.display = 'flex';
+    titleWrap.style.alignItems = 'center';
+    titleWrap.style.gap = '8px';
 
-      let targetSelectorWrap = null;
-      if (mode.id === 'code') {
-        targetSelectorWrap = document.createElement('div');
-        targetSelectorWrap.style.marginTop = '10px';
-        targetSelectorWrap.style.paddingTop = '10px';
-        targetSelectorWrap.style.borderTop = '1px solid var(--border)';
-        targetSelectorWrap.style.display = 'flex';
-        targetSelectorWrap.style.alignItems = 'center';
-        targetSelectorWrap.style.justifyContent = 'space-between';
-        targetSelectorWrap.style.gap = '8px';
+    const title = document.createElement('h2');
+    title.textContent = mode.name;
+    titleWrap.appendChild(title);
 
-        const selLabel = document.createElement('span');
-        selLabel.textContent = 'Target AI Model:';
-        selLabel.style.fontSize = '12px';
-        selLabel.style.fontWeight = '600';
-        selLabel.style.color = 'var(--text-secondary)';
+    if (isLocked) {
+      const lockBadge = document.createElement('span');
+      lockBadge.className = 'mode-card-lock-badge';
+      lockBadge.innerHTML = '🔒 Pro';
+      titleWrap.appendChild(lockBadge);
+    }
 
-        const select = document.createElement('select');
-        select.style.fontSize = '12px';
-        select.style.padding = '5px 8px';
-        select.style.borderRadius = '6px';
-        select.style.maxWidth = '165px';
+    const badge = document.createElement('span');
+    badge.className = 'pill-tag';
+    badge.textContent = mode.badge;
 
-        const aiTargets = [
-          { value: 'chatgpt', label: 'OpenAI / ChatGPT' },
-          { value: 'claude', label: 'Claude (Anthropic)' },
-          { value: 'gemini', label: 'Google Gemini' },
-          { value: 'cursor', label: 'Cursor / Coding IDE' }
-        ];
-        const currentTarget = appState?.settings?.aiPromptTarget || 'chatgpt';
-        for (const t of aiTargets) {
-          const opt = document.createElement('option');
-          opt.value = t.value;
-          opt.textContent = t.label;
-          if (t.value === currentTarget) opt.selected = true;
-          select.appendChild(opt);
-        }
+    top.append(titleWrap, badge);
 
-        select.addEventListener('click', (e) => {
-          e.stopPropagation();
-        });
-        select.addEventListener('change', (e) => {
-          e.stopPropagation();
-          window.voxflow.updateSettings({ aiPromptTarget: select.value });
-        });
+    const desc = document.createElement('p');
+    desc.textContent = mode.description;
 
-        targetSelectorWrap.append(selLabel, select);
+    let targetSelectorWrap = null;
+    if (mode.id === 'code') {
+      targetSelectorWrap = document.createElement('div');
+      targetSelectorWrap.style.marginTop = '10px';
+      targetSelectorWrap.style.paddingTop = '10px';
+      targetSelectorWrap.style.borderTop = '1px solid var(--border)';
+      targetSelectorWrap.style.display = 'flex';
+      targetSelectorWrap.style.alignItems = 'center';
+      targetSelectorWrap.style.justifyContent = 'space-between';
+      targetSelectorWrap.style.gap = '8px';
+
+      const selLabel = document.createElement('span');
+      selLabel.textContent = 'Target AI Model:';
+      selLabel.style.fontSize = '12px';
+      selLabel.style.fontWeight = '600';
+      selLabel.style.color = 'var(--text-secondary)';
+
+      const select = document.createElement('select');
+      select.style.fontSize = '12px';
+      select.style.padding = '5px 8px';
+      select.style.borderRadius = '6px';
+      select.style.maxWidth = '165px';
+      if (isLocked) select.disabled = true;
+
+      const aiTargets = [
+        { value: 'chatgpt', label: 'OpenAI / ChatGPT' },
+        { value: 'claude', label: 'Claude (Anthropic)' },
+        { value: 'gemini', label: 'Google Gemini' },
+        { value: 'cursor', label: 'Cursor / Coding IDE' }
+      ];
+      const currentTarget = appState?.settings?.aiPromptTarget || 'chatgpt';
+      for (const t of aiTargets) {
+        const opt = document.createElement('option');
+        opt.value = t.value;
+        opt.textContent = t.label;
+        if (t.value === currentTarget) opt.selected = true;
+        select.appendChild(opt);
       }
 
-      const footer = document.createElement('div');
-      footer.className = 'mode-card-footer';
+      select.addEventListener('click', (e) => {
+        e.stopPropagation();
+      });
+      select.addEventListener('change', (e) => {
+        e.stopPropagation();
+        window.voxflow.updateSettings({ aiPromptTarget: select.value });
+      });
 
+      targetSelectorWrap.append(selLabel, select);
+    }
+
+    const footer = document.createElement('div');
+    footer.className = 'mode-card-footer';
+
+    if (isLocked) {
+      const lockCta = document.createElement('button');
+      lockCta.type = 'button';
+      lockCta.className = 'mode-card-lock-cta';
+      lockCta.textContent = '🔒 Unlock with Pro';
+      lockCta.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        window.voxflow.openCheckout();
+      });
+      footer.appendChild(lockCta);
+    } else {
       const activeSpan = document.createElement('span');
       activeSpan.className = 'active-indicator';
       activeSpan.textContent = mode.id === activeModeId ? '✓ Active Mode' : 'Click to activate';
       footer.appendChild(activeSpan);
+    }
 
-      if (!mode.builtIn) {
-        const btnWrap = document.createElement('div');
-        btnWrap.style.display = 'flex';
-        btnWrap.style.gap = '6px';
+    if (!mode.builtIn) {
+      const btnWrap = document.createElement('div');
+      btnWrap.style.display = 'flex';
+      btnWrap.style.gap = '6px';
 
-        const editBtn = document.createElement('button');
-        editBtn.type = 'button';
-        editBtn.className = 'btn btn-ghost btn-sm';
-        editBtn.textContent = 'Edit';
-        editBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          openCustomModeModal(mode);
-        });
+      const editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.className = 'btn btn-ghost btn-sm';
+      editBtn.textContent = 'Edit';
+      editBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openCustomModeModal(mode);
+      });
 
-        const delBtn = document.createElement('button');
-        delBtn.type = 'button';
-        delBtn.className = 'btn btn-ghost btn-sm';
-        delBtn.textContent = 'Delete';
-        delBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          window.voxflow.deleteCustomMode(mode.id);
-        });
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'btn btn-ghost btn-sm';
+      delBtn.textContent = 'Delete';
+      delBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        window.voxflow.deleteCustomMode(mode.id);
+      });
 
-        btnWrap.append(editBtn, delBtn);
-        footer.appendChild(btnWrap);
+      btnWrap.append(editBtn, delBtn);
+      footer.appendChild(btnWrap);
+    }
+
+    if (targetSelectorWrap) {
+      label.append(radio, top, desc, targetSelectorWrap, footer);
+    } else {
+      label.append(radio, top, desc, footer);
+    }
+    return label;
+  }
+
+  function renderModes(modes = [], activeModeId) {
+    const isPro = currentUsage.plan === 'pro';
+
+    // Lock banner visibility in AI Modes tab
+    if (modesLockBanner) {
+      modesLockBanner.hidden = isPro;
+    }
+
+    // Render Tab 2: AI Modes Grid
+    if (modesGrid) {
+      modesGrid.replaceChildren();
+      for (const mode of modes) {
+        const card = createModeCard(mode, activeModeId, isPro, 'tab_modes');
+        modesGrid.appendChild(card);
       }
+    }
 
-      if (targetSelectorWrap) {
-        label.append(radio, top, desc, targetSelectorWrap, footer);
-      } else {
-        label.append(radio, top, desc, footer);
+    // Render Tab 4: Settings AI Modes Grid
+    if (settingsModesGrid) {
+      settingsModesGrid.replaceChildren();
+      for (const mode of modes) {
+        const card = createModeCard(mode, activeModeId, isPro, 'settings_modes');
+        settingsModesGrid.appendChild(card);
       }
-      modesGrid.appendChild(label);
     }
   }
 
@@ -557,6 +818,8 @@
       // Render Lemon Squeezy subscription & billing status
       const sub = state.subscription || {};
       const isPro = sub.plan === 'pro' && (sub.status === 'active' || sub.status === 'on_trial');
+      currentUsage.plan = isPro ? 'pro' : 'free';
+      renderModes(state.modes, settings.activeModeId);
       const subBadge = document.getElementById('sub-plan-badge');
       const subDesc = document.getElementById('sub-plan-desc');
       const btnUpgrade = document.getElementById('btn-upgrade-pro');
@@ -564,22 +827,27 @@
 
       if (subBadge && subDesc && btnUpgrade && btnBilling) {
         if (isPro) {
-          subBadge.textContent = '★ Speakly Pro (Active)';
-          subBadge.style.background = 'rgba(52, 211, 153, 0.15)';
+          subBadge.textContent = 'Pro';
+          subBadge.style.background = 'rgba(52, 211, 153, 0.12)';
           subBadge.style.color = '#34d399';
-          subBadge.style.borderColor = 'rgba(52, 211, 153, 0.3)';
-          subDesc.textContent = sub.renewsAt ? `Renews on ${new Date(sub.renewsAt).toLocaleDateString()}` : 'Unlimited voice intelligence active.';
+          subBadge.style.borderColor = 'rgba(52, 211, 153, 0.25)';
+          subDesc.textContent = sub.renewsAt ? `Renews on ${new Date(sub.renewsAt).toLocaleDateString()}` : 'Unlimited voice dictation active.';
           btnUpgrade.hidden = true;
           btnBilling.hidden = false;
         } else {
-          subBadge.textContent = sub.status === 'trial' ? 'Early Access Trial' : 'Free Tier';
-          subBadge.style.background = 'rgba(255, 208, 0, 0.15)';
+          subBadge.textContent = 'Free Tier';
+          subBadge.style.background = 'rgba(255, 208, 0, 0.12)';
           subBadge.style.color = '#ffd000';
-          subBadge.style.borderColor = 'rgba(255, 208, 0, 0.3)';
-          subDesc.textContent = 'Upgrade for unlimited sub-second dictation across all apps.';
+          subBadge.style.borderColor = 'rgba(255, 208, 0, 0.25)';
+          subDesc.textContent = 'Includes 3,000 words per month with Smart Polish & Fast Verbatim.';
           btnUpgrade.hidden = false;
           btnBilling.hidden = true;
         }
+      }
+
+      // Fetch user usage from backend if user is signed in
+      if (state.auth && state.auth.user) {
+        fetchUserUsage(state.auth.accessToken);
       }
     } else {
       if (accountBadge) {
@@ -1017,9 +1285,79 @@
       } finally {
         setTimeout(() => {
           btnUpgradePro.disabled = false;
-          btnUpgradePro.textContent = 'Upgrade to Pro ($10/mo)';
+          btnUpgradePro.textContent = 'Upgrade to Pro (10€/mo)';
         }, 2000);
       }
+    });
+  }
+
+  if (btnDictUpgradePro) {
+    btnDictUpgradePro.addEventListener('click', async () => {
+      btnDictUpgradePro.disabled = true;
+      btnDictUpgradePro.textContent = 'Opening checkout…';
+      try {
+        await window.voxflow.openCheckout();
+      } catch (err) {
+        console.error('Checkout error:', err);
+      } finally {
+        setTimeout(() => {
+          btnDictUpgradePro.disabled = false;
+          btnDictUpgradePro.textContent = 'Upgrade to Pro (10€/mo)';
+        }, 2000);
+      }
+    });
+  }
+
+  if (btnModesUpgradePro) {
+    btnModesUpgradePro.addEventListener('click', async () => {
+      btnModesUpgradePro.disabled = true;
+      btnModesUpgradePro.textContent = 'Opening checkout…';
+      try {
+        await window.voxflow.openCheckout();
+      } catch (err) {
+        console.error('Checkout error:', err);
+      } finally {
+        setTimeout(() => {
+          btnModesUpgradePro.disabled = false;
+          btnModesUpgradePro.textContent = 'Upgrade to Pro (10€/mo)';
+        }, 2000);
+      }
+    });
+  }
+
+  if (btnGotoModesTab) {
+    btnGotoModesTab.addEventListener('click', () => {
+      switchTab('modes');
+    });
+  }
+
+  if (btnQuotaUpgradePro) {
+    btnQuotaUpgradePro.addEventListener('click', async () => {
+      btnQuotaUpgradePro.disabled = true;
+      btnQuotaUpgradePro.textContent = 'Opening checkout…';
+      try {
+        await window.voxflow.openCheckout();
+        if (quotaModal && quotaModal.open) quotaModal.close();
+      } catch (err) {
+        console.error('Checkout error:', err);
+      } finally {
+        setTimeout(() => {
+          btnQuotaUpgradePro.disabled = false;
+          btnQuotaUpgradePro.textContent = 'Upgrade to Pro (10€/month) →';
+        }, 2000);
+      }
+    });
+  }
+
+  if (quotaCloseBtn) {
+    quotaCloseBtn.addEventListener('click', () => {
+      if (quotaModal && quotaModal.open) quotaModal.close();
+    });
+  }
+
+  if (btnQuotaDismiss) {
+    btnQuotaDismiss.addEventListener('click', () => {
+      if (quotaModal && quotaModal.open) quotaModal.close();
     });
   }
 
@@ -1035,7 +1373,7 @@
       } finally {
         setTimeout(() => {
           btnManageBilling.disabled = false;
-          btnManageBilling.textContent = 'Manage Billing & VAT';
+          btnManageBilling.textContent = 'Manage Subscription';
         }, 2000);
       }
     });
@@ -1274,6 +1612,21 @@
     globalAlertText.textContent = message;
     globalAlert.hidden = false;
   });
+  window.voxflow.onQuotaExceeded((data) => {
+    currentUsage.wordsUsed = data.current || 3000;
+    renderUsageBar();
+    showQuotaExceededModal();
+  });
+  if (typeof window.voxflow.onUsageUpdated === 'function') {
+    window.voxflow.onUsageUpdated((data) => {
+      if (data && typeof data.wordsUsed === 'number') {
+        currentUsage.wordsUsed = data.wordsUsed;
+        if (data.plan) currentUsage.plan = data.plan;
+        if (data.wordLimit !== undefined) currentUsage.wordLimit = data.wordLimit;
+        renderUsageBar();
+      }
+    });
+  }
 
   // Initial Boot
   const DASHBOARD_KITS = [

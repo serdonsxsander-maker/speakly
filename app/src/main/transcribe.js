@@ -59,6 +59,70 @@ function basicCleanup(text) {
   return out;
 }
 
+/**
+ * Deterministic fast-path cleanup for short utterances (1-4 words).
+ * Prevents LLM over-expansion/hallucination and returns in <150ms.
+ */
+function fastPathShortUtterance(text) {
+  if (!text) return '';
+  let out = text.trim();
+
+  // Strip brackets or whisper noise
+  out = out.replace(/\[[^\]]*\]|\([^)]*\)/g, '').trim();
+  if (!out) return '';
+
+  const lower = out.toLowerCase().trim();
+  const lowerStripped = lower.replace(/[.!,?]+$/g, '').trim();
+
+  // Common developer commands & syntax (preserve exact lowercase/casing without adding period)
+  const codeCommands = new Set([
+    'git status', 'git diff', 'git push', 'git pull', 'git add', 'git commit', 'git log', 'git checkout',
+    'npm install', 'npm test', 'npm start', 'npm run dev', 'npm build', 'pnpm dev', 'yarn dev',
+    'console.log', 'return true', 'return false', 'undefined', 'null', 'true', 'false',
+    'ls', 'pwd', 'cd', 'clear', 'docker ps', 'docker compose up', 'docker compose down'
+  ]);
+
+  if (codeCommands.has(lower) || codeCommands.has(lowerStripped)) {
+    return codeCommands.has(lower) ? lower : lowerStripped;
+  }
+
+  // Common short affirmations and interjections (English & Dutch/Flemish)
+  const canonicalMap = {
+    'ok': 'OK.',
+    'okay': 'OK.',
+    'k': 'OK.',
+    'ja': 'Ja.',
+    'nee': 'Nee.',
+    'yes': 'Yes.',
+    'no': 'No.',
+    'thanks': 'Thanks.',
+    'thank you': 'Thank you.',
+    'bedankt': 'Bedankt.',
+    'dank u': 'Dank u.',
+    'dankje': 'Dank je.',
+    'cursor': 'Cursor',
+    'claude': 'Claude',
+    'speakly': 'Speakly',
+    'antigravity': 'Antigravity',
+    'groq': 'Groq',
+    'wispr': 'Wispr',
+    'perfect': 'Perfect.',
+    'great': 'Great.',
+    'sure': 'Sure.',
+    'sounds good': 'Sounds good.',
+    'prima': 'Prima.',
+    'goed': 'Goed.',
+    'klopt': 'Klopt.',
+    'inderdaad': 'Inderdaad.'
+  };
+
+  if (canonicalMap[lower]) {
+    return canonicalMap[lower];
+  }
+
+  return basicCleanup(out);
+}
+
 // Elite Context-Aware Speech & Grammar Engine (Wispr Flow / Superwhisper grade)
 const GRAMMAR_INSTRUCTION = `You are Speakly's elite voice-to-text editor (like Wispr Flow / Superwhisper). Transform raw speech-to-text output into crisp, natural, ready-to-send written text while preserving the speaker's authentic voice and language.
 1. Fix Phonetic & Context Mishears: Speech-to-text often mishears words phonetically. Use the surrounding sentence context, acoustic confidence hints, and active app context to silently fix obvious mishears in English, Dutch, or other languages (e.g., "force recognition" -> "voice recognition"; "Croc" / "GROC" / "Grok" when discussing AI/speech models -> "Groq"; "in a tablet" when talking about a MacBook/browser window -> "in a tab"; "Whisper" when comparing voice dictation companies -> "Wispr"; "AngularGravity" / "Integrity" -> "Antigravity"; "Courser" -> "Cursor"; "alarm the microphone" -> "allow the microphone"; Dutch "speelfouten" when discussing text/writing -> "spelfouten").
@@ -274,7 +338,7 @@ function getBackendUrl(settings) {
   return BACKEND_URL;
 }
 
-async function transcribeViaBackend({ audioBuffer, mimeType, language, dictionary, mode, authToken = '', backendUrl = '' }) {
+async function transcribeViaBackend({ audioBuffer, mimeType, language, dictionary, mode, activeContext = '', userProfile = null, predictedLanguages = [], authToken = '', backendUrl = '' }) {
   const base64Audio = audioBuffer.toString('base64');
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 15000);
@@ -298,6 +362,9 @@ async function transcribeViaBackend({ audioBuffer, mimeType, language, dictionar
         mimeType,
         language,
         dictionary,
+        activeContext,
+        userProfile,
+        predictedLanguages,
         modeId: mode?.id || 'smart',
         modePrompt: mode?.prompt || ''
       }),
@@ -305,6 +372,25 @@ async function transcribeViaBackend({ audioBuffer, mimeType, language, dictionar
     });
   } finally {
     clearTimeout(timer);
+  }
+
+  if (res.status === 402) {
+    let quotaError = 'Monthly cap reached, upgrade to Pro for unlimited usage';
+    let quotaDetails = { quotaExceeded: true, limit: 3000, current: 3000 };
+    try {
+      const errJson = await res.json();
+      if (errJson?.error) quotaError = errJson.error;
+      quotaDetails = {
+        quotaExceeded: true,
+        limit: errJson?.limit || 3000,
+        current: errJson?.current || 3000,
+        periodEnd: errJson?.periodEnd || null
+      };
+    } catch {}
+    const err = new Error(quotaError);
+    err.quotaExceeded = true;
+    err.quotaDetails = quotaDetails;
+    throw err;
   }
 
   if (res.status === 429) {
@@ -331,7 +417,8 @@ async function transcribeViaBackend({ audioBuffer, mimeType, language, dictionar
 
   return {
     rawText: data.rawText || '',
-    finalText: data.finalText || ''
+    finalText: data.finalText || '',
+    usage: data.usage || null
   };
 }
 
@@ -370,7 +457,7 @@ async function callWhisperStt({ baseUrl, apiKey, sttModel, audioBuffer, mimeType
   }
 }
 
-async function transcribeDirect({ audioBuffer, mimeType, settings, dictionary, mode, activeContext = '' }) {
+async function transcribeDirect({ audioBuffer, mimeType, settings, dictionary, mode, activeContext = '', predictedLanguages = [] }) {
   const providerKey = settings.provider === 'groq' ? 'groq' : 'openai';
   const providerCfg = PROVIDERS[providerKey];
   let apiKey = (providerKey === 'groq' ? settings.groqApiKey : settings.openaiApiKey || '').trim();
@@ -384,9 +471,29 @@ async function transcribeDirect({ audioBuffer, mimeType, settings, dictionary, m
   }
 
   // Build a natural proper-noun conditioning string (never prefix with "Vocabulary:" so Whisper never echoes it)
-  const coreTerms = ['Speakly', 'Groq', 'OpenAI', 'Wispr', 'Antigravity', 'Cursor', 'MacBook', 'Windows'];
-  const mergedTerms = [...new Set([...(dictionary || []), ...coreTerms])].slice(0, 45);
-  const whisperPrompt = mergedTerms.join(', ');
+  // Cap to top 20 most relevant terms and format naturally as a punctuated sentence
+  const coreTerms = ['Speakly', 'Cursor', 'Claude', 'Antigravity', 'Wispr', 'Groq'];
+  const userTerms = (dictionary || []).filter((t) => t && !/^vocabulary:?$/i.test(String(t).trim()));
+  const mergedTerms = [...new Set([...userTerms, ...coreTerms])].slice(0, 20);
+
+  // If user has Auto-Detect enabled, condition Whisper acoustic bias towards their top predicted/frequent languages
+  // (e.g. Dutch & English) while still allowing Whisper's full multilingual encoder to recognize any language
+  let languageHint = '';
+  if (!settings.language && Array.isArray(predictedLanguages) && predictedLanguages.length > 0) {
+    const langNames = {
+      nl: 'Nederlands',
+      en: 'English',
+      fr: 'Français',
+      de: 'Deutsch',
+      es: 'Español'
+    };
+    const topLangs = predictedLanguages.slice(0, 2).map((code) => langNames[code] || code).filter(Boolean);
+    if (topLangs.length > 0) {
+      languageHint = `Spoken primarily in ${topLangs.join(' or ')}. `;
+    }
+  }
+
+  const whisperPrompt = `${languageHint}${mergedTerms.length > 0 ? `${mergedTerms.join(', ')}.` : ''}`.trim();
 
   let sttRes = await callWhisperStt({
     baseUrl: providerCfg.baseUrl,
@@ -433,6 +540,13 @@ async function transcribeDirect({ audioBuffer, mimeType, settings, dictionary, m
     return { rawText: '', finalText: '' };
   }
 
+  // Fast-Path for short utterances (1-4 words) in Direct API mode:
+  // Bypass LLM inflation and return instant deterministic result
+  const rawWordCount = rawText.trim().split(/\s+/).filter(Boolean).length;
+  if (rawWordCount >= 1 && rawWordCount <= 4 && (!mode || (mode.id !== 'notes' && mode.id !== 'email'))) {
+    return { rawText, finalText: fastPathShortUtterance(rawText) };
+  }
+
   // Extract low-confidence acoustic segments from Whisper verbose_json (avg_logprob < -0.24)
   // so the LLM knows specifically where phonetic mishears ("force" vs "voice", "Croc" vs "Groq") may have occurred!
   const uncertainSegments = [];
@@ -467,9 +581,34 @@ async function transcribeDirect({ audioBuffer, mimeType, settings, dictionary, m
       ? `\nTarget AI Assistant for this prompt: ${aiTargetMap[settings.aiPromptTarget] || 'OpenAI ChatGPT'}. Structure the prompt clearly for this model.`
       : '';
   const vocabPrompt = mergedTerms.length > 0 ? `\nPreferred spelling of terms/names: ${mergedTerms.join(', ')}.` : '';
-  const contextPrompt = activeContext
-    ? `\nActive application/window where the user is dictating: "${activeContext}". Use this context to resolve ambiguous technical or domain words accurately.`
-    : '';
+  // Format active application context & style bias
+  let contextPrompt = '';
+  if (activeContext) {
+    const ctxLower = activeContext.toLowerCase();
+    let appStyleBias = '';
+
+    if (/cursor|code|vscode|terminal|iterm|alacritty|warp|xcode|sublime|intellij|webstorm/i.test(ctxLower)) {
+      appStyleBias = ' The active app is a developer environment/IDE. Bias towards exact programming syntax, code snippets, camelCase/snake_case variable names, CLI command flags, and technical accuracy. Never capitalize terminal commands.';
+    } else if (/slack|discord|teams|messages|telegram|whatsapp|signal/i.test(ctxLower)) {
+      appStyleBias = ' The active app is a chat/messaging app. Maintain a natural, casual, friendly conversational tone. Avoid stiff formality.';
+    } else if (/mail|outlook|spark|thunderbird|superhuman|gmail/i.test(ctxLower)) {
+      appStyleBias = ' The active app is an email client. Format cleanly with clear paragraphs, polite professional tone, and natural greetings/sign-offs.';
+    } else if (/notion|obsidian|docs|word|bear|craft/i.test(ctxLower)) {
+      appStyleBias = ' The active app is a document/notes editor. Preserve structured thinking, clean lists, and editorial clarity.';
+    }
+
+    contextPrompt = `\nActive application/window where the user is dictating: "${activeContext}". Use this context to resolve ambiguous words accurately.${appStyleBias}`;
+  }
+
+  // Format user profile style & language context
+  let langPrompt = '';
+  if (settings.language) {
+    langPrompt = `\nUser's Preferred Dictation Language: "${settings.language}". Always output fluent text matching this dialect (e.g. natural Belgian Dutch/Flemish vs Netherlandic Dutch if nl-BE, or British vs American English if specified).`;
+  } else if (Array.isArray(predictedLanguages) && predictedLanguages.length > 0) {
+    const langNames = { nl: 'Dutch (Nederlands/Vlaams)', en: 'English', fr: 'French (Français)', de: 'German (Deutsch)', es: 'Spanish (Español)' };
+    const readable = predictedLanguages.slice(0, 3).map((l) => langNames[l] || l).join(', ');
+    langPrompt = `\nUser frequently speaks in: ${readable}. Recognize and transcribe in the spoken language without translating. If ambiguous, favor the speaker's frequent languages while keeping the authentic original language.`;
+  }
   const confidenceHint =
     uncertainSegments.length > 0
       ? `\n<acoustic_uncertainty_hint>\nThe speech-to-text engine had low acoustic confidence on: ${uncertainSegments.join('; ')}. Carefully check those words for phonetic/homophone mishears against the sentence context and preferred vocabulary.\n</acoustic_uncertainty_hint>`
@@ -486,7 +625,7 @@ async function transcribeDirect({ audioBuffer, mimeType, settings, dictionary, m
           temperature: 0.1,
           max_tokens: 1500,
           messages: [
-            { role: 'system', content: customPrompt + userPrompt + aiTargetPrompt + vocabPrompt + contextPrompt },
+            { role: 'system', content: customPrompt + userPrompt + langPrompt + aiTargetPrompt + vocabPrompt + contextPrompt },
             { role: 'user', content: `<raw_dictation>\n${rawText}\n</raw_dictation>${confidenceHint}` }
           ]
         };
@@ -525,34 +664,75 @@ async function transcribeDirect({ audioBuffer, mimeType, settings, dictionary, m
   return { rawText, finalText: basicCleanup(rawText) };
 }
 
-async function transcribeAudio({ audioBuffer, mimeType = 'audio/wav', settings, dictionary = [], mode, activeContext = '', authToken = '' }) {
+async function transcribeAudio({ audioBuffer, mimeType = 'audio/wav', settings, dictionary = [], mode, activeContext = '', predictedLanguages = [], authToken = '' }) {
   // 0. STRICT OFFLINE MODE: 100% On-Device execution. Zero cloud calls, zero API keys required.
   if (settings.provider === 'local') {
     return transcribeLocal({ audioBuffer, settings, dictionary, mode });
   }
 
-  // 1. If the user has configured an API key for their selected provider (Groq or OpenAI),
-  // use their selected provider & AI formatting mode directly!
-  const activeKey =
-    (settings.provider === 'groq' ? settings.groqApiKey : settings.openaiApiKey) ||
-    (settings.provider === 'groq' ? process.env.GROQ_API_KEY : process.env.OPENAI_API_KEY) ||
-    '';
-  if (activeKey && activeKey.trim()) {
+  // 1. If user is signed in to Speakly (has an auth token), route via Speakly Secure Backend Proxy
+  // so usage tracking, word counting, and subscription benefits work seamlessly.
+  if (authToken && String(authToken).trim()) {
     try {
-      return await transcribeDirect({ audioBuffer, mimeType, settings, dictionary, mode, activeContext });
-    } catch (directErr) {
-      console.warn('Direct API error, trying backend proxy fallback:', directErr.message);
+      const fullName = [settings.userFirstName, settings.userLastName].map((s) => String(s || '').trim()).filter(Boolean).join(' ');
+      const backendResult = await transcribeViaBackend({
+        audioBuffer,
+        mimeType,
+        language: settings.language,
+        dictionary,
+        mode,
+        activeContext,
+        userProfile: {
+          firstName: settings.userFirstName || '',
+          lastName: settings.userLastName || '',
+          fullName,
+          preferredLanguage: settings.language || ''
+        },
+        predictedLanguages,
+        authToken,
+        backendUrl: getBackendUrl(settings)
+      });
+      if (backendResult && backendResult.finalText) {
+        return backendResult;
+      }
+    } catch (backendErr) {
+      console.log('Backend proxy error:', backendErr.message);
+      // If backend proxy returned a specific error (e.g. rate limit, quota exceeded), rethrow so user sees it in toast & modal
+      if (backendErr.quotaExceeded || backendErr.message.includes('quota reached') || backendErr.message.includes('Rate limit') || backendErr.message.includes('Monthly cap reached')) {
+        throw backendErr;
+      }
     }
   }
 
-  // 2. Fallback to Speakly Secure Backend Proxy (Zero-key beta tester experience)
+  // 2. If the user has explicitly entered their own API key, use it as direct engine
+  const activeKey =
+    (settings.provider === 'groq' ? settings.groqApiKey : settings.openaiApiKey) || '';
+  if (activeKey && activeKey.trim()) {
+    try {
+      return await transcribeDirect({ audioBuffer, mimeType, settings, dictionary, mode, activeContext, predictedLanguages });
+    } catch (directErr) {
+      console.warn('Direct API error:', directErr.message);
+      throw directErr;
+    }
+  }
+
+  // 3. Fallback to backend without auth token (e.g. for guest preview if supported)
   try {
+    const fullName = [settings.userFirstName, settings.userLastName].map((s) => String(s || '').trim()).filter(Boolean).join(' ');
     const backendResult = await transcribeViaBackend({
       audioBuffer,
       mimeType,
       language: settings.language,
       dictionary,
       mode,
+      activeContext,
+      userProfile: {
+        firstName: settings.userFirstName || '',
+        lastName: settings.userLastName || '',
+        fullName,
+        preferredLanguage: settings.language || ''
+      },
+      predictedLanguages,
       authToken,
       backendUrl: getBackendUrl(settings)
     });
@@ -560,9 +740,7 @@ async function transcribeAudio({ audioBuffer, mimeType = 'audio/wav', settings, 
       return backendResult;
     }
   } catch (backendErr) {
-    console.log('Backend proxy unavailable or error:', backendErr.message);
-    // If backend proxy returned a specific error (e.g. rate limit), rethrow so user sees it in toast
-    if (backendErr.message.includes('Rate limit') || backendErr.message.includes('Speakly Cloud')) {
+    if (backendErr.quotaExceeded || backendErr.message.includes('quota reached') || backendErr.message.includes('Rate limit') || backendErr.message.includes('Monthly cap reached')) {
       throw backendErr;
     }
   }

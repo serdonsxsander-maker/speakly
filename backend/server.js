@@ -1274,10 +1274,14 @@ const server = http.createServer(async (req, res) => {
         }
       }
 
-      // Free Plan Restriction: Personal Dictionary / Library is LOCKED to Pro users
-      // If user is on free plan, strip any custom vocabulary terms passed
+      // Free Plan Restriction: Personal Dictionary & Advanced AI Modes (Email, Notes, Dev) are LOCKED to Pro users
+      // If user is on free plan, strip any custom vocabulary terms and fall back to Smart Polish if locked mode requested
       if (userPlan === 'free') {
         dictionary = [];
+        if (modeId !== 'smart' && modeId !== 'raw') {
+          modeId = 'smart';
+          modePrompt = '';
+        }
       }
 
       // 5. In-Memory Transcribe & Polish (Zero Audio Persistence Guarantee)

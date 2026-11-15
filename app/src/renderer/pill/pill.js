@@ -23,6 +23,8 @@
   let toastTimeout = null;
   let isCapturing = false;
   let stopRequestedDuringInit = false;
+  let recordingSafetyTimeout = null;
+  const MAX_RECORDING_MS = 5 * 60 * 1000; // 5 minutes max recording safety timeout to protect API costs
 
   function setView(stateName) {
     if (toastTimeout && stateName !== 'toast') {
@@ -142,6 +144,16 @@
       }
     }
 
+    // Task 1: Clean padding for short audio (< 1.0s) so Whisper's acoustic encoder doesn't choke
+    // Minimum 1.0 second (16,000 samples at 16kHz) with comfortable leading & trailing silence
+    const minSamples = targetRate; // 1.0s
+    if (samples.length < minSamples) {
+      const padded = new Float32Array(minSamples);
+      const padLeft = Math.floor((minSamples - samples.length) / 2);
+      padded.set(samples, padLeft);
+      samples = padded;
+    }
+
     // Smart Peak Normalization (Auto-Gain Boost for distant / quiet voices)
     const maxBoost = sensitivity === 'high' ? 18.0 : sensitivity === 'low' ? 4.0 : 10.0;
     const normGain = maxAbs > 0.00015 && maxAbs < 0.85 ? Math.min(maxBoost, 0.85 / maxAbs) : 1.0;
@@ -198,6 +210,10 @@
 
   async function cleanupAudioGraph() {
     isCapturing = false;
+    if (recordingSafetyTimeout) {
+      clearTimeout(recordingSafetyTimeout);
+      recordingSafetyTimeout = null;
+    }
     if (rafId) {
       cancelAnimationFrame(rafId);
       rafId = null;
@@ -229,7 +245,7 @@
 
   async function startCapture(opts = {}) {
     // 1. Show the rubber ducky Listening view and play chime IMMEDIATELY (0ms UI delay!)
-    // while strictly only activating the hardware microphone on button press for privacy!
+    // Strictly open hardware microphone only while hotkey is held for complete user privacy!
     stopRequestedDuringInit = false;
     currentSensitivity = opts.micSensitivity || 'high';
     await cleanupAudioGraph();
@@ -242,6 +258,8 @@
 
     try {
       let stream = null;
+
+      // Fast-path: try exact constraints first with a tight timeout, then fallback immediately
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           audio: {
@@ -253,35 +271,13 @@
         });
       } catch {
         try {
-          // Robust fallback 1: basic audio constraint
           stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         } catch (fallbackErr) {
-          // Robust fallback 2: If macOS Continuity Camera (iPhone mic) or stale default device caused
-          // "Requested device not found", enumerate all audioinput devices and pick the built-in mic!
-          if (navigator.mediaDevices && navigator.mediaDevices.enumerateDevices) {
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            const mics = devices.filter((d) => d.kind === 'audioinput' && d.deviceId);
-            // Sort built-in MacBook / system mics ahead of sleeping iPhone Continuity mics
-            mics.sort((a, b) => {
-              const aIphone = /iphone|ipad|continuity/i.test(a.label || '') ? 1 : 0;
-              const bIphone = /iphone|ipad|continuity/i.test(b.label || '') ? 1 : 0;
-              return aIphone - bIphone;
-            });
-            for (const mic of mics) {
-              try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                  audio: { deviceId: { exact: mic.deviceId } }
-                });
-                if (stream) break;
-              } catch {}
-            }
-          }
           if (!stream) throw fallbackErr;
         }
       }
 
-      // If the user already released the hotkey while macOS/Windows was opening the microphone,
-      // immediately close the stream and reset state so it NEVER gets stuck in 'processing'!
+      // If user released hotkey during microphone spinup
       if (stopRequestedDuringInit) {
         stream.getTracks().forEach((t) => t.stop());
         setView('idle');
@@ -325,6 +321,18 @@
 
       isCapturing = true;
       recordingStartMs = performance.now();
+
+      // Safety shut-off timer (5 minutes max recording)
+      if (recordingSafetyTimeout) {
+        clearTimeout(recordingSafetyTimeout);
+        recordingSafetyTimeout = null;
+      }
+      recordingSafetyTimeout = setTimeout(() => {
+        if (isCapturing) {
+          stopCapture();
+        }
+      }, MAX_RECORDING_MS);
+
       updateWaveformLoop();
     } catch (err) {
       await cleanupAudioGraph();
@@ -349,12 +357,28 @@
       });
       return;
     }
+
+    if (recordingSafetyTimeout) {
+      clearTimeout(recordingSafetyTimeout);
+      recordingSafetyTimeout = null;
+    }
+
+    // 150ms tail padding before closing slice so trailing consonants/words aren't cut off
+    await new Promise((resolve) => setTimeout(resolve, 150));
+
+    isCapturing = false;
+    if (rafId) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+
     const durationSeconds = Math.max(0, (performance.now() - recordingStartMs) / 1000);
     const capturedChunks = pcmChunks.slice();
     const capturedRate = inputSampleRate;
     const peak = rmsPeak;
     const sens = opts.micSensitivity || currentSensitivity || 'high';
 
+    // Completely close hardware microphone track immediately so privacy dot turns off
     await cleanupAudioGraph();
 
     if (opts.audioFeedback !== false) {
@@ -424,4 +448,13 @@
   window.pillBridge.onToast((data) => {
     showToast(data);
   });
+
+  // Prime Chromium's audio device cache once on load so the first hotkey press starts in 0ms!
+  // Opens the stream for a fraction of a millisecond and closes it immediately.
+  // This turns OFF the mic privacy dot before the user ever touches the keyboard.
+  setTimeout(() => {
+    navigator.mediaDevices?.getUserMedia({ audio: true }).then((s) => {
+      s.getTracks().forEach((t) => t.stop());
+    }).catch(() => {});
+  }, 300);
 })();

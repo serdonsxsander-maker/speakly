@@ -115,21 +115,13 @@ function getDefaultState() {
     },
     dictionary: [
       'Speakly',
-      'Groq',
-      'Cursor',
-      'Claude',
-      'Antigravity',
-      'Supabase',
-      'TypeScript',
-      'Tailwind',
-      'Next.js',
-      'PostgreSQL',
+      'ChatGPT',
+      'Slack',
+      'Zoom',
+      'LinkedIn',
       'GitHub',
-      'OAuth',
-      'JWT',
-      'LLM',
-      'JSON',
-      'API'
+      'WhatsApp',
+      'Google Meet'
     ],
     customModes: [],
     auth: {
@@ -147,6 +139,9 @@ function getDefaultState() {
       wordsDictated: 0,
       secondsRecorded: 0,
       sessionsCount: 0
+    },
+    languageStats: {
+      // Rolling counts of detected languages from user dictations, e.g. { nl: 14, en: 8 }
     },
     history: []
   };
@@ -175,6 +170,7 @@ class Store {
           auth: { ...defaults.auth, ...(parsed.auth || {}) },
           subscription: { ...defaults.subscription, ...(parsed.subscription || {}) },
           stats: { ...defaults.stats, ...(parsed.stats || {}) },
+          languageStats: { ...(parsed.languageStats || {}) },
           history: Array.isArray(parsed.history) ? parsed.history.slice(0, 20) : []
         };
         // SECURITY: early builds shipped shared API keys baked into the app. Those keys are revoked.
@@ -187,13 +183,15 @@ class Store {
           }
         }
 
-        // Auto-import / sync fresh keys from .env or backend/.env if available and not revoked
-        for (const field of ['openaiApiKey', 'groqApiKey']) {
-          const envVar = field === 'openaiApiKey' ? 'OPENAI_API_KEY' : 'GROQ_API_KEY';
-          const envKey = readLegacyEnvKey(envVar);
-          if (envKey && !REVOKED_KEY_PREFIXES.some((prefix) => envKey.startsWith(prefix))) {
-            if (!this._data.settings[field] || this._data.settings[field] !== envKey) {
-              this._data.settings[field] = envKey;
+        // In development only, if developers provide local .env keys and no user key is set yet, populate them
+        if (process.env.NODE_ENV === 'development') {
+          for (const field of ['openaiApiKey', 'groqApiKey']) {
+            const envVar = field === 'openaiApiKey' ? 'OPENAI_API_KEY' : 'GROQ_API_KEY';
+            const envKey = readLegacyEnvKey(envVar);
+            if (envKey && !REVOKED_KEY_PREFIXES.some((prefix) => envKey.startsWith(prefix))) {
+              if (this._data.settings[field] === undefined) {
+                this._data.settings[field] = envKey;
+              }
             }
           }
         }
@@ -273,6 +271,57 @@ class Store {
     return this.getState();
   }
 
+  detectLanguageFromText(text) {
+    if (!text || typeof text !== 'string') return null;
+    const t = text.toLowerCase();
+    const nlWords = /\b(het|een|van|ik|je|jij|we|wij|ze|zij|dat|die|voor|met|op|naar|om|als|ook|niet|geen|maar|ja|nee|wel|goed|is|zijn|heb|hebben|kan|kunnen|moet|moeten|zal|zullen|gaan|deze|dit|mij|jou|ons|hun|graag|bedankt|alstublieft)\b/g;
+    const enWords = /\b(the|a|an|of|i|you|he|she|we|they|that|this|for|with|on|to|at|as|also|not|no|but|yes|is|are|am|have|has|can|could|must|will|would|go|going|me|your|our|their|please|thanks|thank)\b/g;
+    const frWords = /\b(le|la|les|un|une|de|du|des|je|tu|il|elle|nous|vous|ils|elles|ce|cette|pour|avec|sur|dans|qui|que|aussi|pas|non|oui|mais|est|sont|suis|ont|peut|merci)\b/g;
+    const deWords = /\b(der|die|das|ein|eine|von|ich|du|er|sie|es|wir|ihr|den|dem|des|fur|mit|auf|nach|als|auch|nicht|kein|aber|ja|nein|doch|gut|ist|sind|habe|haben|kann|bitte|danke)\b/g;
+
+    const nlMatches = (t.match(nlWords) || []).length;
+    const enMatches = (t.match(enWords) || []).length;
+    const frMatches = (t.match(frWords) || []).length;
+    const deMatches = (t.match(deWords) || []).length;
+
+    const scores = [
+      { lang: 'nl', score: nlMatches },
+      { lang: 'en', score: enMatches },
+      { lang: 'fr', score: frMatches },
+      { lang: 'de', score: deMatches }
+    ].sort((a, b) => b.score - a.score);
+
+    if (scores[0].score >= 2 || (scores[0].score >= 1 && scores[1].score === 0)) {
+      return scores[0].lang;
+    }
+    return null;
+  }
+
+  getPredictedLanguages() {
+    if (!this._data) this.init();
+    const stats = this._data.languageStats || {};
+    // Extract recent languages from history (last 10 dictations)
+    const recentLanguages = [];
+    const history = this._data.history || [];
+    for (const item of history.slice(0, 10)) {
+      const detected = item.detectedLang || this.detectLanguageFromText(item.text || item.rawText);
+      if (detected) recentLanguages.push(detected);
+    }
+
+    // Weight recent languages 2x + historical usage
+    const scores = {};
+    for (const [lang, count] of Object.entries(stats)) {
+      scores[lang] = (scores[lang] || 0) + count;
+    }
+    for (const lang of recentLanguages) {
+      scores[lang] = (scores[lang] || 0) + 2;
+    }
+
+    return Object.entries(scores)
+      .sort((a, b) => b[1] - a[1])
+      .map(([lang]) => lang);
+  }
+
   recordSession({ rawText, finalText, durationSeconds, modeName, provider }) {
     if (!this._data) this.init();
     const wordCount = finalText.trim().split(/\s+/).filter(Boolean).length;
@@ -280,11 +329,19 @@ class Store {
     this._data.stats.secondsRecorded += Math.max(1, Math.round(durationSeconds || 1));
     this._data.stats.sessionsCount += 1;
 
+    // Detect language of this session to continuously refine user's personal language profile
+    const detectedLang = this.detectLanguageFromText(finalText) || this.detectLanguageFromText(rawText);
+    if (detectedLang) {
+      if (!this._data.languageStats) this._data.languageStats = {};
+      this._data.languageStats[detectedLang] = (this._data.languageStats[detectedLang] || 0) + 1;
+    }
+
     const entry = {
       id: `item_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       timestamp: new Date().toISOString(),
       rawText,
       text: finalText,
+      detectedLang: detectedLang || null,
       wordCount,
       durationSeconds: Number((durationSeconds || 0).toFixed(1)),
       modeName: modeName || 'Smart Polish',

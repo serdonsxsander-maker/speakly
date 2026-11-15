@@ -178,9 +178,12 @@
             <span class="stat-foot">Compared to 42 WPM typing</span>
           </article>
           <article class="stat-card">
-            <span class="stat-label">Speaking Speed</span>
-            <strong id="stat-wpm" class="stat-value">— WPM</strong>
-            <span class="stat-foot">Average voice throughput</span>
+            <span class="stat-label">Monthly Plan Quota</span>
+            <strong id="stat-quota-value" class="stat-value">0 / 3,000</strong>
+            <div style="margin-top: 8px; width: 100%; height: 6px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden;">
+              <div id="stat-quota-progress" style="width: 0%; height: 100%; background: #ffd000; border-radius: 999px; transition: width 0.3s ease;"></div>
+            </div>
+            <span id="stat-quota-foot" class="stat-foot" style="margin-top: 6px; display: block;">3,000 free words per month</span>
           </article>
         </section>
 
@@ -229,6 +232,20 @@
           </div>
         </header>
 
+        <!-- Pro Upgrade Lock Banner for Modes on Free Tier -->
+        <div id="modes-lock-banner" style="background: linear-gradient(135deg, rgba(255, 208, 0, 0.12), rgba(255, 107, 0, 0.08)); border: 1px solid rgba(255, 208, 0, 0.3); border-radius: 12px; padding: 16px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 26px;">⭐</span>
+            <div>
+              <strong style="color: #ffd000; font-size: 14px; display: block;">Free Tier: Smart Polish &amp; Fast Verbatim Included</strong>
+              <p style="font-size: 12.5px; color: var(--text-muted); margin: 3px 0 0; line-height: 1.4;">
+                Professional Email, Actionable Notes, and Dev AI Prompts require Speakly Pro (10€/mo). Upgrade for full access.
+              </p>
+            </div>
+          </div>
+          <button type="button" id="btn-modes-upgrade-pro" class="btn btn-primary" style="background: #ffd000; color: #06080e; font-weight: 700; border: none; white-space: nowrap; cursor: pointer; padding: 8px 16px;">Upgrade to Pro (10€/mo)</button>
+        </div>
+
         <div id="modes-grid" class="modes-grid" role="radiogroup" aria-label="Active AI formatting mode"></div>
       </section>
 
@@ -241,7 +258,21 @@
           </div>
         </header>
 
-        <section class="card" aria-labelledby="add-word-heading">
+        <!-- Pro Upgrade Lock Banner for Free Users -->
+        <div id="dict-lock-banner" style="background: linear-gradient(135deg, rgba(255, 208, 0, 0.12), rgba(255, 107, 0, 0.08)); border: 1px solid rgba(255, 208, 0, 0.3); border-radius: 12px; padding: 16px 18px; margin-bottom: 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 26px;">🔒</span>
+            <div>
+              <strong style="color: #ffd000; font-size: 14px; display: block;">★ Speakly Pro Feature: Personal Dictionary</strong>
+              <p style="font-size: 12.5px; color: var(--text-muted); margin: 3px 0 0; line-height: 1.4;">
+                Upgrade to 10€/mo to add custom words, product codenames, and teammate names to your personal dictionary and inject them directly into Whisper &amp; Groq LPU models.
+              </p>
+            </div>
+          </div>
+          <button type="button" id="btn-dict-upgrade-pro" class="btn btn-primary" style="background: #ffd000; color: #06080e; font-weight: 700; border: none; white-space: nowrap; cursor: pointer; padding: 8px 16px;">Upgrade to Pro (10€/mo)</button>
+        </div>
+
+        <section id="dict-card" class="card" aria-labelledby="add-word-heading">
           <h2 id="add-word-heading">Add Vocabulary Term</h2>
           <form id="dictionary-form" class="inline-form">
             <label for="dict-input" class="sr-only">Word, name, or phrase</label>
@@ -250,7 +281,7 @@
               id="dict-input"
               placeholder="e.g. Acme Corp, PostgreSQL, ProductName, Alex Rivera"
               required>
-            <button type="submit" class="btn btn-primary">Add Term</button>
+            <button type="submit" id="dict-submit-btn" class="btn btn-primary">Add Term</button>
           </form>
           <ul id="dictionary-tags" class="tag-cloud" aria-label="Saved vocabulary terms"></ul>
         </section>
@@ -332,18 +363,34 @@
               <button type="button" id="auth-logout-btn" class="btn btn-ghost btn-sm">Log Out</button>
             </div>
 
-            <!-- Lemon Squeezy Subscription & Billing Management -->
-            <div id="subscription-status-card" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; padding: 12px 14px; display: flex; align-items: center; justify-content: space-between;">
-              <div>
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <strong style="font-size: 13.5px;">Subscription</strong>
-                  <span id="sub-plan-badge" class="perm-badge" style="background: rgba(255,208,0,0.15); color: #ffd000; border-color: rgba(255,208,0,0.3);">Early Access Trial</span>
+            <!-- Subscription & Usage Card -->
+            <div id="subscription-status-card" style="background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 16px 18px; display: flex; flex-direction: column; gap: 14px;">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 13.5px; font-weight: 600; color: #f4f4f5;">Plan</span>
+                    <span id="sub-plan-badge" style="font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: rgba(255, 208, 0, 0.12); color: #ffd000; border: 1px solid rgba(255, 208, 0, 0.25);">Free Tier</span>
+                  </div>
+                  <p id="sub-plan-desc" class="muted-text" style="font-size: 12px; margin: 4px 0 0;">3,000 words per month included.</p>
                 </div>
-                <p id="sub-plan-desc" class="muted-text" style="font-size: 12px; margin: 4px 0 0;">Sub-second Groq LPU transcription active.</p>
+                <div>
+                  <button type="button" id="btn-upgrade-pro" class="btn btn-primary btn-sm" style="background: linear-gradient(135deg, #FFD000 0%, #F59E0B 100%); color: #06080e; font-weight: 700; border: none; padding: 6px 14px; border-radius: 8px; cursor: pointer; box-shadow: 0 2px 8px rgba(255, 208, 0, 0.25);">Upgrade to Pro (10€/mo)</button>
+                  <button type="button" id="btn-manage-billing" class="btn btn-secondary btn-sm" hidden style="cursor: pointer; padding: 6px 12px; font-size: 12px; border-radius: 8px;">Manage Subscription</button>
+                </div>
               </div>
-              <div style="display: flex; gap: 8px;">
-                <button type="button" id="btn-upgrade-pro" class="btn btn-primary btn-sm" style="background: #ffd000; color: #06080e; font-weight: 700; border: none; cursor: pointer;">Upgrade to Pro ($10/mo)</button>
-                <button type="button" id="btn-manage-billing" class="btn btn-secondary btn-sm" hidden style="cursor: pointer;">Manage Billing &amp; VAT</button>
+
+              <!-- Monthly Usage Bar in Settings -->
+              <div id="settings-usage-bar-box" style="padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.06);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span style="font-size: 12px; color: var(--text-muted);">Monthly Usage</span>
+                  <span id="settings-usage-text" style="font-size: 12px; font-weight: 600; color: #f4f4f5;">0 / 3,000 words used</span>
+                </div>
+                <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.08); border-radius: 999px; overflow: hidden;">
+                  <div id="settings-usage-progress" style="width: 0%; height: 100%; background: #ffd000; border-radius: 999px; transition: width 0.3s ease;"></div>
+                </div>
+                <div id="settings-usage-reset" style="font-size: 11.5px; color: var(--text-muted); margin-top: 6px; display: none;">
+                  <span>Quota refreshes on </span><strong id="settings-usage-reset-date" style="color: #f4f4f5; font-weight: 600;">—</strong>
+                </div>
               </div>
             </div>
           </div>
@@ -453,6 +500,21 @@
               💡 <strong>Pro Tip:</strong> Locking your language (e.g. 🇧🇪 Nederlands or 🇬🇧 English) speeds up Whisper transcription by eliminating language-probing latency and guarantees heavy accents and local dialect terms are recognized flawlessly!
             </p>
           </div>
+        </section>
+
+        <!-- AI Formatting Modes Setting -->
+        <section class="card settings-section" aria-labelledby="settings-modes-heading">
+          <div class="card-header-inline">
+            <div>
+              <h2 id="settings-modes-heading">AI Formatting Modes</h2>
+              <p class="muted-text">Select how Speakly polishes and restructures your spoken words upon paste.</p>
+            </div>
+            <button type="button" class="btn btn-ghost btn-sm" id="btn-goto-modes-tab" style="font-size: 12.5px; color: var(--brand);">
+              <span>Open AI Modes Tab →</span>
+            </button>
+          </div>
+
+          <div id="settings-modes-grid" class="modes-grid" role="radiogroup" aria-label="Settings AI formatting modes" style="margin-top: 14px;"></div>
         </section>
 
         <!-- Keyboard Trigger -->
@@ -744,6 +806,40 @@
         <div class="modal-actions feedback-success-actions">
           <button type="button" id="feedback-done-btn" class="btn btn-primary">Done</button>
         </div>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- MODAL 4: Rubber Ducky Quota Exceeded Alert -->
+  <dialog id="quota-modal" closedby="any" aria-labelledby="quota-modal-title">
+    <div class="modal-card" style="max-width: 460px; text-align: center; position: relative;">
+      <button type="button" id="quota-close-btn" class="modal-close-btn" title="Close" aria-label="Close modal">✕</button>
+      <div id="quota-duck-mascot" style="width: 80px; height: 80px; margin: 0 auto 8px;"></div>
+      <div class="modal-badge" style="background: rgba(255, 208, 0, 0.15); color: #ffd000; border: 1px solid rgba(255, 208, 0, 0.3);">3,000 / 3,000 Words Used</div>
+      <h2 id="quota-modal-title" style="margin-top: 8px;">Monthly Cap Reached!</h2>
+      <p class="muted-text" style="font-size: 13.5px; line-height: 1.5; margin: 6px 0 16px;">
+        Monthly cap reached, upgrade to Pro for unlimited usage.
+      </p>
+
+      <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 14px; margin-bottom: 20px; text-align: left;">
+        <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; margin-bottom: 8px; color: #ffd000;">
+          <span>★</span> Included in Speakly Pro:
+        </div>
+        <ul style="font-size: 12.5px; color: #d4d4d8; padding-left: 18px; margin: 0; line-height: 1.6;">
+          <li><strong>Unlimited words</strong> (dictate as much as you want)</li>
+          <li><strong>Personal Dictionary</strong> for brand names &amp; acronyms</li>
+          <li><strong>Sub-300ms Groq LPU routing</strong> priority</li>
+          <li>Cancel anytime · EU VAT receipt included</li>
+        </ul>
+      </div>
+
+      <div class="modal-actions" style="flex-direction: column; gap: 8px;">
+        <button type="button" id="btn-quota-upgrade-pro" class="btn btn-primary" style="width: 100%; justify-content: center; background: #ffd000; color: #06080e; font-weight: 700; border: none; font-size: 14px; padding: 12px; cursor: pointer;">
+          Upgrade to Pro (10€/month) →
+        </button>
+        <button type="button" id="btn-quota-dismiss" class="btn btn-ghost btn-sm" style="color: #71717a; cursor: pointer;">
+          Maybe Later
+        </button>
       </div>
     </div>
   </dialog>

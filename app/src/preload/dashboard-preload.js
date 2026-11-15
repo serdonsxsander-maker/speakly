@@ -24,6 +24,8 @@ contextBridge.exposeInMainWorld('voxflow', {
   checkPermissions: () => ipcRenderer.invoke('voxflow:check-permissions'),
   toggleRecording: () => ipcRenderer.send('voxflow:ui-toggle-recording'),
   cancelRecording: () => ipcRenderer.send('voxflow:ui-cancel-recording'),
+  getBackendUrl: () => ipcRenderer.invoke('voxflow:get-backend-url'),
+  getValidToken: () => ipcRenderer.invoke('voxflow:get-valid-token'),
   submitFeedback: (payload) => ipcRenderer.invoke('feedback:submit', payload),
 
   onOpenFeedback: (cb) => {
@@ -50,5 +52,15 @@ contextBridge.exposeInMainWorld('voxflow', {
     const handler = (_e, data) => cb(data);
     ipcRenderer.on('voxflow:error', handler);
     return () => ipcRenderer.removeListener('voxflow:error', handler);
+  },
+  onQuotaExceeded: (cb) => {
+    const handler = (_e, data) => cb(data);
+    ipcRenderer.on('speakly:quota-exceeded', handler);
+    return () => ipcRenderer.removeListener('speakly:quota-exceeded', handler);
+  },
+  onUsageUpdated: (cb) => {
+    const handler = (_e, data) => cb(data);
+    ipcRenderer.on('speakly:usage-updated', handler);
+    return () => ipcRenderer.removeListener('speakly:usage-updated', handler);
   }
 });

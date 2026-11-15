@@ -266,6 +266,75 @@ function fallbackCleanup(text) {
 }
 
 /**
+ * Deterministic fast-path cleanup for short utterances (1-4 words).
+ * Prevents LLM over-expansion/hallucination and returns in <150ms.
+ */
+function fastPathShortUtterance(text) {
+  if (!text) return '';
+  let out = text.trim();
+
+  // Strip brackets or whisper noise
+  out = out.replace(/\[[^\]]*\]|\([^)]*\)/g, '').trim();
+  if (!out) return '';
+
+  const lower = out.toLowerCase().trim();
+  const lowerStripped = lower.replace(/[.!,?]+$/g, '').trim();
+
+  // Common developer commands & syntax (preserve exact lowercase/casing without adding period)
+  const codeCommands = new Set([
+    'git status', 'git diff', 'git push', 'git pull', 'git add', 'git commit', 'git log', 'git checkout',
+    'npm install', 'npm test', 'npm start', 'npm run dev', 'npm build', 'pnpm dev', 'yarn dev',
+    'console.log', 'return true', 'return false', 'undefined', 'null', 'true', 'false',
+    'ls', 'pwd', 'cd', 'clear', 'docker ps', 'docker compose up', 'docker compose down'
+  ]);
+
+  if (codeCommands.has(lower) || codeCommands.has(lowerStripped)) {
+    return codeCommands.has(lower) ? lower : lowerStripped;
+  }
+
+  // Common short affirmations and interjections (English & Dutch/Flemish)
+  const canonicalMap = {
+    'ok': 'OK.',
+    'okay': 'OK.',
+    'k': 'OK.',
+    'ja': 'Ja.',
+    'nee': 'Nee.',
+    'yes': 'Yes.',
+    'no': 'No.',
+    'thanks': 'Thanks.',
+    'thank you': 'Thank you.',
+    'bedankt': 'Bedankt.',
+    'dank u': 'Dank u.',
+    'dankje': 'Dank je.',
+    'cursor': 'Cursor',
+    'claude': 'Claude',
+    'speakly': 'Speakly',
+    'antigravity': 'Antigravity',
+    'groq': 'Groq',
+    'wispr': 'Wispr',
+    'perfect': 'Perfect.',
+    'great': 'Great.',
+    'sure': 'Sure.',
+    'sounds good': 'Sounds good.',
+    'prima': 'Prima.',
+    'goed': 'Goed.',
+    'klopt': 'Klopt.',
+    'inderdaad': 'Inderdaad.'
+  };
+
+  if (canonicalMap[lower]) {
+    return canonicalMap[lower];
+  }
+
+  // Generic 1-4 word capitalization & punctuation
+  out = out.charAt(0).toUpperCase() + out.slice(1);
+  if (!/[.!?…:;]$/.test(out)) {
+    out += '.';
+  }
+  return out;
+}
+
+/**
  * Speech Transcription & Polish Engine
  * Uses Groq LPU (whisper-large-v3-turbo + llama-3.3-70b-versatile) as primary for ~0.3s latency,
  * with automatic fallback to OpenAI if configured.
@@ -276,7 +345,10 @@ async function transcribeAndPolish({
   language = '',
   dictionary = [],
   modeId = 'smart',
-  modePrompt = ''
+  modePrompt = '',
+  activeContext = '',
+  userProfile = null,
+  predictedLanguages = []
 }) {
   const hasGroq = Boolean(GROQ_API_KEY);
   const hasOpenAI = Boolean(OPENAI_API_KEY);
@@ -292,6 +364,31 @@ async function transcribeAndPolish({
   const ext = mimeType.includes('webm') ? 'webm' : 'wav';
   const blob = new Blob([audioBuffer], { type: mimeType });
 
+  // Format anti-hallucination Whisper prompt:
+  // Remove "Vocabulary:" prefix and cap to top 20 most relevant terms formatted naturally as a sentence
+  let whisperPrompt = '';
+  if (dictionary && Array.isArray(dictionary) && dictionary.length > 0) {
+    const cleanTerms = dictionary
+      .map((t) => String(t || '').trim())
+      .filter((t) => t.length > 0 && !/^vocabulary:?$/i.test(t))
+      .slice(0, 20);
+    if (cleanTerms.length > 0) {
+      whisperPrompt = `${cleanTerms.join(', ')}.`;
+    }
+  }
+
+  // Adaptive Multi-Language Prediction Bias:
+  // If user has Auto-Detect enabled, bias Whisper towards their most frequent languages (e.g. Dutch + English)
+  // while still allowing Whisper's full multilingual encoder to recognize any language
+  if (!language && Array.isArray(predictedLanguages) && predictedLanguages.length > 0) {
+    const langNames = { nl: 'Nederlands', en: 'English', fr: 'Français', de: 'Deutsch', es: 'Español' };
+    const topLangs = predictedLanguages.slice(0, 2).map((code) => langNames[code] || code).filter(Boolean);
+    if (topLangs.length > 0) {
+      const langHint = `Spoken primarily in ${topLangs.join(' or ')}. `;
+      whisperPrompt = `${langHint}${whisperPrompt}`.trim();
+    }
+  }
+
   // Attempt Groq STT first
   if (hasGroq) {
     try {
@@ -299,9 +396,10 @@ async function transcribeAndPolish({
       form.append('file', blob, `recording.${ext}`);
       form.append('model', 'whisper-large-v3-turbo');
       form.append('response_format', 'json');
+      form.append('temperature', '0.0');
       if (language && language.trim()) form.append('language', language.trim());
-      if (dictionary && dictionary.length > 0) {
-        form.append('prompt', `Vocabulary: ${dictionary.slice(0, 50).join(', ')}.`);
+      if (whisperPrompt) {
+        form.append('prompt', whisperPrompt);
       }
 
       const groqRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
@@ -330,9 +428,10 @@ async function transcribeAndPolish({
       form.append('file', blob, `recording.${ext}`);
       form.append('model', 'whisper-1');
       form.append('response_format', 'json');
+      form.append('temperature', '0.0');
       if (language && language.trim()) form.append('language', language.trim());
-      if (dictionary && dictionary.length > 0) {
-        form.append('prompt', `Vocabulary: ${dictionary.slice(0, 50).join(', ')}.`);
+      if (whisperPrompt) {
+        form.append('prompt', whisperPrompt);
       }
 
       const openaiRes = await fetch('https://api.openai.com/v1/audio/transcriptions', {
@@ -363,6 +462,18 @@ async function transcribeAndPolish({
     return { rawText: '', finalText: '', engine: activeEngine };
   }
 
+  // Task 3: Short-Utterance Fast Path (Bypass Sentence Inflation)
+  // If raw transcription is 1 to 4 words and not in notes/email mode, skip heavy LLM polish!
+  // Guarantees short commands and replies paste in <150ms with zero unwanted words added.
+  const rawWordCount = rawText.trim().split(/\s+/).filter(Boolean).length;
+  if (rawWordCount >= 1 && rawWordCount <= 4 && modeId !== 'notes' && modeId !== 'email') {
+    return {
+      rawText,
+      finalText: fastPathShortUtterance(rawText),
+      engine: `${activeEngine}+fast-path`
+    };
+  }
+
   // If raw mode requested, skip LLM cleanup
   if (modeId === 'raw') {
     return {
@@ -375,6 +486,50 @@ async function transcribeAndPolish({
   // 2. Grammar & Polish via LLM
   const activeSystemPrompt = (modePrompt && modePrompt.trim()) ? modePrompt.trim() : GRAMMAR_CLEANUP_PROMPT;
   const vocabHint = dictionary.length > 0 ? `\nEnsure terms are spelled accurately: ${dictionary.join(', ')}.` : '';
+
+  // Task 4: Personal Style & User Profile Context
+  let userProfilePrompt = '';
+  if (userProfile && typeof userProfile === 'object') {
+    const name = userProfile.fullName || [userProfile.firstName, userProfile.lastName].filter(Boolean).join(' ');
+    if (name) {
+      userProfilePrompt += `\nSpeaker's Name: "${name}". If signing off an email or personal message, sign off using "${userProfile.firstName || name}" instead of placeholders like "[Your Name]".`;
+    }
+    const prefLang = userProfile.preferredLanguage || language;
+    if (prefLang) {
+      userProfilePrompt += `\nSpeaker's Preferred Language: "${prefLang}". Always output fluent text matching this dialect (e.g. natural Belgian Dutch/Flemish vs Netherlands Dutch if nl-BE, or British vs American English if specified).`;
+    } else if (Array.isArray(predictedLanguages) && predictedLanguages.length > 0) {
+      const langNames = { nl: 'Dutch (Nederlands/Vlaams)', en: 'English', fr: 'French (Français)', de: 'German (Deutsch)', es: 'Spanish (Español)' };
+      const readable = predictedLanguages.slice(0, 3).map((l) => langNames[l] || l).join(', ');
+      userProfilePrompt += `\nSpeaker frequently dictates in: ${readable}. Transcribe in the authentic spoken language without translating. If phonetic phonemes are ambiguous, favor the speaker's frequently spoken languages.`;
+    }
+  } else if (language) {
+    userProfilePrompt += `\nSpeaker's Preferred Language: "${language}".`;
+  } else if (Array.isArray(predictedLanguages) && predictedLanguages.length > 0) {
+    const langNames = { nl: 'Dutch (Nederlands/Vlaams)', en: 'English', fr: 'French (Français)', de: 'German (Deutsch)', es: 'Spanish (Español)' };
+    const readable = predictedLanguages.slice(0, 3).map((l) => langNames[l] || l).join(', ');
+    userProfilePrompt += `\nSpeaker frequently dictates in: ${readable}. Transcribe in the authentic spoken language without translating. If phonetic phonemes are ambiguous, favor the speaker's frequently spoken languages.`;
+  }
+
+  // Task 4: Active Application Context & Domain Bias
+  let appContextPrompt = '';
+  if (activeContext && typeof activeContext === 'string') {
+    const ctxLower = activeContext.toLowerCase();
+    let appStyleBias = '';
+
+    if (/cursor|code|vscode|terminal|iterm|alacritty|warp|xcode|sublime|intellij|webstorm/i.test(ctxLower)) {
+      appStyleBias = ' The active app is a developer environment/IDE. Bias strongly towards technical terms, exact syntax, camelCase/snake_case identifiers, CLI command flags, and code accuracy. Never capitalize terminal commands.';
+    } else if (/slack|discord|teams|messages|telegram|whatsapp|signal/i.test(ctxLower)) {
+      appStyleBias = ' The active app is a chat/messaging app. Maintain a natural, casual, friendly conversational tone. Avoid stiff corporate formality.';
+    } else if (/mail|outlook|spark|thunderbird|superhuman|gmail/i.test(ctxLower)) {
+      appStyleBias = ' The active app is an email client. Format cleanly with clear paragraphs, polite professional tone, and natural greetings/sign-offs.';
+    } else if (/notion|obsidian|docs|word|bear|craft/i.test(ctxLower)) {
+      appStyleBias = ' The active app is a document/notes editor. Preserve structured thinking, clean lists, and editorial clarity.';
+    }
+
+    appContextPrompt = `\nActive application/window where the user is dictating: "${activeContext}". Use this context to resolve ambiguous words accurately.${appStyleBias}`;
+  }
+
+  const fullSystemPrompt = activeSystemPrompt + userProfilePrompt + vocabHint + appContextPrompt;
 
   // Candidate LLM models: Groq Llama 3.3 70B & 3.1 8B, or OpenAI GPT-4o-mini
   const llmCandidates = [];
@@ -411,7 +566,7 @@ async function transcribeAndPolish({
           temperature: 0.1,
           max_tokens: 1500,
           messages: [
-            { role: 'system', content: activeSystemPrompt + vocabHint },
+            { role: 'system', content: fullSystemPrompt },
             { role: 'user', content: `<raw_dictation>\n${rawText}\n</raw_dictation>` }
           ]
         })
@@ -564,6 +719,59 @@ const server = http.createServer(async (req, res) => {
       const status = err.statusCode || 400;
       res.writeHead(status, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ success: false, error: err.message }));
+    }
+    return;
+  }
+
+  // --------------------------------------------------------------------------
+  // User Usage & Plan Quota Endpoint (GET /api/v1/user/usage)
+  // Returns current plan ('free' | 'pro'), wordsUsed, wordLimit (3000 | null), and periodEnd
+  // --------------------------------------------------------------------------
+  if (url.pathname === '/api/v1/user/usage' && req.method === 'GET') {
+    const authResult = await authenticateUser(req);
+    if (!authResult.ok) {
+      res.writeHead(authResult.statusCode || 401, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: authResult.error }));
+      return;
+    }
+
+    try {
+      let usageData = null;
+      if (supabaseAdmin) {
+        // Query atomic record_word_usage with 0 words to perform auto-reset / subscription sync if needed
+        const { data, error } = await supabaseAdmin.rpc('record_word_usage', {
+          p_user_id: authResult.userId,
+          p_words: 0
+        });
+        if (!error && Array.isArray(data) && data.length > 0) {
+          usageData = data[0];
+        } else {
+          // Fallback to direct select
+          const { data: directData } = await supabaseAdmin
+            .from('user_usage')
+            .select('*')
+            .eq('user_id', authResult.userId)
+            .maybeSingle();
+          usageData = directData;
+        }
+      }
+
+      const plan = usageData?.plan === 'pro' ? 'pro' : 'free';
+      const wordsUsed = typeof usageData?.words_used === 'number' ? usageData.words_used : 0;
+      const wordLimit = plan === 'pro' ? null : 3000;
+      const periodEnd = usageData?.period_end || new Date(Date.now() + 30 * 86400000).toISOString();
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        success: true,
+        plan,
+        wordsUsed,
+        wordLimit,
+        periodEnd
+      }));
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ success: false, error: err.message || 'Failed to fetch usage' }));
     }
     return;
   }
@@ -873,6 +1081,19 @@ const server = http.createServer(async (req, res) => {
             console.warn('[Lemon Squeezy DB Subscription Upsert Warning]:', dbSubErr.message);
           }
 
+          // Also synchronize public.user_usage table immediately
+          try {
+            await supabaseAdmin
+              .from('user_usage')
+              .upsert({
+                user_id: targetUserId,
+                plan: plan,
+                updated_at: new Date().toISOString()
+              }, { onConflict: 'user_id' });
+          } catch (usageSyncErr) {
+            console.warn('[Lemon Squeezy user_usage sync warning]:', usageSyncErr.message);
+          }
+
           console.log(`[Lemon Squeezy] User ${targetUserId} synced: ${plan} (${normalizedStatus})`);
         }
 
@@ -977,6 +1198,9 @@ const server = http.createServer(async (req, res) => {
       let dictionary = [];
       let modeId = 'smart';
       let modePrompt = '';
+      let activeContext = '';
+      let userProfile = null;
+      let predictedLanguages = [];
 
       if (contentType.includes('application/json')) {
         const parsed = JSON.parse(bodyBuffer.toString('utf8'));
@@ -986,6 +1210,9 @@ const server = http.createServer(async (req, res) => {
         dictionary = Array.isArray(parsed.dictionary) ? parsed.dictionary : [];
         modeId = parsed.modeId || 'smart';
         modePrompt = parsed.modePrompt || '';
+        activeContext = parsed.activeContext || '';
+        userProfile = parsed.userProfile || null;
+        predictedLanguages = Array.isArray(parsed.predictedLanguages) ? parsed.predictedLanguages : [];
       } else {
         audioBuffer = bodyBuffer;
         mimeType = contentType;
@@ -998,18 +1225,106 @@ const server = http.createServer(async (req, res) => {
         return;
       }
 
-      // 4. In-Memory Transcribe & Polish (Zero Audio Persistence Guarantee)
+      // Safety Cap: Enforce 5-minute maximum recording limit (10MB ~ 5.2 minutes at 16kHz 16-bit mono)
+      // Strictly protects backend Groq / OpenAI transcription costs from abusive long audio payloads
+      const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
+      if (audioBuffer.length > MAX_AUDIO_BYTES) {
+        res.writeHead(413, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          success: false,
+          error: 'Audio recording exceeds the 5-minute safety limit. Please record in shorter segments to protect processing resources.'
+        }));
+        return;
+      }
+
+      // 4. Enforce Tier Quota & Personal Dictionary Restrictions
+      let userPlan = 'free';
+      let userWordsUsed = 0;
+      let userPeriodEnd = null;
+
+      if (supabaseAdmin) {
+        try {
+          // Check quota status without incrementing words yet (p_words: 0)
+          const { data: usageRows, error: usageErr } = await supabaseAdmin.rpc('record_word_usage', {
+            p_user_id: authResult.userId,
+            p_words: 0
+          });
+
+          if (!usageErr && Array.isArray(usageRows) && usageRows.length > 0) {
+            const usage = usageRows[0];
+            userPlan = usage.plan || 'free';
+            userWordsUsed = usage.words_used || 0;
+            userPeriodEnd = usage.period_end || null;
+
+            if (userPlan === 'free' && userWordsUsed >= 3000) {
+              res.writeHead(402, { 'Content-Type': 'application/json' });
+              res.end(JSON.stringify({
+                success: false,
+                error: 'Monthly cap reached, upgrade to Pro for unlimited usage',
+                quotaExceeded: true,
+                limit: 3000,
+                current: userWordsUsed,
+                periodEnd: userPeriodEnd
+              }));
+              return;
+            }
+          }
+        } catch (quotaCheckErr) {
+          console.warn('[Quota Check Warning]:', quotaCheckErr.message);
+        }
+      }
+
+      // Free Plan Restriction: Personal Dictionary / Library is LOCKED to Pro users
+      // If user is on free plan, strip any custom vocabulary terms passed
+      if (userPlan === 'free') {
+        dictionary = [];
+      }
+
+      // 5. In-Memory Transcribe & Polish (Zero Audio Persistence Guarantee)
       const result = await transcribeAndPolish({
         audioBuffer,
         mimeType,
         language,
         dictionary,
         modeId,
-        modePrompt
+        modePrompt,
+        activeContext,
+        userProfile,
+        predictedLanguages
       });
 
+      // 6. Count transcribed words and increment quota for user
+      const transcribedWords = (result.finalText || result.rawText || '')
+        .trim()
+        .split(/\s+/)
+        .filter(Boolean).length;
+
+      if (supabaseAdmin && transcribedWords > 0) {
+        try {
+          const { data: updatedUsage } = await supabaseAdmin.rpc('record_word_usage', {
+            p_user_id: authResult.userId,
+            p_words: transcribedWords
+          });
+          if (Array.isArray(updatedUsage) && updatedUsage.length > 0) {
+            userWordsUsed = updatedUsage[0].words_used;
+            userPlan = updatedUsage[0].plan;
+          }
+        } catch (incErr) {
+          console.warn('[Word Usage Increment Warning]:', incErr.message);
+        }
+      }
+
       res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ success: true, ...result }));
+      res.end(JSON.stringify({
+        success: true,
+        ...result,
+        usage: {
+          plan: userPlan,
+          wordsUsed: userWordsUsed,
+          wordLimit: userPlan === 'pro' ? null : 3000,
+          wordsAdded: transcribedWords
+        }
+      }));
     } catch (err) {
       const status = err.statusCode || 500;
       if (!res.headersSent) {

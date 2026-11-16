@@ -1585,8 +1585,6 @@ function registerIpcHandlers() {
       title: 'Mic Error ⚠️',
       message: String(message || 'Microphone unavailable').slice(0, 52)
     });
-      message: String(message || 'Microphone unavailable').slice(0, 52)
-    });
     sendToDashboard('voxflow:error', {
       message: String(message || 'Microphone access failed.')
     });

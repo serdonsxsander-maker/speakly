@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Speakly Privacy &amp; Cookie Policy | GDPR Compliant</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Speakly's Privacy and Cookie Policy. Learn about our Zero Audio Retention architecture, GDPR compliance, sub-processors, and cookies.">
+  <link rel="icon" type="image/png" href="assets/icon.png">
+  <style>
+    :root {
+      --bg: #09090b;
+      --card-bg: #141417;
+      --card-border: #27272a;
+      --accent: #ffd000;
+      --accent-glow: rgba(255, 208, 0, 0.15);
+      --text-main: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --text-sub: #71717a;
+      --green: #22c55e;
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+      line-height: 1.65;
+      -webkit-font-smoothing: antialiased;
+      padding: 48px 20px 96px;
+    }
+    .container { max-width: 780px; margin: 0 auto; }
+    .nav-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 13.5px;
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+    .nav-back:hover { text-decoration: underline; }
+    header { margin-bottom: 36px; border-bottom: 1px solid var(--card-border); padding-bottom: 24px; }
+    h1 { font-size: clamp(28px, 4vw, 36px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 8px; }
+    .last-updated { font-size: 13px; color: var(--text-sub); }
+    .badge {
+      display: inline-block;
+      background: rgba(34, 197, 94, 0.12);
+      color: var(--green);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    h2 { font-size: 20px; font-weight: 700; color: #fff; margin: 36px 0 12px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 24px; }
+    p, li { font-size: 14.5px; color: var(--text-muted); margin-bottom: 12px; }
+    ul { padding-left: 20px; margin-bottom: 16px; }
+    li { margin-bottom: 6px; }
+    strong { color: var(--text-main); }
+    .highlight-box {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-left: 4px solid var(--accent);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin: 20px 0;
+    }
+    .highlight-box p { margin-bottom: 0; font-size: 14px; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 13.5px; }
+    th, td { border: 1px solid var(--card-border); padding: 10px 14px; text-align: left; }
+    th { background: rgba(255,255,255,0.03); color: var(--text-main); font-weight: 600; }
+    td { color: var(--text-muted); }
+    a { color: var(--accent); }
+    footer { margin-top: 48px; border-top: 1px solid var(--card-border); padding-top: 24px; font-size: 13px; color: var(--text-sub); text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="index.html" class="nav-back">← Back to Speakly</a>
+
+    <header>
+      <div class="badge">GDPR &amp; EU Compliance Verified</div>
+      <h1>Speakly Privacy &amp; Cookie Policy</h1>
+      <div class="last-updated">Last Updated: November 16, 2026 · Effective Date: November 16, 2026</div>
+    </header>
+
+    <div class="highlight-box">
+      <p><strong>Zero Audio Persistence Guarantee:</strong> Speakly never saves, records, or archives your voice recordings to any permanent database or disk storage. Audio is streamed ephemerally in RAM buffer memory exclusively to transcribe your speech into text, and is instantly discarded in under one second.</p>
+    </div>
+
+    <h2>1. Introduction &amp; Data Controller</h2>
+    <p>Speakly ("we", "our", or "us") provides sub-second AI voice dictation and productivity tools for macOS and Windows. We are committed to protecting your privacy in full compliance with the European Union General Data Protection Regulation (GDPR / Regulation 2016/679) and applicable national data protection legislation.</p>
+    <p><strong>Data Controller:</strong><br>
+    Speakly (operated by Xsander Serdons, Belgium / European Union)<br>
+    Contact Email: <a href="mailto:serdonsxsander@gmail.com">serdonsxsander@gmail.com</a> / <a href="mailto:support@speakly.app">support@speakly.app</a></p>
+
+    <h2>2. Data We Process &amp; How We Use It</h2>
+    <ul>
+      <li><strong>Account Credentials &amp; Profile:</strong> Your email address, name (optional), and authentication identifiers provided through Google OAuth or Supabase Auth to establish your account session and manage your subscription.</li>
+      <li><strong>Spoken Voice Input:</strong> Short microphone audio snippets captured while holding your hotkey. <em>Retention period: 0 milliseconds after transcription.</em> Audio is held exclusively in volatile RAM and is never written to disk or used for public foundation model training.</li>
+      <li><strong>Word Count Statistics:</strong> Aggregate monthly word counts associated with your account to calculate tier quotas (Free 3,000 words/month vs. Unlimited Speakly Pro).</li>
+      <li><strong>Custom Personal Vocabulary:</strong> Brand names, acronyms, and custom words you explicitly add to your Personal Dictionary to improve transcription accuracy.</li>
+    </ul>
+
+    <h2>3. Personalized Client Models &amp; Model Improvement (Strictly Opt-In)</h2>
+    <p>Speakly offers optional personalization features to adapt speech models to your personal accent, professional jargon, and correction history.</p>
+    <ul>
+      <li><strong>Strictly Opt-In:</strong> Model personalization and correction analytics are disabled by default. You must explicitly opt in during onboarding or in Speakly Settings.</li>
+      <li><strong>Client-Specific Adaptation:</strong> When enabled, anonymized correction patterns (e.g. replacing a misheard word with your corrected word) are used solely to improve speech accuracy for your account or dedicated client-based models.</li>
+      <li><strong>No Public Model Training:</strong> Your voice and personal writings are <em>never</em> shared, sold, or used to train public foundation models for third parties.</li>
+      <li><strong>Full Control:</strong> You can revoke your consent and disable model personalization at any time in Settings.</li>
+    </ul>
+
+    <h2>4. Third-Party Sub-Processors</h2>
+    <p>We work with trusted industry sub-processors who meet strict European security standards (Standard Contractual Clauses / ISO 27001):</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Sub-Processor</th>
+          <th>Purpose</th>
+          <th>Location</th>
+          <th>Data Retained</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Groq, Inc.</strong></td>
+          <td>Ultra-fast LPU inference (Whisper STT &amp; grammar polish)</td>
+          <td>USA / Global CDN</td>
+          <td>Zero retention (Ephemeral RAM processing)</td>
+        </tr>
+        <tr>
+          <td><strong>Supabase, Inc.</strong></td>
+          <td>Encrypted user authentication &amp; quota database</td>
+          <td>EU (Frankfurt, Germany)</td>
+          <td>Email, subscription tier, word counts</td>
+        </tr>
+        <tr>
+          <td><strong>Lemon Squeezy, LLC</strong></td>
+          <td>Merchant of Record (payment, EU VAT compliance)</td>
+          <td>USA</td>
+          <td>Billing address, tax invoices (handled directly)</td>
+        </tr>
+        <tr>
+          <td><strong>Render Services, Inc.</strong></td>
+          <td>Cloud backend API and static web hosting</td>
+          <td>EU (Frankfurt, Germany)</td>
+          <td>Server access logs (30-day rotation)</td>
+        </tr>
+        <tr>
+          <td><strong>Meta Platforms Ireland Ltd.</strong></td>
+          <td>Marketing attribution (Facebook / Meta Pixel)</td>
+          <td>EU (Ireland)</td>
+          <td>Consent-gated website conversion telemetry</td>
+        </tr>
+        <tr>
+          <td><strong>Google Ireland Limited</strong></td>
+          <td>Google Ads attribution &amp; Google OAuth Sign-in</td>
+          <td>EU (Ireland)</td>
+          <td>Consent-gated ad conversion telemetry</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>5. Cookies &amp; Attribution Pixels</h2>
+    <p>We believe in transparent, respectful tracking:</p>
+    <ul>
+      <li><strong>Essential Session Storage:</strong> Local storage tokens (`access_token`, `refresh_token`) required to keep you signed into Speakly and verify your Pro subscription. These do not require cookie consent under EU ePrivacy regulations.</li>
+      <li><strong>Attribution Pixels (Meta Pixel &amp; Google Ads):</strong> We deploy conversion pixels on our website to measure public launch campaigns and marketing effectiveness. <strong>These pixels are strictly gated by our Cookie Consent Banner.</strong> They will not load or track your visits unless you click "Accept All".</li>
+      <li><strong>Revoking Cookie Consent:</strong> You can reset your cookie preferences at any time by clearing your browser cookies or clicking the cookie settings link in our footer.</li>
+    </ul>
+
+    <h2>6. Your Rights Under GDPR (EU Articles 15–22)</h2>
+    <p>As an individual in the EU (and globally), you have the right to:</p>
+    <ul>
+      <li><strong>Access:</strong> Request a copy of the personal data we hold about you.</li>
+      <li><strong>Rectification:</strong> Request correction of inaccurate personal details.</li>
+      <li><strong>Erasure ("Right to be Forgotten"):</strong> Request complete deletion of your account and metadata from Supabase.</li>
+      <li><strong>Data Portability:</strong> Export your personal vocabulary dictionary and dictation history.</li>
+      <li><strong>Withdraw Consent:</strong> Disable model personalization or marketing tracking at any time.</li>
+    </ul>
+    <p>To exercise any of these rights, email us at <a href="mailto:serdonsxsander@gmail.com">serdonsxsander@gmail.com</a>. We respond within 30 days free of charge.</p>
+
+    <h2>7. Security Measures</h2>
+    <p>Speakly enforces industry-standard technical and organizational security controls:</p>
+    <ul>
+      <li><strong>Encryption in Transit:</strong> All communications between the desktop app, website, and backend use TLS 1.3 encryption.</li>
+      <li><strong>Row-Level Security (RLS):</strong> User usage and subscriptions are isolated at the database level with strict PostgreSQL RLS policies.</li>
+      <li><strong>Server Isolation:</strong> Privileged administrative API keys are stored solely in server environment variables and never bundled in the desktop application.</li>
+    </ul>
+
+    <footer>
+      <p>&copy; 2026 Speakly. All rights reserved. · <a href="terms.html">Terms of Service</a> · <a href="setup-guide.html">macOS Setup</a></p>
+    </footer>
+  </div>
+</body>
+</html>

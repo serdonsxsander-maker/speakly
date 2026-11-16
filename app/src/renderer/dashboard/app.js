@@ -142,7 +142,14 @@
   const dismissAlertBtn = document.getElementById('dismiss-alert-btn');
 
   // Dialogs
+  const reopenOnboardingBtn = document.getElementById('reopen-onboarding-btn');
   const onboardingDialog = document.getElementById('onboarding-dialog');
+  const onbBackBtn = document.getElementById('onb-back-btn');
+  const onbStepCounter = document.getElementById('onb-step-counter');
+  const onbProgressBar = document.getElementById('onb-progress-bar');
+  const onbProgressSegs = Array.from(document.querySelectorAll('#onb-progress-bar .onb-progress-seg'));
+  const onbSteps = Array.from(document.querySelectorAll('#onboarding-dialog .onb-step'));
+  const onbGoalPills = Array.from(document.querySelectorAll('#onb-goal-pills .onb-goal-pill'));
   const onbGoogleBtn = document.getElementById('onb-google-btn');
   const onbFirstNameInput = document.getElementById('onb-first-name-input');
   const onbLastNameInput = document.getElementById('onb-last-name-input');
@@ -153,11 +160,50 @@
   const onbAuthFeedback = document.getElementById('onb-auth-feedback');
   const onbAuthLoggedOut = document.getElementById('onb-auth-logged-out');
   const onbAuthLoggedIn = document.getElementById('onb-auth-logged-in');
+  const onbUserGreeting = document.getElementById('onb-user-greeting');
   const onbUserEmail = document.getElementById('onb-user-email');
   const onbLogoutBtn = document.getElementById('onb-logout-btn');
+  const onbStep1NextBtn = document.getElementById('onb-step1-next-btn');
+
+  const onbMicCard = document.getElementById('onb-mic-card');
+  const onbAccCard = document.getElementById('onb-acc-card');
+  const onbMicBadge = document.getElementById('onb-mic-badge');
+  const onbAccBadge = document.getElementById('onb-acc-badge');
   const onbGrantMicBtn = document.getElementById('onb-grant-mic-btn');
   const onbGrantAccBtn = document.getElementById('onb-grant-acc-btn');
+  const onbRefreshBtn = document.getElementById('onb-refresh-btn');
+  const onbVuMeter = document.getElementById('onb-vu-meter');
+  const onbVuBars = Array.from(document.querySelectorAll('#onb-vu-meter .onb-vu-bar'));
+  const onbVuStatus = document.getElementById('onb-vu-status');
+  const onbStep2NextBtn = document.getElementById('onb-step2-next-btn');
+
+  const onbTriggerSegBtns = Array.from(document.querySelectorAll('#onb-trigger-segmented .onb-seg-btn'));
+  const onbMacKeyboard = document.getElementById('onb-mac-keyboard');
+  const onbKeyInteractiveEls = Array.from(document.querySelectorAll('#onb-mac-keyboard .kbd-key-interactive'));
+  const onbKeyPills = Array.from(document.querySelectorAll('.onb-key-pills .onb-key-pill'));
+  const onbKeyTestStatus = document.getElementById('onb-key-test-status');
+  const onbStep3NextBtn = document.getElementById('onb-step3-next-btn');
+
+  const onbConfettiCanvas = document.getElementById('onb-confetti-canvas');
+  const onbPromptInstruction = document.getElementById('onb-prompt-instruction');
+  const onbPromptSentence = document.getElementById('onb-prompt-sentence');
+  const onbPromptLangBtns = Array.from(document.querySelectorAll('.onb-prompt-lang-switch .onb-mini-lang'));
+  const onbSandboxDuck = document.getElementById('onb-sandbox-duck');
+  const onbSandboxStateBadge = document.getElementById('onb-sandbox-state-badge');
+  const onbSandboxKbd = document.getElementById('onb-sandbox-kbd');
+  const onbSandboxMicBtn = document.getElementById('onb-sandbox-mic-btn');
+  const onbSandboxDemoBtn = document.getElementById('onb-sandbox-demo-btn');
+  const onbSandboxOutput = document.getElementById('onb-sandbox-output');
+  const onbWpmCard = document.getElementById('onb-wpm-card');
+  const onbWpmValue = document.getElementById('onb-wpm-value');
+  const onbWpmMultiplier = document.getElementById('onb-wpm-multiplier');
+  const onbStep4NextBtn = document.getElementById('onb-step4-next-btn');
+
+  const onbLangCards = Array.from(document.querySelectorAll('#onb-lang-grid .onb-lang-card'));
+  const onbFinalKbd = document.getElementById('onb-final-kbd');
   const onbFinishBtn = document.getElementById('onb-finish-btn');
+  const onbCloseBtn = document.getElementById('onb-close-btn');
+  const onbSkipBtn = document.getElementById('onb-skip-btn');
 
   const customModeDialog = document.getElementById('custom-mode-dialog');
   const customModeForm = document.getElementById('custom-mode-form');
@@ -892,7 +938,556 @@
     updateOnboardingGate(state);
   }
 
-  let lastAllReady = false;
+  const ONB_STORAGE_KEY = 'speakly_wispr_onb_v1';
+  const ONB_STEP_LABELS = {
+    1: 'Step 1 of 5 · Welcome',
+    2: 'Step 2 of 5 · Permissions',
+    3: 'Step 3 of 5 · Hotkey',
+    4: 'Step 4 of 5 · Practice',
+    5: 'Step 5 of 5 · Language'
+  };
+  const ONB_KEY_LABELS = {
+    right_cmd: 'Right ⌘ Command',
+    left_cmd: 'Left ⌘ Command',
+    right_alt: 'Right ⌥ Option',
+    left_alt: 'Left ⌥ Option',
+    right_ctrl: 'Right ⌃ Control',
+    left_ctrl: 'Left ⌃ Control'
+  };
+  const ONB_PROMPT_SENTENCES = {
+    nl: 'Hey team, ik test mijn spraakgestuurde typen met Speakly en het werkt razendsnel.',
+    en: "Hey team, I'm testing my voice typing with Speakly, and it works flawlessly."
+  };
+
+  let currentOnbStep = 1;
+  let onboardingBootChecked = false;
+  let onboardingDismissedThisSession = false;
+  let onbSelectedGoals = new Set(['chat']);
+  let onbPermPollTimer = null;
+  let onbPrevMicOk = null;
+  let onbPrevAccOk = null;
+  let onbHotkeyDefaultApplied = false;
+  let onbHotkeyUserSelected = false;
+  let onbPromptLang = 'nl';
+  let step4BaselineHistoryId = null;
+  let step4Completed = false;
+  let step4DemoTimer = null;
+  let onbTypewriterTimer = null;
+  let onbConfettiRafId = null;
+  let onbLastTickMs = 0;
+
+  let onbVuStream = null;
+  let onbVuAudioCtx = null;
+  let onbVuAnalyser = null;
+  let onbVuSource = null;
+  let onbVuRafId = null;
+  let onbVuVerified = false;
+
+  try {
+    const savedGoals = JSON.parse(localStorage.getItem('speakly_onb_goals') || 'null');
+    if (Array.isArray(savedGoals) && savedGoals.length > 0) {
+      onbSelectedGoals = new Set(savedGoals.slice(0, 2));
+    }
+  } catch {}
+
+  function prefersReducedMotion() {
+    return Boolean(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  }
+
+  function playOnbSound(kind) {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      const ctx = new Ctx();
+      const now = ctx.currentTime;
+
+      const scheduleTone = (freqStart, freqEnd, startOffset, dur, peakGain, type = 'sine') => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freqStart, now + startOffset);
+        if (freqEnd !== freqStart) {
+          osc.frequency.exponentialRampToValueAtTime(freqEnd, now + startOffset + dur);
+        }
+        gain.gain.setValueAtTime(0.0001, now + startOffset);
+        gain.gain.exponentialRampToValueAtTime(peakGain, now + startOffset + 0.012);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + startOffset + dur);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(now + startOffset);
+        osc.stop(now + startOffset + dur + 0.02);
+      };
+
+      if (kind === 'perm-granted') {
+        scheduleTone(523.25, 523.25, 0, 0.11, 0.06, 'triangle');
+        scheduleTone(659.25, 783.99, 0.08, 0.16, 0.07, 'triangle');
+      } else if (kind === 'key-down') {
+        scheduleTone(320, 180, 0, 0.035, 0.045, 'triangle');
+      } else if (kind === 'type-tick') {
+        scheduleTone(760, 620, 0, 0.022, 0.018, 'sine');
+      } else if (kind === 'celebrate') {
+        scheduleTone(523.25, 523.25, 0, 0.1, 0.06, 'triangle');
+        scheduleTone(659.25, 659.25, 0.07, 0.1, 0.06, 'triangle');
+        scheduleTone(783.99, 783.99, 0.14, 0.12, 0.065, 'triangle');
+        scheduleTone(1046.5, 1046.5, 0.21, 0.22, 0.075, 'triangle');
+      }
+
+      setTimeout(() => ctx.close().catch(() => {}), 550);
+    } catch {
+      // Optional audio feedback
+    }
+  }
+
+  function getOnbHotkeyLabel(state = appState) {
+    const keyId = state?.settings?.holdKey || 'right_cmd';
+    return ONB_KEY_LABELS[keyId] || state?.hotkeyDisplay || 'Right ⌘ Command';
+  }
+
+  function syncOnbGoalPills() {
+    onbGoalPills.forEach((btn) => {
+      const selected = onbSelectedGoals.has(btn.dataset.goal);
+      btn.classList.toggle('is-selected', selected);
+      btn.setAttribute('aria-pressed', String(selected));
+    });
+  }
+
+  function syncOnbHotkeyUI(state = appState) {
+    const settings = state?.settings || {};
+    const triggerMode = settings.triggerMode || 'hold';
+    const holdKey = settings.holdKey || 'right_cmd';
+    const label = getOnbHotkeyLabel(state);
+
+    onbTriggerSegBtns.forEach((btn) => {
+      const active = btn.dataset.trigger === triggerMode;
+      btn.classList.toggle('is-active', active);
+      btn.setAttribute('aria-checked', String(active));
+    });
+
+    onbKeyInteractiveEls.forEach((el) => {
+      el.classList.toggle('is-selected', el.dataset.keyId === holdKey);
+    });
+
+    onbKeyPills.forEach((pill) => {
+      pill.classList.toggle('is-selected', pill.dataset.keyId === holdKey);
+    });
+
+    if (onbKeyTestStatus && !onbKeyTestStatus.classList.contains('is-detected')) {
+      const verb = triggerMode === 'toggle' ? 'Tap' : 'Press and hold';
+      onbKeyTestStatus.innerHTML = `<span class="onb-pulse-dot" aria-hidden="true"></span><span>${verb} <strong>${label}</strong> on your keyboard to test…</span>`;
+    }
+
+    const shortLabel = label.replace(' Command', '').replace(' Option', '').replace(' Control', '');
+    if (onbPromptInstruction) {
+      const actionVerb = triggerMode === 'toggle' ? 'Tap' : 'Hold';
+      onbPromptInstruction.innerHTML = `${actionVerb} <strong>${shortLabel}</strong> and read this out loud:`;
+    }
+    if (onbSandboxKbd) onbSandboxKbd.textContent = shortLabel;
+    if (onbFinalKbd) onbFinalKbd.textContent = shortLabel;
+  }
+
+  function syncOnbLanguageCards(lang = '') {
+    onbLangCards.forEach((card) => {
+      const active = (card.dataset.lang || '') === (lang || '');
+      card.classList.toggle('is-selected', active);
+      card.setAttribute('aria-checked', String(active));
+    });
+  }
+
+  function syncOnbPromptLanguage(lang) {
+    onbPromptLang = lang === 'en' ? 'en' : 'nl';
+    onbPromptLangBtns.forEach((btn) => {
+      btn.classList.toggle('is-active', btn.dataset.promptLang === onbPromptLang);
+    });
+    if (onbPromptSentence) {
+      onbPromptSentence.textContent = `“${ONB_PROMPT_SENTENCES[onbPromptLang]}”`;
+    }
+  }
+
+  function stopOnbVuMeter() {
+    if (onbVuRafId) {
+      cancelAnimationFrame(onbVuRafId);
+      onbVuRafId = null;
+    }
+    if (onbVuSource) {
+      try {
+        onbVuSource.disconnect();
+      } catch {}
+      onbVuSource = null;
+    }
+    if (onbVuStream) {
+      onbVuStream.getTracks().forEach((t) => t.stop());
+      onbVuStream = null;
+    }
+    if (onbVuAudioCtx) {
+      onbVuAudioCtx.close().catch(() => {});
+      onbVuAudioCtx = null;
+    }
+    onbVuAnalyser = null;
+    if (onbVuMeter) onbVuMeter.classList.remove('is-live');
+    onbVuBars.forEach((bar) => {
+      bar.style.transform = 'scaleY(0.18)';
+    });
+  }
+
+  async function startOnbVuMeter() {
+    if (onbVuStream || !onboardingDialog?.open || currentOnbStep !== 2) return;
+    const perms = appState?.permissions;
+    const isMac = !perms || perms.platform === 'darwin';
+    if (isMac && perms?.microphone !== 'granted') return;
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+      });
+      if (!onboardingDialog?.open || currentOnbStep !== 2) {
+        stream.getTracks().forEach((t) => t.stop());
+        return;
+      }
+
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      const ctx = new Ctx();
+      if (ctx.state === 'suspended') await ctx.resume().catch(() => {});
+
+      const source = ctx.createMediaStreamSource(stream);
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 64;
+      analyser.smoothingTimeConstant = 0.65;
+      source.connect(analyser);
+
+      onbVuStream = stream;
+      onbVuAudioCtx = ctx;
+      onbVuSource = source;
+      onbVuAnalyser = analyser;
+
+      if (onbVuMeter) onbVuMeter.classList.add('is-live');
+      if (onbVuStatus && !onbVuVerified) {
+        onbVuStatus.textContent = 'Listening — say something to test your mic…';
+      }
+
+      const bins = new Uint8Array(analyser.frequencyBinCount);
+      const bandIndices = [1, 2, 4, 6, 8, 5, 3, 2];
+
+      const tick = () => {
+        if (!onbVuAnalyser || !onboardingDialog?.open || currentOnbStep !== 2) {
+          stopOnbVuMeter();
+          return;
+        }
+        onbVuAnalyser.getByteFrequencyData(bins);
+        let energyPeak = 0;
+        for (let i = 0; i < onbVuBars.length; i++) {
+          const val = bins[bandIndices[i]] || 0;
+          if (val > energyPeak) energyPeak = val;
+          const level = Math.min(1, Math.max(0.18, (val / 170) ** 1.05));
+          onbVuBars[i].style.transform = `scaleY(${level.toFixed(3)})`;
+        }
+        if (energyPeak > 38 && !onbVuVerified) {
+          onbVuVerified = true;
+          if (onbVuStatus) {
+            onbVuStatus.textContent = '✓ Microphone active — loud & clear!';
+            onbVuStatus.classList.add('is-verified');
+          }
+        }
+        onbVuRafId = requestAnimationFrame(tick);
+      };
+      onbVuRafId = requestAnimationFrame(tick);
+    } catch {
+      if (onbVuStatus) {
+        onbVuStatus.textContent = 'Allow microphone access above to test live input.';
+      }
+    }
+  }
+
+  function stopOnbPermPolling() {
+    if (onbPermPollTimer) {
+      clearInterval(onbPermPollTimer);
+      onbPermPollTimer = null;
+    }
+  }
+
+  function startOnbPermPolling() {
+    stopOnbPermPolling();
+    onbPermPollTimer = setInterval(async () => {
+      if (!onboardingDialog?.open || currentOnbStep !== 2) {
+        stopOnbPermPolling();
+        return;
+      }
+      if (window.voxflow?.checkPermissions) {
+        const next = await window.voxflow.checkPermissions();
+        renderState(next);
+      }
+    }, 400);
+  }
+
+  function launchConfettiBurst() {
+    if (!onbConfettiCanvas || prefersReducedMotion()) return;
+    if (onbConfettiRafId) {
+      cancelAnimationFrame(onbConfettiRafId);
+      onbConfettiRafId = null;
+    }
+
+    const rect = onbConfettiCanvas.getBoundingClientRect();
+    const width = Math.max(320, rect.width || 580);
+    const height = Math.max(240, rect.height || 460);
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    onbConfettiCanvas.width = Math.round(width * dpr);
+    onbConfettiCanvas.height = Math.round(height * dpr);
+
+    const ctx = onbConfettiCanvas.getContext('2d');
+    if (!ctx) return;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const palette = ['#ffd000', '#34d399', '#38bdf8', '#fbbf24', '#f4f4f5'];
+    const particles = Array.from({ length: 54 }, (_, i) => {
+      const angle = -Math.PI / 2 + (Math.random() - 0.5) * 1.45;
+      const speed = 4.5 + Math.random() * 6.5;
+      return {
+        x: width * 0.5 + (Math.random() - 0.5) * 80,
+        y: height * 0.58,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 1.5,
+        w: 5 + Math.random() * 5,
+        h: 4 + Math.random() * 4,
+        rot: Math.random() * Math.PI * 2,
+        vRot: (Math.random() - 0.5) * 0.24,
+        color: palette[i % palette.length],
+        alpha: 1
+      };
+    });
+
+    const startTime = performance.now();
+    const frame = (now) => {
+      const elapsed = now - startTime;
+      ctx.clearRect(0, 0, width, height);
+
+      let alive = 0;
+      for (const p of particles) {
+        p.vy += 0.22;
+        p.vx *= 0.985;
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vRot;
+        if (elapsed > 900) p.alpha = Math.max(0, p.alpha - 0.025);
+        if (p.alpha <= 0 || p.y > height + 30) continue;
+
+        alive++;
+        ctx.save();
+        ctx.globalAlpha = p.alpha;
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+        ctx.restore();
+      }
+
+      if (alive > 0 && elapsed < 2200) {
+        onbConfettiRafId = requestAnimationFrame(frame);
+      } else {
+        ctx.clearRect(0, 0, width, height);
+        onbConfettiRafId = null;
+      }
+    };
+
+    onbConfettiRafId = requestAnimationFrame(frame);
+  }
+
+  function completeStep4Sandbox(rawTranscript, durationSeconds = 3.0) {
+    const cleanText = String(rawTranscript || '').trim() || ONB_PROMPT_SENTENCES[onbPromptLang];
+    if (onbTypewriterTimer) {
+      clearInterval(onbTypewriterTimer);
+      onbTypewriterTimer = null;
+    }
+
+    if (onbSandboxDuck) onbSandboxDuck.dataset.state = 'solved';
+    if (onbSandboxStateBadge) onbSandboxStateBadge.textContent = '✓ Polished & Ready';
+
+    const finishReveal = () => {
+      step4Completed = true;
+      const wordCount = Math.max(4, cleanText.split(/\s+/).filter(Boolean).length);
+      const effectiveSec = Math.max(1.5, Number(durationSeconds) || 3.0);
+      const rawWpm = Math.round((wordCount / effectiveSec) * 60);
+      const displayWpm = Math.min(210, Math.max(118, rawWpm));
+      const multiplier = (displayWpm / 42).toFixed(1);
+
+      if (onbWpmValue) onbWpmValue.textContent = `${displayWpm} WPM`;
+      if (onbWpmMultiplier) onbWpmMultiplier.textContent = `${multiplier}× faster`;
+      if (onbWpmCard) onbWpmCard.hidden = false;
+
+      if (onbStep4NextBtn) {
+        onbStep4NextBtn.disabled = false;
+        onbStep4NextBtn.textContent = 'Awesome! Choose Language →';
+      }
+
+      playOnbSound('celebrate');
+      launchConfettiBurst();
+    };
+
+    if (!onbSandboxOutput) {
+      finishReveal();
+      return;
+    }
+
+    onbSandboxOutput.replaceChildren();
+    onbSandboxOutput.setAttribute('aria-label', cleanText);
+
+    if (prefersReducedMotion()) {
+      const span = document.createElement('span');
+      span.setAttribute('aria-hidden', 'true');
+      span.textContent = cleanText;
+      onbSandboxOutput.appendChild(span);
+      finishReveal();
+      return;
+    }
+
+    const caret = document.createElement('span');
+    caret.className = 'onb-typewriter-caret';
+    caret.setAttribute('aria-hidden', 'true');
+    onbSandboxOutput.appendChild(caret);
+
+    const tokens = cleanText.split(/(\s+)/).filter(Boolean);
+    const charQueue = [];
+    for (const token of tokens) {
+      const wordWrap = document.createElement('span');
+      wordWrap.className = 'onb-typewriter-word';
+      wordWrap.setAttribute('aria-hidden', 'true');
+      onbSandboxOutput.insertBefore(wordWrap, caret);
+      for (const ch of Array.from(token)) {
+        charQueue.push({ parent: wordWrap, ch });
+      }
+    }
+
+    const intervalMs = Math.max(12, Math.min(22, Math.floor(1350 / Math.max(1, charQueue.length))));
+    let idx = 0;
+
+    onbTypewriterTimer = setInterval(() => {
+      if (idx >= charQueue.length) {
+        clearInterval(onbTypewriterTimer);
+        onbTypewriterTimer = null;
+        caret.remove();
+        finishReveal();
+        return;
+      }
+
+      const item = charQueue[idx];
+      const chSpan = document.createElement('span');
+      chSpan.className = 'onb-typewriter-char';
+      chSpan.setAttribute('aria-hidden', 'true');
+      chSpan.textContent = item.ch;
+      item.parent.appendChild(chSpan);
+      idx++;
+
+      const now = performance.now();
+      if (now - onbLastTickMs > 55) {
+        onbLastTickMs = now;
+        playOnbSound('type-tick');
+      }
+    }, intervalMs);
+  }
+
+  function updateOnboardingRecordingState(recState) {
+    if (!onboardingDialog?.open) return;
+
+    if (currentOnbStep === 3) {
+      const activeKey = appState?.settings?.holdKey || 'right_cmd';
+      const activeEl = onbKeyInteractiveEls.find((el) => el.dataset.keyId === activeKey);
+      if (recState === 'recording') {
+        if (activeEl) activeEl.classList.add('is-pressed');
+        if (onbKeyTestStatus) {
+          onbKeyTestStatus.classList.add('is-detected');
+          onbKeyTestStatus.innerHTML = `<span class="onb-pulse-dot" aria-hidden="true"></span><span>✓ <strong>${getOnbHotkeyLabel()}</strong> detected! Feels natural, right?</span>`;
+        }
+      } else if (recState === 'idle') {
+        onbKeyInteractiveEls.forEach((el) => el.classList.remove('is-pressed'));
+      }
+      return;
+    }
+
+    if (currentOnbStep === 4 && !step4Completed) {
+      const shortLabel = getOnbHotkeyLabel().replace(' Command', '').replace(' Option', '').replace(' Control', '');
+      if (recState === 'recording') {
+        if (onbSandboxDuck) onbSandboxDuck.dataset.state = 'listening';
+        if (onbSandboxStateBadge) onbSandboxStateBadge.textContent = 'Listening… Release when finished';
+        if (onbSandboxMicBtn) onbSandboxMicBtn.textContent = '⏹ Stop & Transcribe';
+      } else if (recState === 'processing') {
+        if (onbSandboxDuck) onbSandboxDuck.dataset.state = 'thinking';
+        if (onbSandboxStateBadge) onbSandboxStateBadge.textContent = 'AI Polishing…';
+        if (onbSandboxMicBtn) onbSandboxMicBtn.textContent = 'Processing…';
+      } else {
+        if (onbSandboxDuck) onbSandboxDuck.dataset.state = 'idle';
+        if (onbSandboxStateBadge) onbSandboxStateBadge.innerHTML = `Hold <kbd id="onb-sandbox-kbd">${shortLabel}</kbd> to speak`;
+        if (onbSandboxMicBtn) onbSandboxMicBtn.textContent = '🎤 Click to dictate';
+      }
+    }
+  }
+
+  function goToOnbStep(targetStep, direction = 'forward') {
+    const nextStep = Math.max(1, Math.min(5, targetStep));
+    const prevStep = currentOnbStep;
+    currentOnbStep = nextStep;
+
+    if (prevStep === 2 && nextStep !== 2) {
+      stopOnbVuMeter();
+      stopOnbPermPolling();
+    }
+
+    onbSteps.forEach((el) => {
+      const s = Number(el.dataset.step);
+      el.classList.remove('is-entering-forward', 'is-entering-back');
+      if (s === nextStep) {
+        el.hidden = false;
+        void el.offsetWidth;
+        el.classList.add(direction === 'back' ? 'is-entering-back' : 'is-entering-forward');
+      } else {
+        el.hidden = true;
+      }
+    });
+
+    if (onbBackBtn) onbBackBtn.hidden = nextStep <= 1;
+    if (onbStepCounter) onbStepCounter.textContent = ONB_STEP_LABELS[nextStep] || `Step ${nextStep} of 5`;
+    if (onbProgressBar) onbProgressBar.setAttribute('aria-valuenow', String(nextStep));
+    onbProgressSegs.forEach((seg) => {
+      const s = Number(seg.dataset.seg);
+      seg.classList.toggle('is-done', s < nextStep);
+      seg.classList.toggle('is-active', s === nextStep);
+    });
+
+    if (nextStep === 2) {
+      startOnbPermPolling();
+      startOnbVuMeter();
+    } else if (nextStep === 3) {
+      if (!onbHotkeyDefaultApplied && !onbHotkeyUserSelected && (!localStorage.getItem(ONB_STORAGE_KEY) || !appState?.settings?.onboardingComplete)) {
+        onbHotkeyDefaultApplied = true;
+        if (appState?.settings && appState.settings.holdKey !== 'right_cmd') {
+          appState.settings.holdKey = 'right_cmd';
+          appState.hotkeyDisplay = ONB_KEY_LABELS.right_cmd;
+          window.voxflow.updateSettings({ holdKey: 'right_cmd' }).then((next) => {
+            if (next) renderState(next);
+          });
+        }
+      }
+      syncOnbHotkeyUI(appState);
+    } else if (nextStep === 4) {
+      step4BaselineHistoryId = appState?.history?.[0]?.id || null;
+      syncOnbHotkeyUI(appState);
+      syncOnbPromptLanguage(appState?.settings?.language === 'en' ? 'en' : onbPromptLang);
+      if (!step4Completed && onbStep4NextBtn) {
+        onbStep4NextBtn.disabled = true;
+        onbStep4NextBtn.textContent = '🔒 Dictate the sentence above to continue';
+      }
+    } else if (nextStep === 5) {
+      syncOnbLanguageCards(appState?.settings?.language || '');
+      syncOnbHotkeyUI(appState);
+    }
+  }
+
+  function openOnboardingWizard(startStep = 1) {
+    if (!onboardingDialog) return;
+    onboardingDismissedThisSession = false;
+    syncOnbGoalPills();
+    goToOnbStep(startStep, 'forward');
+    if (!onboardingDialog.open) {
+      onboardingDialog.showModal();
+    }
+  }
 
   function updateOnboardingGate(state) {
     if (!onboardingDialog) return;
@@ -901,71 +1496,84 @@
     const isMac = !perms || perms.platform === 'darwin';
     const micOk = !isMac || perms?.microphone === 'granted';
     const accOk = !isMac || Boolean(perms?.accessibility);
-    const allReady = isAuthed && micOk && accOk;
-    lastAllReady = allReady;
 
     if (onbAuthLoggedOut && onbAuthLoggedIn) {
       if (isAuthed) {
         onbAuthLoggedOut.hidden = true;
         onbAuthLoggedIn.hidden = false;
         if (onbUserEmail) onbUserEmail.textContent = state.auth.user.email;
+        if (onbUserGreeting) {
+          const fallbackName = String(state.auth.user.email || '').split('@')[0];
+          onbUserGreeting.textContent = state.settings?.userFirstName || fallbackName || 'there';
+        }
       } else {
         onbAuthLoggedOut.hidden = false;
         onbAuthLoggedIn.hidden = true;
       }
     }
 
+    // Detect permission state flips on Step 2 to play subtle Apple chime
+    if (onboardingDialog.open && currentOnbStep === 2) {
+      if ((onbPrevMicOk === false && micOk) || (onbPrevAccOk === false && accOk)) {
+        playOnbSound('perm-granted');
+      }
+      if (micOk && !onbVuStream) {
+        startOnbVuMeter();
+      }
+    }
+    onbPrevMicOk = micOk;
+    onbPrevAccOk = accOk;
+
+    if (onbMicCard) onbMicCard.classList.toggle('is-granted', micOk);
+    if (onbAccCard) onbAccCard.classList.toggle('is-granted', accOk);
+
+    if (onbMicBadge) {
+      onbMicBadge.dataset.ok = String(micOk);
+      onbMicBadge.textContent = micOk ? '✓ Granted' : '• Required';
+    }
+    if (onbAccBadge) {
+      onbAccBadge.dataset.ok = String(accOk);
+      onbAccBadge.innerHTML = accOk
+        ? '✓ Granted'
+        : '<span class="onb-poll-dot" aria-hidden="true"></span>Auto-detecting…';
+    }
+
     if (onbGrantMicBtn) {
       onbGrantMicBtn.disabled = micOk;
-      onbGrantMicBtn.textContent = micOk ? '✓ Microphone Allowed' : 'Allow Microphone';
-      if (micOk) onbGrantMicBtn.classList.add('btn-granted');
-      else onbGrantMicBtn.classList.remove('btn-granted');
+      onbGrantMicBtn.textContent = micOk ? '✓ Allowed' : 'Allow Microphone';
+      onbGrantMicBtn.classList.toggle('btn-granted', micOk);
     }
     if (onbGrantAccBtn) {
       onbGrantAccBtn.disabled = accOk;
-      onbGrantAccBtn.textContent = accOk ? '✓ Accessibility Granted' : 'Open Accessibility';
-      if (accOk) onbGrantAccBtn.classList.add('btn-granted');
-      else onbGrantAccBtn.classList.remove('btn-granted');
+      onbGrantAccBtn.textContent = accOk ? '✓ Granted' : 'Open Settings';
+      onbGrantAccBtn.classList.toggle('btn-granted', accOk);
     }
 
-    if (onbFinishBtn) {
-      if (allReady) {
-        onbFinishBtn.disabled = false;
-        onbFinishBtn.textContent = '✓ Start Using Speakly';
-      } else if (!isAuthed) {
-        onbFinishBtn.disabled = true;
-        onbFinishBtn.textContent = '1. Please Sign In to Continue';
-      } else if (!micOk && !accOk) {
-        onbFinishBtn.disabled = true;
-        onbFinishBtn.textContent = '2. Allow Microphone & Accessibility Above';
-      } else if (!micOk) {
-        onbFinishBtn.disabled = true;
-        onbFinishBtn.textContent = '2. Please Allow Microphone Above';
-      } else {
-        onbFinishBtn.disabled = true;
-        onbFinishBtn.textContent = '2. Please Grant Accessibility in Settings';
+    if (onbStep2NextBtn) {
+      onbStep2NextBtn.textContent = micOk && accOk
+        ? '✓ All Set — Continue to Hotkey Setup →'
+        : 'Continue to Hotkey Setup →';
+    }
+
+    syncOnbHotkeyUI(state);
+    syncOnbLanguageCards(state.settings?.language || '');
+
+    // Detect newly completed real voice dictation during Step 4 Practice Sandbox
+    if (onboardingDialog.open && currentOnbStep === 4 && !step4Completed) {
+      const latest = state.history?.[0];
+      if (latest && latest.id && latest.id !== step4BaselineHistoryId) {
+        step4BaselineHistoryId = latest.id;
+        completeStep4Sandbox(latest.text, latest.durationSeconds || 3.0);
       }
     }
 
-    // AUTO-UNLOCK: If all requirements are ready, auto-close the modal immediately!
-    if (allReady) {
-      if (onboardingDialog.open) {
-        if (onbFinishBtn) {
-          onbFinishBtn.textContent = '✓ Permissions Verified — Launching Speakly...';
-        }
-        setTimeout(() => {
-          if (onboardingDialog && onboardingDialog.open) {
-            onboardingDialog.close();
-          }
-        }, 350);
-      }
-      if (!state.settings?.onboardingComplete) {
-        window.voxflow.updateSettings({ onboardingComplete: true });
-      }
-    } else {
-      // If missing permissions or login, show modal only if user hasn't explicitly skipped it
-      if (!onboardingDialog.open && !state.settings?.onboardingComplete) {
-        onboardingDialog.showModal();
+    // Open automatically once on launch if the 5-step onboarding has not yet been completed
+    if (!onboardingBootChecked) {
+      onboardingBootChecked = true;
+      const completedV1 = localStorage.getItem(ONB_STORAGE_KEY) === 'done';
+      const needsOnboarding = !state.settings?.onboardingComplete || !completedV1;
+      if (needsOnboarding && !onboardingDismissedThisSession && !onboardingDialog.open) {
+        openOnboardingWizard(1);
       }
     }
   }
@@ -1399,7 +2007,89 @@
     });
   }
 
-  // Onboarding Gate Handlers
+  // Onboarding 5-Step Wizard Handlers
+  if (reopenOnboardingBtn) {
+    reopenOnboardingBtn.addEventListener('click', () => {
+      step4Completed = false;
+      onbVuVerified = false;
+      if (onbVuStatus) {
+        onbVuStatus.textContent = 'Allow microphone to see your live voice meter…';
+        onbVuStatus.classList.remove('is-verified');
+      }
+      if (onbKeyTestStatus) onbKeyTestStatus.classList.remove('is-detected');
+      if (onbWpmCard) onbWpmCard.hidden = true;
+      if (onbSandboxDuck) onbSandboxDuck.dataset.state = 'idle';
+      if (onbSandboxOutput) {
+        onbSandboxOutput.replaceChildren();
+        const ph = document.createElement('span');
+        ph.className = 'onb-sandbox-placeholder';
+        ph.textContent = 'Your polished dictation will type out here character-by-character…';
+        onbSandboxOutput.appendChild(ph);
+      }
+      openOnboardingWizard(1);
+    });
+  }
+
+  if (onbBackBtn) {
+    onbBackBtn.addEventListener('click', () => {
+      goToOnbStep(currentOnbStep - 1, 'back');
+    });
+  }
+
+  if (onbStep1NextBtn) {
+    onbStep1NextBtn.addEventListener('click', () => {
+      goToOnbStep(2, 'forward');
+    });
+  }
+
+  if (onbStep2NextBtn) {
+    onbStep2NextBtn.addEventListener('click', () => {
+      goToOnbStep(3, 'forward');
+    });
+  }
+
+  if (onbStep3NextBtn) {
+    onbStep3NextBtn.addEventListener('click', () => {
+      goToOnbStep(4, 'forward');
+    });
+  }
+
+  if (onbStep4NextBtn) {
+    onbStep4NextBtn.addEventListener('click', () => {
+      if (step4Completed) {
+        goToOnbStep(5, 'forward');
+      }
+    });
+  }
+
+  onbGoalPills.forEach((pill) => {
+    pill.addEventListener('click', () => {
+      const goal = pill.dataset.goal;
+      if (!goal) return;
+      if (onbSelectedGoals.has(goal)) {
+        if (onbSelectedGoals.size > 1) onbSelectedGoals.delete(goal);
+      } else {
+        if (onbSelectedGoals.size >= 2) {
+          const oldest = onbSelectedGoals.values().next().value;
+          onbSelectedGoals.delete(oldest);
+        }
+        onbSelectedGoals.add(goal);
+      }
+      try {
+        localStorage.setItem('speakly_onb_goals', JSON.stringify([...onbSelectedGoals]));
+      } catch {}
+      syncOnbGoalPills();
+      playOnbSound('key-down');
+
+      const goalToMode = { chat: 'smart', email: 'email', notes: 'notes', code: 'code' };
+      const mappedMode = goalToMode[goal];
+      const isPro = currentUsage.plan === 'pro';
+      if (mappedMode && (isPro || mappedMode === 'smart' || mappedMode === 'raw')) {
+        window.voxflow.updateSettings({ activeModeId: mappedMode });
+      }
+    });
+  });
+
   if (onbGoogleBtn) {
     onbGoogleBtn.addEventListener('click', () => handleGoogleAuth(onbAuthFeedback));
   }
@@ -1458,10 +2148,158 @@
     });
   }
 
+  if (onbRefreshBtn) {
+    onbRefreshBtn.addEventListener('click', async () => {
+      onbRefreshBtn.textContent = '…';
+      const next = await window.voxflow.checkPermissions();
+      renderState(next);
+      setTimeout(() => {
+        if (onbRefreshBtn) onbRefreshBtn.textContent = '↻';
+      }, 450);
+    });
+  }
+
+  // Step 3: Trigger mode & interactive vector Mac keyboard selection
+  onbTriggerSegBtns.forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const triggerMode = btn.dataset.trigger;
+      if (!triggerMode) return;
+      playOnbSound('key-down');
+      if (onbKeyTestStatus) onbKeyTestStatus.classList.remove('is-detected');
+      const next = await window.voxflow.updateSettings({ triggerMode });
+      renderState(next);
+    });
+  });
+
+  async function selectOnbHotkey(keyId) {
+    if (!keyId) return;
+    onbHotkeyUserSelected = true;
+    playOnbSound('key-down');
+    if (onbKeyTestStatus) onbKeyTestStatus.classList.remove('is-detected');
+    const next = await window.voxflow.updateSettings({ holdKey: keyId });
+    renderState(next);
+  }
+
+  onbKeyInteractiveEls.forEach((el) => {
+    el.addEventListener('click', () => selectOnbHotkey(el.dataset.keyId));
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        selectOnbHotkey(el.dataset.keyId);
+      }
+    });
+  });
+
+  onbKeyPills.forEach((pill) => {
+    pill.addEventListener('click', () => selectOnbHotkey(pill.dataset.keyId));
+  });
+
+  const DOM_CODE_TO_KEY_ID = {
+    MetaRight: 'right_cmd',
+    MetaLeft: 'left_cmd',
+    AltRight: 'right_alt',
+    AltLeft: 'left_alt',
+    ControlRight: 'right_ctrl',
+    ControlLeft: 'left_ctrl'
+  };
+
+  window.addEventListener('keydown', (e) => {
+    if (!onboardingDialog?.open || currentOnbStep !== 3 || isRecordingShortcut) return;
+    const keyId = DOM_CODE_TO_KEY_ID[e.code];
+    if (!keyId) return;
+
+    const kbdEl = onbKeyInteractiveEls.find((el) => el.dataset.keyId === keyId);
+    if (kbdEl) kbdEl.classList.add('is-pressed');
+    if (!e.repeat) playOnbSound('key-down');
+
+    const activeKey = appState?.settings?.holdKey || 'right_cmd';
+    if (onbKeyTestStatus) {
+      if (keyId === activeKey) {
+        onbKeyTestStatus.classList.add('is-detected');
+        onbKeyTestStatus.innerHTML = `<span class="onb-pulse-dot" aria-hidden="true"></span><span>✓ <strong>${ONB_KEY_LABELS[keyId]}</strong> detected! Notice how natural it feels.</span>`;
+      } else {
+        onbKeyTestStatus.classList.remove('is-detected');
+        onbKeyTestStatus.innerHTML = `<span class="onb-pulse-dot" aria-hidden="true"></span><span>Pressed <strong>${ONB_KEY_LABELS[keyId]}</strong> — click that key on the diagram to switch, or press ${getOnbHotkeyLabel()}.</span>`;
+      }
+    }
+  });
+
+  window.addEventListener('keyup', (e) => {
+    if (!onboardingDialog?.open || currentOnbStep !== 3) return;
+    const keyId = DOM_CODE_TO_KEY_ID[e.code];
+    if (!keyId) return;
+    const kbdEl = onbKeyInteractiveEls.find((el) => el.dataset.keyId === keyId);
+    if (kbdEl) kbdEl.classList.remove('is-pressed');
+
+    if (appState?.recordingState === 'recording') {
+      setTimeout(() => {
+        if (onboardingDialog?.open && currentOnbStep === 3) {
+          window.voxflow.cancelRecording();
+        }
+      }, 60);
+    }
+  });
+
+  // Step 4: Practice Sandbox Controls
+  onbPromptLangBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      syncOnbPromptLanguage(btn.dataset.promptLang);
+    });
+  });
+
+  if (onbSandboxMicBtn) {
+    onbSandboxMicBtn.addEventListener('click', () => {
+      if (step4Completed) return;
+      step4BaselineHistoryId = appState?.history?.[0]?.id || null;
+      window.voxflow.toggleRecording();
+    });
+  }
+
+  if (onbSandboxDemoBtn) {
+    onbSandboxDemoBtn.addEventListener('click', () => {
+      if (step4DemoTimer) clearTimeout(step4DemoTimer);
+      step4Completed = false;
+      if (onbWpmCard) onbWpmCard.hidden = true;
+      if (onbStep4NextBtn) {
+        onbStep4NextBtn.disabled = true;
+        onbStep4NextBtn.textContent = '🔒 Dictate the sentence above to continue';
+      }
+      if (onbSandboxDuck) onbSandboxDuck.dataset.state = 'listening';
+      if (onbSandboxStateBadge) onbSandboxStateBadge.textContent = 'Listening to sample voice…';
+
+      step4DemoTimer = setTimeout(() => {
+        if (onbSandboxDuck) onbSandboxDuck.dataset.state = 'thinking';
+        if (onbSandboxStateBadge) onbSandboxStateBadge.textContent = 'AI Polishing…';
+
+        step4DemoTimer = setTimeout(() => {
+          completeStep4Sandbox(ONB_PROMPT_SENTENCES[onbPromptLang], 5.1);
+        }, 480);
+      }, 650);
+    });
+  }
+
+  // Step 5: Language Flag Selector & Finalize to Menubar
+  onbLangCards.forEach((card) => {
+    card.addEventListener('click', async () => {
+      const lang = card.dataset.lang || '';
+      playOnbSound('key-down');
+      syncOnbLanguageCards(lang);
+      if (languageSelect) languageSelect.value = lang;
+      const next = await window.voxflow.updateSettings({ language: lang });
+      renderState(next);
+    });
+  });
+
   if (onbFinishBtn) {
     onbFinishBtn.addEventListener('click', async () => {
+      try {
+        localStorage.setItem(ONB_STORAGE_KEY, 'done');
+      } catch {}
+      onboardingDismissedThisSession = true;
       await window.voxflow.updateSettings({ onboardingComplete: true });
-      onboardingDialog.close();
+      if (onboardingDialog && onboardingDialog.open) {
+        onboardingDialog.close();
+      }
     });
   }
 
@@ -1471,6 +2309,20 @@
 
   onboardingDialog.addEventListener('close', () => {
     onboardingDialog.returnValue = '';
+    stopOnbVuMeter();
+    stopOnbPermPolling();
+    if (step4DemoTimer) {
+      clearTimeout(step4DemoTimer);
+      step4DemoTimer = null;
+    }
+    if (onbTypewriterTimer) {
+      clearInterval(onbTypewriterTimer);
+      onbTypewriterTimer = null;
+    }
+    if (onbConfettiRafId) {
+      cancelAnimationFrame(onbConfettiRafId);
+      onbConfettiRafId = null;
+    }
   });
 
   // Custom Mode Modal Handlers
@@ -1507,38 +2359,29 @@
 
   if (onboardingDialog) {
     onboardingDialog.addEventListener('cancel', () => {
-      // Allow Escape key to dismiss setup dialog without blocking
+      onboardingDismissedThisSession = true;
     });
   }
 
-  const onbCloseBtn = document.getElementById('onb-close-btn');
   if (onbCloseBtn) {
     onbCloseBtn.addEventListener('click', () => {
+      onboardingDismissedThisSession = true;
       if (onboardingDialog && onboardingDialog.open) {
         onboardingDialog.close();
       }
     });
   }
 
-  const onbSkipBtn = document.getElementById('onb-skip-btn');
   if (onbSkipBtn) {
     onbSkipBtn.addEventListener('click', async () => {
+      try {
+        localStorage.setItem(ONB_STORAGE_KEY, 'done');
+      } catch {}
+      onboardingDismissedThisSession = true;
       await window.voxflow.updateSettings({ onboardingComplete: true });
       if (onboardingDialog && onboardingDialog.open) {
         onboardingDialog.close();
       }
-    });
-  }
-
-  const onbRefreshBtn = document.getElementById('onb-refresh-btn');
-  if (onbRefreshBtn) {
-    onbRefreshBtn.addEventListener('click', async () => {
-      onbRefreshBtn.textContent = 'Checking...';
-      const next = await window.voxflow.checkPermissions();
-      renderState(next);
-      setTimeout(() => {
-        if (onbRefreshBtn) onbRefreshBtn.textContent = '🔄 Check Again';
-      }, 500);
     });
   }
 
@@ -1618,7 +2461,8 @@
       const perms = appState?.permissions;
       const micOk = perms?.microphone === 'granted';
       const accOk = Boolean(perms?.accessibility);
-      if (!micOk || !accOk || (onboardingDialog && onboardingDialog.open)) {
+      const step2HandlesPolling = onboardingDialog && onboardingDialog.open && currentOnbStep === 2;
+      if ((!micOk || !accOk) && !step2HandlesPolling) {
         const next = await window.voxflow.checkPermissions();
         renderState(next);
       }
@@ -1627,10 +2471,19 @@
 
   // IPC Subscriptions
   window.voxflow.onStateUpdated((next) => renderState(next));
-  window.voxflow.onRecordingStatus(({ state }) => updateRecordingIndicators(state));
+  window.voxflow.onRecordingStatus(({ state }) => {
+    updateRecordingIndicators(state);
+    updateOnboardingRecordingState(state);
+  });
   window.voxflow.onError(({ message }) => {
     globalAlertText.textContent = message;
     globalAlert.hidden = false;
+    if (onboardingDialog?.open && currentOnbStep === 4 && !step4Completed) {
+      if (onbSandboxDuck) onbSandboxDuck.dataset.state = 'idle';
+      if (onbSandboxStateBadge) {
+        onbSandboxStateBadge.textContent = 'Tip: Sign in / check mic or click ⚡ Simulate test';
+      }
+    }
   });
   window.voxflow.onQuotaExceeded((data) => {
     if (data && typeof data.current === 'number') {
@@ -1872,6 +2725,18 @@
   if (window.voxflow.onOpenFeedback) {
     window.voxflow.onOpenFeedback(() => {
       openFeedback();
+    });
+  }
+
+  if (window.voxflow.onNavigateTab) {
+    window.voxflow.onNavigateTab(({ tab, section }) => {
+      if (tab) switchTab(tab);
+      if (section === 'shortcuts') {
+        const el = document.getElementById('hotkey-heading') || document.getElementById('section-shortcuts');
+        if (el) {
+          setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'center' }), 100);
+        }
+      }
     });
   }
 

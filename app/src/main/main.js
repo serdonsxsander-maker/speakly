@@ -14,7 +14,8 @@ const {
   clipboard,
   dialog,
   systemPreferences,
-  session
+  session,
+  globalShortcut
 } = require('electron');
 
 const { createClient } = require('@supabase/supabase-js');
@@ -336,91 +337,320 @@ function updateTrayIcon(recording) {
   tray.setImage(createTrayIcon({ recording }));
 }
 
+const WHISPER_LANGUAGES = [
+  { code: '', label: 'Auto-detect' },
+  { code: 'en', label: 'English' },
+  { code: 'zh', label: 'Chinese - Simplified (简体中文)' },
+  { code: 'nl', label: 'Dutch (Nederlands)' },
+  { code: 'es', label: 'Spanish (Español)' },
+  { code: 'af', label: 'Afrikaans' },
+  { code: 'sq', label: 'Albanian (Shqip)' },
+  { code: 'am', label: 'Amharic (አማርኛ)' },
+  { code: 'ar', label: 'Arabic (العربية)' },
+  { code: 'hy', label: 'Armenian (Հայերեն)' },
+  { code: 'as', label: 'Assamese (অসমীয়া)' },
+  { code: 'az', label: 'Azerbaijani (Azərbaycan)' },
+  { code: 'ba', label: 'Bashkir' },
+  { code: 'eu', label: 'Basque (Euskara)' },
+  { code: 'be', label: 'Belarusian (Беларуская)' },
+  { code: 'bn', label: 'Bengali (বাংলা)' },
+  { code: 'bs', label: 'Bosnian (Bosanski)' },
+  { code: 'br', label: 'Breton' },
+  { code: 'bg', label: 'Bulgarian (Български)' },
+  { code: 'yue', label: 'Cantonese (粵語)' },
+  { code: 'ca', label: 'Catalan (Català)' },
+  { code: 'zh-TW', label: 'Chinese - Traditional (繁體中文)' },
+  { code: 'hr', label: 'Croatian (Hrvatski)' },
+  { code: 'cs', label: 'Czech (Čeština)' },
+  { code: 'da', label: 'Danish (Dansk)' },
+  { code: 'en-GB', label: 'English - British' },
+  { code: 'en-CA', label: 'English - Canadian' },
+  { code: 'et', label: 'Estonian (Eesti)' },
+  { code: 'fo', label: 'Faroese (Føroyskt)' },
+  { code: 'fi', label: 'Finnish (Suomi)' },
+  { code: 'fr', label: 'French (Français)' },
+  { code: 'gl', label: 'Galician (Galego)' },
+  { code: 'ka', label: 'Georgian (ქართული)' },
+  { code: 'de-CH', label: 'German - Swiss (Deutsch)' },
+  { code: 'de', label: 'German (Deutsch)' },
+  { code: 'el', label: 'Greek (Ελληνικά)' },
+  { code: 'gu', label: 'Gujarati (ગુજરાતી)' },
+  { code: 'ht', label: 'Haitian Creole (Kreyòl Ayisyen)' },
+  { code: 'ha', label: 'Hausa' },
+  { code: 'haw', label: 'Hawaiian (\'Ōlelo Hawai\'i)' },
+  { code: 'he', label: 'Hebrew (עברית)' },
+  { code: 'hi', label: 'Hindi (हिन्दी)' },
+  { code: 'hu', label: 'Hungarian (Magyar)' },
+  { code: 'is', label: 'Icelandic (Íslenska)' },
+  { code: 'id', label: 'Indonesian (Bahasa Indonesia)' },
+  { code: 'it', label: 'Italian (Italiano)' },
+  { code: 'ja', label: 'Japanese (日本語)' },
+  { code: 'jv', label: 'Javanese' },
+  { code: 'kn', label: 'Kannada (ಕನ್ನಡ)' },
+  { code: 'kk', label: 'Kazakh (Қазақ)' },
+  { code: 'km', label: 'Khmer (ខ្មែរ)' },
+  { code: 'ko', label: 'Korean (한국어)' },
+  { code: 'lo', label: 'Lao (ລາວ)' },
+  { code: 'la', label: 'Latin' },
+  { code: 'lv', label: 'Latvian (Latviešu)' },
+  { code: 'lt', label: 'Lithuanian (Lietuvių)' },
+  { code: 'lb', label: 'Luxembourgish (Lëtzebuergesch)' },
+  { code: 'mk', label: 'Macedonian (Македонски)' },
+  { code: 'mg', label: 'Malagasy' },
+  { code: 'ms', label: 'Malay (Bahasa Melayu)' },
+  { code: 'ml', label: 'Malayalam (മലയാളം)' },
+  { code: 'mt', label: 'Maltese (Malti)' },
+  { code: 'mi', label: 'Maori' },
+  { code: 'mr', label: 'Marathi (मराठी)' },
+  { code: 'mn', label: 'Mongolian (Монгол)' },
+  { code: 'my', label: 'Myanmar (Burmese)' },
+  { code: 'ne', label: 'Nepali (नेपाली)' },
+  { code: 'no', label: 'Norwegian (Norsk)' },
+  { code: 'oc', label: 'Occitan' },
+  { code: 'ps', label: 'Pashto (پښتو)' },
+  { code: 'fa', label: 'Persian (فارسی)' },
+  { code: 'pl', label: 'Polish (Polski)' },
+  { code: 'pt', label: 'Portuguese (Português)' },
+  { code: 'pa', label: 'Punjabi (ਪੰਜਾਬੀ)' },
+  { code: 'ro', label: 'Romanian (Română)' },
+  { code: 'ru', label: 'Russian (Русский)' },
+  { code: 'sa', label: 'Sanskrit (संस्कृतम्)' },
+  { code: 'sr', label: 'Serbian (Srpski)' },
+  { code: 'sn', label: 'Shona' },
+  { code: 'sd', label: 'Sindhi (سنڌي)' },
+  { code: 'si', label: 'Sinhala (සිංහල)' },
+  { code: 'sk', label: 'Slovak (Slovenčina)' },
+  { code: 'sl', label: 'Slovenian (Slovenščina)' },
+  { code: 'so', label: 'Somali' },
+  { code: 'su', label: 'Sundanese' },
+  { code: 'sw', label: 'Swahili (Kiswahili)' },
+  { code: 'sv', label: 'Swedish (Svenska)' },
+  { code: 'tl', label: 'Tagalog (Filipino)' },
+  { code: 'tg', label: 'Tajik (Тоҷикӣ)' },
+  { code: 'ta', label: 'Tamil (தமிழ்)' },
+  { code: 'tt', label: 'Tatar' },
+  { code: 'te', label: 'Telugu (తెలుగు)' },
+  { code: 'th', label: 'Thai (ไทย)' },
+  { code: 'bo', label: 'Tibetan (བོད་ཡིག)' },
+  { code: 'tr', label: 'Turkish (Türkçe)' },
+  { code: 'tk', label: 'Turkmen' },
+  { code: 'uk', label: 'Ukrainian (Українська)' },
+  { code: 'ur', label: 'Urdu (اردو)' },
+  { code: 'uz', label: 'Uzbek (Oʻzbek)' },
+  { code: 'vi', label: 'Vietnamese (Tiếng Việt)' },
+  { code: 'cy', label: 'Welsh (Cymraeg)' },
+  { code: 'yi', label: 'Yiddish (ייִדיש)' },
+  { code: 'yo', label: 'Yoruba' },
+  { code: 'zu', label: 'Zulu' }
+];
+
+let availableAudioDevices = [];
+
+function checkUpdatesFromTray() {
+  dialog.showMessageBox({
+    type: 'info',
+    title: 'Speakly Updates',
+    message: 'You are on the latest version of Speakly (v1.0.0).',
+    detail: 'Speakly is up to date with the latest Groq LPU transcription, 5-minute safety limits, and macOS Gatekeeper optimizations.',
+    buttons: ['OK', 'Visit Website'],
+    defaultId: 0
+  }).then(({ response }) => {
+    if (response === 1) {
+      shell.openExternal('https://speakly.app');
+    }
+  }).catch(() => {});
+}
+
+async function pasteLastTranscript() {
+  const state = store.getState();
+  const lastItem = state.history?.[0];
+  const textToPaste = lastItem?.text || lastItem?.finalText || lastItem?.rawText;
+
+  if (!textToPaste || !textToPaste.trim()) {
+    sendToPill('voxflow:pill-toast', {
+      kind: 'muted',
+      message: 'No recent transcript'
+    });
+    return;
+  }
+
+  try {
+    const pasteResult = await pasteAtCursor(textToPaste, {
+      preserveClipboard: state.settings.preserveClipboard
+    });
+
+    if (pasteResult.pasted) {
+      sendToPill('voxflow:pill-toast', {
+        kind: 'success',
+        message: 'Pasted last transcript ✨'
+      });
+    } else if (pasteResult.reason === 'accessibility_missing') {
+      sendToPill('voxflow:pill-toast', {
+        kind: 'warning',
+        message: 'Copied! Enable Accessibility to paste'
+      });
+    } else {
+      sendToPill('voxflow:pill-toast', {
+        kind: 'warning',
+        message: 'Copied to clipboard'
+      });
+    }
+  } catch (err) {
+    console.error('Failed to paste last transcript:', err);
+  }
+}
+
+function openShortcutsFromTray() {
+  showDashboard();
+  const send = () => sendToDashboard('voxflow:navigate-tab', { tab: 'settings', section: 'shortcuts' });
+  if (dashboardWindow && !dashboardWindow.isDestroyed()) {
+    if (dashboardWindow.webContents.isLoading()) {
+      dashboardWindow.webContents.once('did-finish-load', send);
+    } else {
+      send();
+    }
+  }
+}
+
+function openHelpCenterFromTray() {
+  const guidePath = path.resolve(__dirname, '..', '..', 'docs', 'ONBOARDING_GUIDE.md');
+  if (fs.existsSync(guidePath)) {
+    shell.openPath(guidePath);
+  } else {
+    shell.openExternal('https://speakly.app/help');
+  }
+}
+
+function openSupportFromTray() {
+  if (!dashboardWindow || dashboardWindow.isDestroyed()) {
+    createDashboardWindow(ensureAppIconAsset());
+  }
+  if (dashboardWindow.isMinimized()) dashboardWindow.restore();
+  dashboardWindow.show();
+  dashboardWindow.focus();
+  const send = () => sendToDashboard('voxflow:open-feedback');
+  if (dashboardWindow.webContents.isLoading()) {
+    dashboardWindow.webContents.once('did-finish-load', send);
+  } else {
+    send();
+  }
+}
+
 function rebuildTrayMenu() {
   if (!tray) return;
   const state = store.getState();
-  const modes = store.getAllModes();
   const hotkeyLabel = getHotkeyDisplayLabel(state.settings);
 
-  const sub = state.subscription || {};
-  const isPro = sub.plan === 'pro' && (sub.status === 'active' || sub.status === 'on_trial');
-
-  const modeItems = modes.map((m) => {
-    const isFreeAllowed = m.id === 'smart' || m.id === 'raw';
-    const isLocked = !isPro && !isFreeAllowed;
-    return {
-      label: isLocked ? `${m.name} (🔒 Pro)` : m.name,
+  // 1. Microphone Submenu (Matches Wispr Flow Image 3)
+  const activeMicId = state.settings.micDeviceId || 'default';
+  const micItems = [
+    {
+      label: 'Auto-detect (System Default)',
       type: 'radio',
-      checked: state.settings.activeModeId === m.id,
+      checked: activeMicId === 'default' || !activeMicId,
       click: () => {
-        if (isLocked) {
-          sendToPill('voxflow:pill-toast', {
-            kind: 'warning',
-            title: 'Pro Feature 🔒',
-            message: `${m.name} is a Pro mode. Upgrade to unlock.`
-          });
-          sendToDashboard('speakly:quota-exceeded', {
-            isModeLock: true,
-            badge: 'Pro Feature 🔒',
-            title: `Unlock ${m.name}`,
-            message: `${m.name} formatting is an exclusive Speakly Pro mode. Upgrade to unlock all AI modes & unlimited words.`,
-            limit: 3000,
-            current: 0
-          });
-          showDashboard();
-          return;
-        }
-        store.updateSettings({ activeModeId: m.id });
-        broadcastState();
+        store.updateSettings({ micDeviceId: 'default' });
+        rebuildTrayMenu();
+        sendToPill('voxflow:pill-toast', { kind: 'success', message: 'Mic: Auto-detect' });
       }
-    };
-  });
+    }
+  ];
 
+  if (availableAudioDevices && availableAudioDevices.length > 0) {
+    const seen = new Set();
+    availableAudioDevices.forEach((d) => {
+      if (!d.deviceId || seen.has(d.deviceId)) return;
+      seen.add(d.deviceId);
+      const isBuiltIn = /built-in|internal|macbook/i.test(d.label);
+      const displayLabel = isBuiltIn ? `${d.label} (recommended)` : d.label;
+      micItems.push({
+        label: displayLabel,
+        type: 'radio',
+        checked: activeMicId === d.deviceId,
+        click: () => {
+          store.updateSettings({ micDeviceId: d.deviceId });
+          rebuildTrayMenu();
+          sendToPill('voxflow:pill-toast', { kind: 'success', message: `Mic: ${d.label}` });
+        }
+      });
+    });
+  } else {
+    micItems.push({
+      label: 'Built-in mic (recommended)',
+      type: 'radio',
+      checked: activeMicId === 'builtin',
+      click: () => {
+        store.updateSettings({ micDeviceId: 'builtin' });
+        rebuildTrayMenu();
+      }
+    });
+  }
+
+  // 2. Languages Submenu (Matches Wispr Flow Image 4)
+  const activeLangCode = state.settings.language || '';
+  const langItems = WHISPER_LANGUAGES.map((l) => ({
+    label: l.label,
+    type: 'radio',
+    checked: activeLangCode === l.code,
+    click: () => {
+      store.updateSettings({ language: l.code });
+      syncPreferencesToCloud();
+      broadcastState();
+      rebuildTrayMenu();
+      sendToPill('voxflow:pill-toast', {
+        kind: 'success',
+        message: l.code ? `Language: ${l.label}` : 'Language: Auto-detect'
+      });
+    }
+  }));
+
+  // Wispr Flow Dropdown Menu Architecture (without meeting items, Speakly branded)
   const menu = Menu.buildFromTemplate([
     {
-      label: `Speakly — ${currentRecordingState === 'recording' ? 'Listening…' : 'Ready'}`,
-      enabled: false
-    },
-    {
-      label: `Trigger: ${hotkeyLabel}`,
-      enabled: false
-    },
-    { type: 'separator' },
-    {
-      label: currentRecordingState === 'recording' ? 'Stop & Transcribe' : 'Start Dictation Now',
-      click: () => {
-        if (currentRecordingState === 'recording') {
-          triggerStopRecording();
-        } else {
-          triggerStartRecording({ source: 'tray' });
-        }
-      }
-    },
-    {
-      label: 'AI Formatting Mode',
-      submenu: modeItems
-    },
-    {
-      label: '🔒 100% Local Offline Mode',
-      type: 'checkbox',
-      checked: state.settings.provider === 'local',
-      click: (menuItem) => {
-        store.updateSettings({ provider: menuItem.checked ? 'local' : 'groq' });
-        broadcastState();
-      }
-    },
-    { type: 'separator' },
-    {
-      label: 'Open Speakly Control Center',
+      label: 'Open Speakly',
       click: () => showDashboard()
     },
+    { type: 'separator' },
     {
-      label: 'Send Feedback…',
+      label: 'Check for updates…',
+      click: () => checkUpdatesFromTray()
+    },
+    {
+      label: 'Paste last transcript',
+      accelerator: 'Control+Alt+V',
+      click: () => pasteLastTranscript()
+    },
+    { type: 'separator' },
+    {
+      label: 'Shortcuts',
+      click: () => openShortcutsFromTray()
+    },
+    {
+      label: 'Microphone',
+      submenu: micItems
+    },
+    {
+      label: 'Languages',
+      submenu: langItems
+    },
+    { type: 'separator' },
+    {
+      label: 'Help center',
+      click: () => openHelpCenterFromTray()
+    },
+    {
+      label: 'Talk to support',
+      accelerator: 'CmdOrControl+/',
+      click: () => openSupportFromTray()
+    },
+    {
+      label: 'Share feedback',
       click: () => openFeedbackFromTray()
     },
     { type: 'separator' },
     {
       label: 'Quit Speakly',
+      accelerator: 'CmdOrControl+Q',
       click: () => {
         isQuitting = true;
         app.quit();
@@ -693,6 +923,7 @@ function triggerStartRecording({ source = 'hotkey' } = {}) {
     source,
     audioFeedback: state.settings.audioFeedback,
     micSensitivity: state.settings.micSensitivity || 'high',
+    micDeviceId: state.settings.micDeviceId || 'default',
     modeBadge: store.getActiveMode().badge,
     triggerMode: state.settings.triggerMode
   });
@@ -1421,6 +1652,13 @@ function registerIpcHandlers() {
     showDashboard();
   });
 
+  ipcMain.on('voxflow:audio-devices', (_event, devices) => {
+    if (Array.isArray(devices) && devices.length > 0) {
+      availableAudioDevices = devices;
+      rebuildTrayMenu();
+    }
+  });
+
   // Receive recorded WAV buffer from Pill HUD
   ipcMain.on('voxflow:audio-captured', async (_event, payload) => {
     const { wavBytes, durationSeconds, rmsPeak } = payload || {};
@@ -1631,6 +1869,23 @@ app.whenReady().then(() => {
   createDashboardWindow(iconPath);
 
   hotkeyManager.configure(store.getState().settings);
+
+  // Global shortcuts matching Wispr Flow: Paste Last Transcript (^⌥V) & Talk to Support (⌘/)
+  try {
+    globalShortcut.register('Control+Alt+V', () => {
+      pasteLastTranscript();
+    });
+  } catch (err) {
+    console.warn('Could not register Control+Alt+V shortcut:', err.message);
+  }
+
+  try {
+    globalShortcut.register('CommandOrControl+/', () => {
+      openSupportFromTray();
+    });
+  } catch (err) {
+    console.warn('Could not register CommandOrControl+/ shortcut:', err.message);
+  }
 
   if (process.platform === 'darwin') {
     if (!systemPreferences.isTrustedAccessibilityClient(false)) {

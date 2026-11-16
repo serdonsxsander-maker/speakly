@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('pillBridge', {
   openDashboard: () => ipcRenderer.send('voxflow:open-dashboard'),
   sendAudioCaptured: (payload) => ipcRenderer.send('voxflow:audio-captured', payload),
   sendCaptureError: (msg) => ipcRenderer.send('voxflow:capture-error', msg),
+  sendAudioDevices: (devices) => ipcRenderer.send('voxflow:audio-devices', devices),
 
   onStateSync: (cb) => {
     ipcRenderer.on('voxflow:state-sync', (_e, state) => cb(state));

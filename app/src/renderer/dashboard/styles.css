@@ -1343,3 +1343,1443 @@ dialog::backdrop {
   font-size: 13.5px;
   padding: 8px 12px;
 }
+
+/* ==========================================================================
+   Wispr Flow Apple-Grade 5-Step Onboarding Wizard
+   ========================================================================== */
+dialog.onb-dialog {
+  max-width: 616px;
+  width: calc(100% - 32px);
+  border-radius: 22px;
+  background: rgba(9, 9, 11, 0.94);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:
+    0 32px 84px rgba(0, 0, 0, 0.78),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  color: #f4f4f5;
+  overflow: hidden;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", system-ui, sans-serif;
+}
+
+dialog.onb-dialog::backdrop {
+  background: rgba(3, 4, 8, 0.74);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+dialog.onb-dialog [hidden] {
+  display: none !important;
+}
+
+.onb-shell {
+  position: relative;
+  padding: 22px 26px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow: hidden;
+}
+
+.onb-ambient-glow {
+  position: absolute;
+  top: -110px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 440px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 208, 0, 0.14) 0%, rgba(245, 158, 11, 0.04) 45%, transparent 72%);
+  filter: blur(24px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.onb-confetti-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 25;
+}
+
+/* Header & 5-Segment Progress */
+.onb-header {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.onb-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.onb-nav-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px 4px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: #e4e4e7;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 100ms ease, background-color 140ms ease, border-color 140ms ease;
+}
+
+.onb-nav-back svg {
+  width: 13px;
+  height: 13px;
+}
+
+.onb-nav-back:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.onb-nav-back:active {
+  transform: scale(0.96);
+}
+
+.onb-step-counter {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #a1a1aa;
+}
+
+.onb-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.onb-skip-top-btn {
+  background: transparent;
+  border: none;
+  color: #71717a;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: color 140ms ease, background-color 140ms ease;
+}
+
+.onb-skip-top-btn:hover {
+  color: #e4e4e7;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.onb-close-btn {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+  color: #a1a1aa;
+  font-size: 13px;
+  cursor: pointer;
+  transition: transform 100ms ease, background-color 140ms ease, color 140ms ease;
+}
+
+.onb-close-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.onb-close-btn:active {
+  transform: scale(0.95);
+}
+
+.onb-progress-bar {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 7px;
+}
+
+.onb-progress-seg {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.10);
+  transition:
+    background-color 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 320ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.onb-progress-seg.is-done {
+  background: #34d399;
+}
+
+.onb-progress-seg.is-active {
+  background: #ffd000;
+  box-shadow: 0 0 12px rgba(255, 208, 0, 0.5);
+}
+
+/* Step Container & Directional Motion */
+.onb-step {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.onb-step.is-entering-forward {
+  animation: onbStepEnterForward 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.onb-step.is-entering-back {
+  animation: onbStepEnterBack 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes onbStepEnterForward {
+  from {
+    opacity: 0;
+    transform: translateX(18px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes onbStepEnterBack {
+  from {
+    opacity: 0;
+    transform: translateX(-18px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+/* Typography Hierarchy (Apple HIG) */
+.onb-hero-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.onb-duck-badge {
+  width: 54px;
+  height: 54px;
+  border-radius: 15px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 208, 0, 0.35);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45), 0 0 16px rgba(255, 208, 0, 0.16);
+}
+
+.onb-duck-badge svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.onb-step-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.onb-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #ffd000;
+}
+
+.onb-title {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+  color: #fafafa;
+}
+
+.onb-subtitle {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: #a1a1aa;
+  margin-top: 2px;
+}
+
+/* Step 1: Mental Model Goal Pills & Auth Card */
+.onb-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.onb-block-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #e4e4e7;
+}
+
+.onb-block-hint {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #71717a;
+}
+
+.onb-goal-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.onb-goal-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f4f4f5;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 100ms ease,
+    border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 180ms ease;
+}
+
+.onb-goal-pill:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.onb-goal-pill:active {
+  transform: scale(0.97);
+}
+
+.onb-goal-pill.is-selected {
+  background: rgba(255, 208, 0, 0.09);
+  border-color: rgba(255, 208, 0, 0.55);
+  box-shadow: inset 0 1px 0 rgba(255, 208, 0, 0.16);
+}
+
+.onb-goal-emoji {
+  font-size: 18px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.onb-goal-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.onb-goal-text strong {
+  font-size: 12.5px;
+  font-weight: 600;
+  line-height: 1.25;
+  color: #fafafa;
+}
+
+.onb-goal-text small {
+  font-size: 11px;
+  color: #a1a1aa;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.onb-goal-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 10.5px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.07);
+  color: transparent;
+  flex-shrink: 0;
+  transition: background-color 160ms ease, color 160ms ease, transform 200ms cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.onb-goal-pill.is-selected .onb-goal-check {
+  background: #ffd000;
+  color: #09090b;
+  transform: scale(1.05);
+}
+
+.onb-glass-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.onb-google-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 11px 16px;
+  border-radius: 11px;
+  background: #ffffff;
+  color: #09090b;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+  transition: transform 100ms ease, background-color 140ms ease, box-shadow 140ms ease;
+}
+
+.onb-google-btn:hover {
+  background: #f4f4f5;
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.12);
+}
+
+.onb-google-btn:active {
+  transform: scale(0.97);
+}
+
+.onb-google-pill {
+  margin-left: auto;
+  font-size: 10.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #f4f4f5;
+  color: #52525b;
+}
+
+.onb-email-accordion {
+  margin-top: 10px;
+}
+
+.onb-email-summary {
+  list-style: none;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: #a1a1aa;
+  cursor: pointer;
+  padding: 4px 0;
+  user-select: none;
+  transition: color 140ms ease;
+}
+
+.onb-email-summary:hover {
+  color: #fafafa;
+}
+
+.onb-email-summary::-webkit-details-marker {
+  display: none;
+}
+
+.onb-email-body {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+dialog.onb-dialog input[type="text"],
+dialog.onb-dialog input[type="email"],
+dialog.onb-dialog input[type="password"] {
+  width: 100%;
+  padding: 8px 11px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.11);
+  background: rgba(24, 24, 27, 0.85);
+  color: #fafafa;
+  font-size: 13px;
+}
+
+.onb-muted-inline {
+  color: #71717a;
+  font-weight: 400;
+}
+
+.onb-email-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.onb-auth-logged-in {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.onb-auth-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.onb-check-circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(52, 211, 153, 0.16);
+  border: 1px solid rgba(52, 211, 153, 0.4);
+  color: #34d399;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.onb-user-greeting-line {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #fafafa;
+}
+
+.onb-user-email-line {
+  font-size: 12px;
+  color: #a1a1aa;
+}
+
+/* Primary Wizard CTA */
+.onb-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.onb-cta-primary {
+  width: 100%;
+  padding: 12px 18px;
+  border-radius: 12px;
+  background: #ffd000;
+  color: #09090b;
+  border: none;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  box-shadow: 0 8px 24px rgba(255, 208, 0, 0.22);
+  transition: transform 100ms ease, background-color 140ms ease, box-shadow 140ms ease, opacity 160ms ease;
+}
+
+.onb-cta-primary:hover:not(:disabled) {
+  background: #ffe042;
+  box-shadow: 0 10px 28px rgba(255, 208, 0, 0.30);
+}
+
+.onb-cta-primary:active:not(:disabled) {
+  transform: scale(0.975);
+}
+
+.onb-cta-primary:disabled {
+  background: rgba(255, 255, 255, 0.08);
+  color: #71717a;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+/* Step 2: Permissions & Live VU Meter */
+.onb-perm-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.onb-perm-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  transition: border-color 240ms ease, background-color 240ms ease;
+}
+
+.onb-perm-card.is-granted {
+  border-color: rgba(52, 211, 153, 0.42);
+  background: rgba(52, 211, 153, 0.05);
+}
+
+.onb-perm-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.onb-perm-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.onb-perm-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
+}
+
+.onb-perm-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.onb-perm-title-row h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fafafa;
+}
+
+.onb-perm-desc {
+  font-size: 12px;
+  color: #a1a1aa;
+  margin-top: 2px;
+}
+
+.onb-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: #a1a1aa;
+}
+
+.onb-status-pill[data-ok="true"] {
+  background: rgba(52, 211, 153, 0.14);
+  border-color: rgba(52, 211, 153, 0.35);
+  color: #34d399;
+}
+
+.onb-poll-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #fbbf24;
+  animation: onbPulseDot 1.4s ease-in-out infinite;
+}
+
+.onb-status-pill[data-ok="true"] .onb-poll-dot {
+  display: none;
+}
+
+@keyframes onbPulseDot {
+  0%, 100% { opacity: 0.35; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.2); }
+}
+
+.onb-perm-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.onb-perm-btn {
+  padding: 7px 13px;
+  border-radius: 9px;
+  font-size: 12.5px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #fafafa;
+}
+
+.onb-perm-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 208, 0, 0.5);
+}
+
+.onb-refresh-mini {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #a1a1aa;
+  font-size: 13px;
+  cursor: pointer;
+  transition: transform 120ms ease, color 140ms ease, background-color 140ms ease;
+}
+
+.onb-refresh-mini:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fafafa;
+}
+
+.onb-refresh-mini:active {
+  transform: scale(0.94);
+}
+
+.onb-vu-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.onb-vu-meter {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 2px;
+}
+
+.onb-vu-bar {
+  width: 4px;
+  height: 20px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #ffd000 0%, #34d399 100%);
+  transform-origin: center;
+  transform: scaleY(0.18);
+  opacity: 0.45;
+  transition: transform 70ms ease-out, opacity 140ms ease;
+}
+
+.onb-vu-meter.is-live .onb-vu-bar {
+  opacity: 1;
+}
+
+.onb-vu-status {
+  font-size: 12px;
+  color: #a1a1aa;
+}
+
+.onb-vu-status.is-verified {
+  color: #34d399;
+  font-weight: 600;
+}
+
+.onb-perm-tip {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: #71717a;
+}
+
+.onb-perm-tip strong {
+  color: #d4d4d8;
+}
+
+/* Step 3: Trigger Segmented Control & Interactive Mac Keyboard SVG */
+.onb-segmented {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.onb-seg-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 9px 12px;
+  border-radius: 9px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #a1a1aa;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 100ms ease, background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+}
+
+.onb-seg-btn strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e4e4e7;
+}
+
+.onb-seg-btn span {
+  font-size: 11px;
+  color: #71717a;
+}
+
+.onb-seg-btn:active {
+  transform: scale(0.98);
+}
+
+.onb-seg-btn.is-active {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(255, 208, 0, 0.42);
+  color: #fafafa;
+}
+
+.onb-seg-btn.is-active strong {
+  color: #ffd000;
+}
+
+.onb-seg-btn.is-active span {
+  color: #d4d4d8;
+}
+
+.onb-keyboard-stage {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.onb-mac-keyboard {
+  width: 100%;
+  height: auto;
+  display: block;
+  user-select: none;
+}
+
+.kbd-key-base {
+  fill: #1f1f24;
+  stroke: rgba(255, 255, 255, 0.10);
+  stroke-width: 1;
+  transition: fill 120ms ease, stroke 120ms ease, stroke-width 120ms ease;
+}
+
+.kbd-glyph-alpha {
+  fill: rgba(255, 255, 255, 0.36);
+  font-size: 12px;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+}
+
+.kbd-glyph-sm {
+  fill: rgba(255, 255, 255, 0.36);
+  font-size: 9.5px;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+}
+
+.kbd-glyph-xs {
+  fill: rgba(255, 255, 255, 0.56);
+  font-size: 8.5px;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+}
+
+.kbd-glyph-sym {
+  fill: rgba(255, 255, 255, 0.72);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+}
+
+.kbd-key-interactive {
+  cursor: pointer;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 110ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.kbd-key-interactive:hover .kbd-key-base {
+  fill: #27272e;
+  stroke: rgba(255, 255, 255, 0.25);
+}
+
+.kbd-key-interactive.is-selected .kbd-key-base {
+  fill: rgba(255, 208, 0, 0.16);
+  stroke: #ffd000;
+  stroke-width: 1.8;
+  filter: url(#kbdGoldGlow);
+  animation: onbKeyPulse 2.1s ease-in-out infinite;
+}
+
+.kbd-key-interactive.is-selected .kbd-glyph-sym,
+.kbd-key-interactive.is-selected .kbd-glyph-xs {
+  fill: #ffd000;
+  font-weight: 700;
+}
+
+.kbd-key-interactive.is-pressed {
+  transform: translateY(2.5px) scale(0.96);
+}
+
+.kbd-key-interactive.is-pressed .kbd-key-base {
+  fill: rgba(255, 208, 0, 0.38);
+  stroke: #ffe566;
+  stroke-width: 2.2;
+}
+
+@keyframes onbKeyPulse {
+  0%, 100% {
+    stroke-opacity: 0.7;
+  }
+  50% {
+    stroke-opacity: 1;
+  }
+}
+
+.onb-key-pills {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+}
+
+.onb-key-pill {
+  flex: 1 1 0;
+  min-width: max-content;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 11px;
+  white-space: nowrap;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: #d4d4d8;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 100ms ease, border-color 140ms ease, background-color 140ms ease;
+}
+
+.onb-key-pill:active {
+  transform: scale(0.97);
+}
+
+.onb-key-pill.is-selected {
+  background: rgba(255, 208, 0, 0.12);
+  border-color: rgba(255, 208, 0, 0.55);
+  color: #ffd000;
+}
+
+.onb-pill-rec {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(255, 208, 0, 0.18);
+  color: #ffd000;
+}
+
+.onb-key-test-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 12.5px;
+  color: #a1a1aa;
+  transition: background-color 200ms ease, border-color 200ms ease, color 200ms ease;
+}
+
+.onb-key-test-status.is-detected {
+  background: rgba(52, 211, 153, 0.10);
+  border-color: rgba(52, 211, 153, 0.35);
+  color: #34d399;
+}
+
+.onb-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ffd000;
+  flex-shrink: 0;
+  animation: onbPulseDot 1.6s ease-in-out infinite;
+}
+
+.onb-key-test-status.is-detected .onb-pulse-dot {
+  background: #34d399;
+  animation: none;
+}
+
+/* Step 4: Practice Sandbox & Kinetic Typewriter */
+.onb-prompt-card {
+  background: rgba(255, 208, 0, 0.06);
+  border: 1px solid rgba(255, 208, 0, 0.24);
+  border-radius: 14px;
+  padding: 13px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.onb-prompt-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.onb-prompt-instruction {
+  font-size: 12.5px;
+  color: #d4d4d8;
+}
+
+.onb-prompt-lang-switch {
+  display: inline-flex;
+  gap: 4px;
+  padding: 2px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.onb-mini-lang {
+  background: transparent;
+  border: none;
+  color: #a1a1aa;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+
+.onb-mini-lang.is-active {
+  background: rgba(255, 208, 0, 0.2);
+  color: #ffd000;
+}
+
+.onb-prompt-sentence {
+  font-size: 15.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: -0.015em;
+  color: #ffd000;
+  margin: 0;
+}
+
+.onb-sandbox-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 14px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.onb-sandbox-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 9px 13px;
+  background: rgba(255, 255, 255, 0.025);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.onb-sandbox-hud {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.onb-sandbox-duck {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: transform 200ms cubic-bezier(0.22, 1, 0.36, 1), box-shadow 200ms ease, border-color 200ms ease;
+}
+
+.onb-sandbox-duck[data-state="listening"] {
+  border-color: #38bdf8;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.5);
+  transform: scale(1.08);
+}
+
+.onb-sandbox-duck[data-state="thinking"] {
+  border-color: #ffd000;
+  box-shadow: 0 0 14px rgba(255, 208, 0, 0.4);
+}
+
+.onb-sandbox-duck[data-state="solved"] {
+  border-color: #34d399;
+  box-shadow: 0 0 14px rgba(52, 211, 153, 0.45);
+}
+
+.onb-sandbox-state-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: #d4d4d8;
+}
+
+.onb-sandbox-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.onb-sandbox-output {
+  min-height: 88px;
+  padding: 15px 16px;
+  font-size: 15.5px;
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  color: #fafafa;
+  word-wrap: break-word;
+}
+
+.onb-sandbox-placeholder {
+  color: #52525b;
+  font-size: 13.5px;
+  font-weight: 400;
+}
+
+.onb-typewriter-word {
+  display: inline-block;
+  white-space: pre;
+}
+
+.onb-typewriter-char {
+  display: inline-block;
+  white-space: pre;
+  color: #fafafa;
+  animation: onbCharReveal 160ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes onbCharReveal {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.onb-typewriter-caret {
+  display: inline-block;
+  width: 2px;
+  height: 1.15em;
+  vertical-align: -0.18em;
+  margin-left: 2px;
+  border-radius: 2px;
+  background: #ffd000;
+  box-shadow: 0 0 8px rgba(255, 208, 0, 0.65);
+  animation: onbCaretBlink 0.85s steps(1, end) infinite;
+}
+
+@keyframes onbCaretBlink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+
+.onb-wpm-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 15px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.14), rgba(255, 208, 0, 0.08));
+  border: 1px solid rgba(52, 211, 153, 0.42);
+  animation: onbPopIn 360ms cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+}
+
+@keyframes onbPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.onb-wpm-badge {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 208, 0, 0.18);
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.onb-wpm-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+}
+
+.onb-wpm-copy strong {
+  font-size: 13.5px;
+  color: #fafafa;
+}
+
+.onb-wpm-copy > span {
+  font-size: 12px;
+  color: #d4d4d8;
+}
+
+.onb-wpm-copy #onb-wpm-value,
+.onb-wpm-copy #onb-wpm-multiplier {
+  color: #34d399;
+}
+
+.onb-wpm-check {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: #34d399;
+  color: #09090b;
+  font-size: 13px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* Step 5: Language Flag Grid & Menu Bar Handoff */
+.onb-lang-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.onb-lang-card {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 11px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #f4f4f5;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 100ms ease, border-color 140ms ease, background-color 140ms ease;
+}
+
+.onb-lang-card:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
+.onb-lang-card:active {
+  transform: scale(0.97);
+}
+
+.onb-lang-card.is-selected {
+  background: rgba(255, 208, 0, 0.11);
+  border-color: rgba(255, 208, 0, 0.6);
+  box-shadow: inset 0 1px 0 rgba(255, 208, 0, 0.15);
+}
+
+.onb-lang-flag {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.onb-lang-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.onb-lang-meta strong {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #fafafa;
+}
+
+.onb-lang-meta small {
+  font-size: 10.5px;
+  color: #a1a1aa;
+}
+
+.onb-menubar-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+
+.onb-menubar-mockup {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-bottom: 14px;
+}
+
+.onb-menubar-strip {
+  width: 100%;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 9px;
+  background: rgba(24, 24, 27, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11.5px;
+  color: #d4d4d8;
+}
+
+.onb-menubar-left,
+.onb-menubar-right {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.onb-mb-tray-icon {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: rgba(255, 208, 0, 0.16);
+}
+
+.onb-mb-pulse-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 9px;
+  border: 1.5px solid #ffd000;
+  animation: onbMbRing 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+@keyframes onbMbRing {
+  0% { transform: scale(0.9); opacity: 0.95; }
+  75%, 100% { transform: scale(1.45); opacity: 0; }
+}
+
+.onb-mb-pointer {
+  position: absolute;
+  top: 26px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 15px;
+  font-weight: 800;
+  color: #ffd000;
+  line-height: 1;
+  animation: onbPointerBob 1.3s ease-in-out infinite;
+}
+
+@keyframes onbPointerBob {
+  0%, 100% { transform: translate(-50%, 0); }
+  50% { transform: translate(-50%, -4px); }
+}
+
+.onb-menubar-copy strong {
+  display: block;
+  font-size: 13px;
+  color: #fafafa;
+  margin-bottom: 2px;
+}
+
+.onb-menubar-copy p {
+  font-size: 12px;
+  line-height: 1.45;
+  color: #a1a1aa;
+}
+
+/* Reduced Motion & Reduced Transparency (Apple Design §14) */
+@media (prefers-reduced-motion: reduce) {
+  .onb-step.is-entering-forward,
+  .onb-step.is-entering-back,
+  .onb-typewriter-char,
+  .onb-wpm-card,
+  .onb-poll-dot,
+  .onb-pulse-dot,
+  .kbd-key-interactive.is-selected .kbd-key-base,
+  .onb-mb-pulse-ring,
+  .onb-mb-pointer,
+  .onb-typewriter-caret {
+    animation: none !important;
+  }
+
+  .onb-step.is-entering-forward,
+  .onb-step.is-entering-back {
+    opacity: 1;
+    transform: none;
+  }
+
+  .onb-progress-seg,
+  .onb-goal-pill,
+  .onb-cta-primary,
+  .kbd-key-interactive {
+    transition: opacity 150ms ease, background-color 150ms ease, border-color 150ms ease !important;
+  }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  dialog.onb-dialog {
+    background: #09090b;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .onb-goal-grid,
+  .onb-lang-grid,
+  .onb-segmented {
+    grid-template-columns: 1fr;
+  }
+}

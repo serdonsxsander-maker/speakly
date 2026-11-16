@@ -98,8 +98,16 @@
         </p>
       </div>
 
-      <!-- Early-access feedback entry point -->
-      <button type="button" id="open-feedback-btn" class="feedback-trigger" aria-haspopup="dialog">
+      <!-- Early-access feedback & setup replay entry points -->
+      <button type="button" id="reopen-onboarding-btn" class="feedback-trigger" style="margin-top: 8px;" aria-haspopup="dialog">
+        <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M10 2.75l1.65 3.85 3.85 1.65-3.85 1.65L10 13.75l-1.65-3.85L4.5 8.25l3.85-1.65L10 2.75z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+          <path d="M15.25 13.25l.7 1.65 1.65.7-1.65.7-.7 1.65-.7-1.65-1.65-.7 1.65-.7.7-1.65z" fill="currentColor"/>
+        </svg>
+        <span>Setup Wizard</span>
+      </button>
+
+      <button type="button" id="open-feedback-btn" class="feedback-trigger" style="margin-top: 8px;" aria-haspopup="dialog">
         <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
           <path d="M4 4.5h12a1.5 1.5 0 0 1 1.5 1.5v7a1.5 1.5 0 0 1-1.5 1.5H9l-3.5 3v-3H4A1.5 1.5 0 0 1 2.5 13V6A1.5 1.5 0 0 1 4 4.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
           <path d="M6.5 8.5h7M6.5 11h4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
@@ -605,106 +613,552 @@
     </main>
   </div>
 
-  <!-- MODAL 1: First-Run Welcome & Setup Gate -->
-  <dialog id="onboarding-dialog" aria-labelledby="onboarding-title">
-    <div class="modal-card" style="max-width: 520px; position: relative;">
-      <button type="button" id="onb-close-btn" class="modal-close-btn" title="Close Setup Gate">✕</button>
-      <div class="modal-badge">Welcome to Speakly 🐥</div>
-      <h2 id="onboarding-title">Activate Speakly Voice Engine</h2>
-      <p class="muted-text">Please sign in and verify macOS permissions to unlock seamless AI voice dictation.</p>
+  <!-- MODAL 1: Apple-Grade 5-Step Wispr Flow Onboarding Wizard -->
+  <dialog id="onboarding-dialog" class="onb-dialog" aria-labelledby="onboarding-title">
+    <div class="onb-shell">
+      <div class="onb-ambient-glow" aria-hidden="true"></div>
+      <canvas id="onb-confetti-canvas" class="onb-confetti-canvas" aria-hidden="true"></canvas>
 
-      <div id="onb-auth-section" style="margin-top: 16px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
-        <h3 style="font-size: 14px; margin: 0 0 10px;">1. Connect Your Account</h3>
-        <div id="onb-auth-logged-out">
-          <button type="button" id="onb-google-btn" class="btn" style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;background:#ffffff;color:#18181b;font-weight:600;padding:9px 16px;border-radius:10px;border:1px solid #e4e4e7;cursor:pointer;width:100%;">
-            <svg width="18" height="18" viewBox="0 0 18 18">
-              <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
-              <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
-              <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.347 2.825.957 4.039l3.007-2.332z"/>
-              <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
+      <!-- Top Header: Back + 5-Segment Stepper + Skip/Close -->
+      <header class="onb-header">
+        <div class="onb-header-left">
+          <button type="button" id="onb-back-btn" class="onb-nav-back" aria-label="Previous step" hidden>
+            <svg viewBox="0 0 16 16" fill="none" aria-hidden="true">
+              <path d="M10 3.5L5.5 8 10 12.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            Sign in with Google
+            <span>Back</span>
           </button>
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-            <hr style="flex:1;border:0;border-top:1px solid rgba(255,255,255,0.08);">
-            <span style="font-size:10px;color:rgba(255,255,255,0.35);text-transform:uppercase;letter-spacing:0.05em;">or continue with email</span>
-            <hr style="flex:1;border:0;border-top:1px solid rgba(255,255,255,0.08);">
-          </div>
-          <div class="two-col-fields" style="margin-bottom:8px;">
-            <div class="field-group">
-              <label for="onb-first-name-input">Name</label>
-              <input type="text" id="onb-first-name-input" placeholder="Name" spellcheck="false">
-            </div>
-            <div class="field-group">
-              <label for="onb-last-name-input">Last Name</label>
-              <input type="text" id="onb-last-name-input" placeholder="Last name" spellcheck="false">
-            </div>
-          </div>
-          <div class="two-col-fields" style="margin-bottom:8px;">
-            <div class="field-group">
-              <label for="onb-email-input">Email</label>
-              <input type="email" id="onb-email-input" placeholder="you@example.com" spellcheck="false">
-            </div>
-            <div class="field-group">
-              <label for="onb-password-input">Password</label>
-              <input type="password" id="onb-password-input" placeholder="••••••••">
-            </div>
-          </div>
-          <div class="field-group" style="margin-bottom:8px;">
-            <label for="onb-referral-input">Partner / Invite Code <small style="color: rgba(255,255,255,0.4); font-weight: normal;">(optional)</small></label>
-            <input type="text" id="onb-referral-input" placeholder="e.g. ALEX" spellcheck="false" style="text-transform: uppercase;">
-          </div>
-          <div style="display:flex;gap:8px;align-items:center;margin-top:6px;">
-            <button type="button" id="onb-signin-btn" class="btn btn-primary btn-sm">Log In</button>
-            <button type="button" id="onb-signup-btn" class="btn btn-secondary btn-sm">Create Account</button>
-            <small id="onb-auth-feedback" class="field-feedback"></small>
-          </div>
+          <span id="onb-step-counter" class="onb-step-counter">Step 1 of 5 · Welcome</span>
         </div>
-        <div id="onb-auth-logged-in" hidden style="display:flex;align-items:center;justify-content:space-between;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="color:#22c55e;font-size:16px;">✓</span>
-            <div>
-              <strong id="onb-user-email" style="font-size:13px;">user@example.com</strong>
-              <div style="font-size:11px;color:#94a3b8;">Account connected &amp; ready</div>
-            </div>
-          </div>
-          <button type="button" id="onb-logout-btn" class="btn btn-ghost btn-sm">Switch Account</button>
+
+        <div class="onb-header-actions">
+          <button type="button" id="onb-skip-btn" class="onb-skip-top-btn">Skip setup</button>
+          <button type="button" id="onb-close-btn" class="onb-close-btn" title="Close Setup" aria-label="Close setup wizard">✕</button>
         </div>
+      </header>
+
+      <div id="onb-progress-bar" class="onb-progress-bar" role="progressbar" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1" aria-label="Onboarding progress">
+        <span class="onb-progress-seg is-active" data-seg="1"></span>
+        <span class="onb-progress-seg" data-seg="2"></span>
+        <span class="onb-progress-seg" data-seg="3"></span>
+        <span class="onb-progress-seg" data-seg="4"></span>
+        <span class="onb-progress-seg" data-seg="5"></span>
       </div>
 
-      <div id="onb-perms-section" style="margin-top: 14px; padding: 16px; background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-          <h3 style="font-size: 14px; margin: 0;">2. Required Permissions</h3>
-          <button type="button" id="onb-refresh-btn" class="btn btn-ghost btn-sm" style="font-size: 11px; padding: 3px 8px;">🔄 Check Again</button>
-        </div>
-        <p class="muted-text" style="font-size: 12px; margin: 0 0 12px;">Speakly needs microphone and accessibility permissions to capture voice and paste at your cursor.</p>
-
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <strong style="font-size: 13px;">1. Microphone</strong>
-              <div style="font-size: 11px; color: #94a3b8;">Captures spoken audio</div>
-            </div>
-            <button type="button" id="onb-grant-mic-btn" class="btn btn-secondary btn-sm">Allow Microphone</button>
+      <!-- STEP 1: Welcome, Mental Model & 1-Click Google OAuth -->
+      <section class="onb-step" data-step="1">
+        <div class="onb-hero-row">
+          <div class="onb-duck-badge" aria-hidden="true">
+            <svg viewBox="0 0 100 100" fill="none">
+              <rect width="100" height="100" rx="22" fill="#06080E"/>
+              <rect x="13" y="38" width="13" height="6" rx="3" fill="#FF6B00"/>
+              <rect x="27" y="26" width="6" height="44" rx="3" fill="#FFD000"/>
+              <rect x="36" y="21" width="6" height="54" rx="3" fill="#FFD000"/>
+              <rect x="45" y="25" width="6" height="52" rx="3" fill="#FFD000"/>
+              <rect x="54" y="44" width="6" height="33" rx="3" fill="#F59E0B"/>
+              <rect x="63" y="46" width="6" height="29" rx="3" fill="#F59E0B"/>
+              <rect x="72" y="42" width="6" height="26" rx="3" fill="#FFD000"/>
+              <circle cx="39" cy="33" r="3.5" fill="#06080E"/>
+              <circle cx="39" cy="33" r="2" fill="#00F5D4"/>
+              <rect x="81" y="48" width="4" height="14" rx="2" fill="#00F5D4"/>
+            </svg>
           </div>
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-              <strong style="font-size: 13px;">2. Accessibility &amp; Keystroke Auto-Paste</strong>
-              <div style="font-size: 11px; color: #94a3b8;">Required for Right ⌘ hotkey and direct pasting</div>
-            </div>
-            <button type="button" id="onb-grant-acc-btn" class="btn btn-secondary btn-sm">Open Accessibility</button>
+          <div class="onb-hero-copy">
+            <span class="onb-eyebrow">60-Second Setup</span>
+            <h2 id="onboarding-title" class="onb-title">Speak 3.5× faster than you type</h2>
+            <p class="onb-subtitle">Welcome to Speakly. Let's tune your voice engine and train your hotkey.</p>
           </div>
         </div>
 
-        <p style="font-size: 11px; color: #71717a; margin: 12px 0 0; line-height: 1.4;">
-          💡 <em>Tip: If Speakly is already checked in System Settings, toggle it OFF and ON once to refresh macOS security token.</em>
-        </p>
-      </div>
+        <!-- Mental Model Goal Pills ("Where do you write most?") -->
+        <div class="onb-block">
+          <div class="onb-block-label">
+            <span>Where do you write most?</span>
+            <span class="onb-block-hint">Pick 1 or 2 to personalize AI formatting</span>
+          </div>
+          <div id="onb-goal-pills" class="onb-goal-grid" role="group" aria-label="Primary writing workflows">
+            <button type="button" class="onb-goal-pill is-selected" data-goal="chat" aria-pressed="true">
+              <span class="onb-goal-emoji" aria-hidden="true">💬</span>
+              <span class="onb-goal-text">
+                <strong>Quick Messages &amp; Chat</strong>
+                <small>Slack, WhatsApp, iMessage</small>
+              </span>
+              <span class="onb-goal-check" aria-hidden="true">✓</span>
+            </button>
+            <button type="button" class="onb-goal-pill" data-goal="email" aria-pressed="false">
+              <span class="onb-goal-emoji" aria-hidden="true">✉️</span>
+              <span class="onb-goal-text">
+                <strong>Emails &amp; Replies</strong>
+                <small>Gmail, Outlook, Superhuman</small>
+              </span>
+              <span class="onb-goal-check" aria-hidden="true">✓</span>
+            </button>
+            <button type="button" class="onb-goal-pill" data-goal="notes" aria-pressed="false">
+              <span class="onb-goal-emoji" aria-hidden="true">📝</span>
+              <span class="onb-goal-text">
+                <strong>Notes &amp; Docs</strong>
+                <small>Notion, Google Docs, Obsidian</small>
+              </span>
+              <span class="onb-goal-check" aria-hidden="true">✓</span>
+            </button>
+            <button type="button" class="onb-goal-pill" data-goal="code" aria-pressed="false">
+              <span class="onb-goal-emoji" aria-hidden="true">💻</span>
+              <span class="onb-goal-text">
+                <strong>Code &amp; AI Prompts</strong>
+                <small>Cursor, Claude, Terminal</small>
+              </span>
+              <span class="onb-goal-check" aria-hidden="true">✓</span>
+            </button>
+          </div>
+        </div>
 
-      <div class="modal-actions" style="margin-top: 20px; display: flex; flex-direction: column; gap: 8px;">
-        <button type="button" id="onb-finish-btn" class="btn btn-primary full-width" style="width: 100%; justify-content: center;" disabled>Sign In &amp; Grant Permissions to Continue</button>
-        <button type="button" id="onb-skip-btn" class="btn btn-ghost btn-sm" style="align-self: center; font-size: 11.5px; color: #71717a;">Skip to Dashboard</button>
-      </div>
+        <!-- 1-Click Google OAuth + Collapsible Email Accordion -->
+        <div id="onb-auth-section" class="onb-glass-card">
+          <div id="onb-auth-logged-out" class="onb-auth-logged-out">
+            <button type="button" id="onb-google-btn" class="onb-google-btn">
+              <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
+                <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/>
+                <path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/>
+                <path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.347 2.825.957 4.039l3.007-2.332z"/>
+                <path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/>
+              </svg>
+              <span>Continue with Google</span>
+              <span class="onb-google-pill">1-Click</span>
+            </button>
+
+            <details class="onb-email-accordion">
+              <summary class="onb-email-summary">or continue with email</summary>
+              <div class="onb-email-body">
+                <div class="two-col-fields">
+                  <div class="field-group">
+                    <label for="onb-first-name-input">First Name</label>
+                    <input type="text" id="onb-first-name-input" placeholder="Alex" spellcheck="false">
+                  </div>
+                  <div class="field-group">
+                    <label for="onb-last-name-input">Last Name</label>
+                    <input type="text" id="onb-last-name-input" placeholder="Rivera" spellcheck="false">
+                  </div>
+                </div>
+                <div class="two-col-fields">
+                  <div class="field-group">
+                    <label for="onb-email-input">Email</label>
+                    <input type="email" id="onb-email-input" placeholder="you@example.com" spellcheck="false">
+                  </div>
+                  <div class="field-group">
+                    <label for="onb-password-input">Password</label>
+                    <input type="password" id="onb-password-input" placeholder="••••••••">
+                  </div>
+                </div>
+                <div class="field-group">
+                  <label for="onb-referral-input">Partner / Invite Code <small class="onb-muted-inline">(optional)</small></label>
+                  <input type="text" id="onb-referral-input" placeholder="e.g. DUCK" spellcheck="false" style="text-transform: uppercase;">
+                </div>
+                <div class="onb-email-actions">
+                  <button type="button" id="onb-signin-btn" class="btn btn-primary btn-sm">Log In</button>
+                  <button type="button" id="onb-signup-btn" class="btn btn-secondary btn-sm">Create Account</button>
+                  <small id="onb-auth-feedback" class="field-feedback"></small>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <div id="onb-auth-logged-in" class="onb-auth-logged-in" hidden>
+            <div class="onb-auth-user">
+              <span class="onb-check-circle" aria-hidden="true">✓</span>
+              <div>
+                <div class="onb-user-greeting-line">Welcome, <span id="onb-user-greeting">there</span>!</div>
+                <div class="onb-user-email-line"><strong id="onb-user-email">user@example.com</strong> · Connected</div>
+              </div>
+            </div>
+            <button type="button" id="onb-logout-btn" class="btn btn-ghost btn-sm">Switch Account</button>
+          </div>
+        </div>
+
+        <footer class="onb-footer">
+          <button type="button" id="onb-step1-next-btn" class="btn onb-cta-primary">Continue to Permissions →</button>
+        </footer>
+      </section>
+
+      <!-- STEP 2: Permissions with Live Microphone VU-Meter & Auto-Polling -->
+      <section class="onb-step" data-step="2" hidden>
+        <div class="onb-step-intro">
+          <span class="onb-eyebrow">System Handshake</span>
+          <h2 class="onb-title">Enable macOS Permissions</h2>
+          <p class="onb-subtitle">Speakly needs two one-time permissions to hear your voice and paste directly at your cursor.</p>
+        </div>
+
+        <div class="onb-perm-stack">
+          <!-- Card 1: Microphone + Live VU Meter -->
+          <div id="onb-mic-card" class="onb-perm-card">
+            <div class="onb-perm-top">
+              <div class="onb-perm-left">
+                <div class="onb-perm-icon" aria-hidden="true">🎤</div>
+                <div>
+                  <div class="onb-perm-title-row">
+                    <h3>Microphone Access</h3>
+                    <span id="onb-mic-badge" class="onb-status-pill" data-ok="false">• Required</span>
+                  </div>
+                  <p class="onb-perm-desc">Captures your voice in RAM with zero audio retention.</p>
+                </div>
+              </div>
+              <button type="button" id="onb-grant-mic-btn" class="btn onb-perm-btn">Allow Microphone</button>
+            </div>
+
+            <div id="onb-vu-container" class="onb-vu-container">
+              <div id="onb-vu-meter" class="onb-vu-meter" aria-hidden="true">
+                <span class="onb-vu-bar"></span>
+                <span class="onb-vu-bar"></span>
+                <span class="onb-vu-bar"></span>
+                <span class="onb-vu-bar"></span>
+                <span class="onb-vu-bar"></span>
+                <span class="onb-vu-bar"></span>
+                <span class="onb-vu-bar"></span>
+                <span class="onb-vu-bar"></span>
+              </div>
+              <span id="onb-vu-status" class="onb-vu-status">Allow microphone to see your live voice meter…</span>
+            </div>
+          </div>
+
+          <!-- Card 2: Accessibility + Auto-Polling -->
+          <div id="onb-acc-card" class="onb-perm-card">
+            <div class="onb-perm-top">
+              <div class="onb-perm-left">
+                <div class="onb-perm-icon" aria-hidden="true">⚙️</div>
+                <div>
+                  <div class="onb-perm-title-row">
+                    <h3>Accessibility Access</h3>
+                    <span id="onb-acc-badge" class="onb-status-pill" data-ok="false">
+                      <span class="onb-poll-dot" aria-hidden="true"></span>
+                      Auto-detecting…
+                    </span>
+                  </div>
+                  <p class="onb-perm-desc">Types polished text directly at your cursor in any app.</p>
+                </div>
+              </div>
+              <div class="onb-perm-actions">
+                <button type="button" id="onb-grant-acc-btn" class="btn onb-perm-btn">Open Settings</button>
+                <button type="button" id="onb-refresh-btn" class="onb-refresh-mini" title="Check permission status now">↻</button>
+              </div>
+            </div>
+            <p class="onb-perm-tip">
+              💡 Already checked in System Settings? Toggle Speakly <strong>OFF</strong> and <strong>ON</strong> once to refresh macOS security cache.
+            </p>
+          </div>
+        </div>
+
+        <footer class="onb-footer">
+          <button type="button" id="onb-step2-next-btn" class="btn onb-cta-primary">Continue to Hotkey Setup →</button>
+        </footer>
+      </section>
+
+      <!-- STEP 3: Hotkey Selector & Interactive Vector Mac Keyboard -->
+      <section class="onb-step" data-step="3" hidden>
+        <div class="onb-step-intro">
+          <span class="onb-eyebrow">Muscle Memory</span>
+          <h2 class="onb-title">Choose &amp; Test Your Hotkey</h2>
+          <p class="onb-subtitle">Press and hold your hotkey on your physical keyboard to feel how natural it is.</p>
+        </div>
+
+        <!-- Trigger Mode Segmented Control -->
+        <div id="onb-trigger-segmented" class="onb-segmented" role="radiogroup" aria-label="Dictation trigger mode">
+          <button type="button" class="onb-seg-btn is-active" data-trigger="hold" role="radio" aria-checked="true">
+            <strong>Hold to Speak</strong>
+            <span>Recommended · 98% prefer this</span>
+          </button>
+          <button type="button" class="onb-seg-btn" data-trigger="toggle" role="radio" aria-checked="false">
+            <strong>Tap to Toggle</strong>
+            <span>Hands-free long monologues</span>
+          </button>
+        </div>
+
+        <!-- Interactive Vector MacBook Keyboard -->
+        <div class="onb-keyboard-stage">
+          <svg id="onb-mac-keyboard" class="onb-mac-keyboard" viewBox="0 0 640 164" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Interactive Mac keyboard showing hotkey location">
+            <defs>
+              <linearGradient id="kbdShellGrad" x1="0" y1="0" x2="0" y2="164" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="#18181b"/>
+                <stop offset="1" stop-color="#0f0f12"/>
+              </linearGradient>
+              <filter id="kbdGoldGlow" x="-30%" y="-30%" width="160%" height="160%">
+                <feGaussianBlur stdDeviation="4" result="blur"/>
+                <feMerge>
+                  <feMergeNode in="blur"/>
+                  <feMergeNode in="SourceGraphic"/>
+                </feMerge>
+              </filter>
+            </defs>
+
+            <!-- Keyboard deck -->
+            <rect x="2" y="2" width="636" height="160" rx="16" fill="url(#kbdShellGrad)" stroke="rgba(255,255,255,0.10)" stroke-width="1.2"/>
+
+            <!-- Row 1 (ASDF / ZXCV bottom alpha row context) -->
+            <g class="kbd-static-row">
+              <rect x="14" y="14" width="84" height="44" rx="7" class="kbd-key-base"/>
+              <text x="26" y="42" class="kbd-glyph-sm">⇧ shift</text>
+
+              <rect x="104" y="14" width="44" height="44" rx="7" class="kbd-key-base"/>
+              <text x="126" y="40" text-anchor="middle" class="kbd-glyph-alpha">Z</text>
+
+              <rect x="154" y="14" width="44" height="44" rx="7" class="kbd-key-base"/>
+              <text x="176" y="40" text-anchor="middle" class="kbd-glyph-alpha">X</text>
+
+              <rect x="204" y="14" width="44" height="44" rx="7" class="kbd-key-base"/>
+              <text x="226" y="40" text-anchor="middle" class="kbd-glyph-alpha">C</text>
+
+              <rect x="254" y="14" width="44" height="44" rx="7" class="kbd-key-base"/>
+              <text x="276" y="40" text-anchor="middle" class="kbd-glyph-alpha">V</text>
+
+              <rect x="304" y="14" width="44" height="44" rx="7" class="kbd-key-base"/>
+              <text x="326" y="40" text-anchor="middle" class="kbd-glyph-alpha">B</text>
+
+              <rect x="354" y="14" width="44" height="44" rx="7" class="kbd-key-base"/>
+              <text x="376" y="40" text-anchor="middle" class="kbd-glyph-alpha">N</text>
+
+              <rect x="404" y="14" width="44" height="44" rx="7" class="kbd-key-base"/>
+              <text x="426" y="40" text-anchor="middle" class="kbd-glyph-alpha">M</text>
+
+              <rect x="454" y="14" width="44" height="44" rx="7" class="kbd-key-base"/>
+              <text x="476" y="40" text-anchor="middle" class="kbd-glyph-alpha">,</text>
+
+              <rect x="504" y="14" width="44" height="44" rx="7" class="kbd-key-base"/>
+              <text x="526" y="40" text-anchor="middle" class="kbd-glyph-alpha">.</text>
+
+              <rect x="554" y="14" width="72" height="44" rx="7" class="kbd-key-base"/>
+              <text x="614" y="42" text-anchor="end" class="kbd-glyph-sm">shift ⇧</text>
+            </g>
+
+            <!-- Row 2 (Bottom modifier row) -->
+            <!-- fn -->
+            <g class="kbd-static-row">
+              <rect x="14" y="66" width="42" height="52" rx="7" class="kbd-key-base"/>
+              <text x="22" y="106" class="kbd-glyph-xs">fn 🌐</text>
+            </g>
+
+            <!-- Left Control -->
+            <g class="kbd-key-interactive" data-key-id="left_ctrl" tabindex="0" role="button" aria-label="Left Control">
+              <rect x="62" y="66" width="44" height="52" rx="7" class="kbd-key-base"/>
+              <text x="98" y="83" text-anchor="end" class="kbd-glyph-sym">⌃</text>
+              <text x="70" y="108" class="kbd-glyph-xs">control</text>
+            </g>
+
+            <!-- Left Option -->
+            <g class="kbd-key-interactive" data-key-id="left_alt" tabindex="0" role="button" aria-label="Left Option">
+              <rect x="112" y="66" width="44" height="52" rx="7" class="kbd-key-base"/>
+              <text x="148" y="83" text-anchor="end" class="kbd-glyph-sym">⌥</text>
+              <text x="120" y="108" class="kbd-glyph-xs">option</text>
+            </g>
+
+            <!-- Left Command -->
+            <g class="kbd-key-interactive" data-key-id="left_cmd" tabindex="0" role="button" aria-label="Left Command">
+              <rect x="162" y="66" width="58" height="52" rx="7" class="kbd-key-base"/>
+              <text x="210" y="84" text-anchor="end" class="kbd-glyph-sym">⌘</text>
+              <text x="170" y="108" class="kbd-glyph-xs">command</text>
+            </g>
+
+            <!-- Spacebar -->
+            <g class="kbd-static-row">
+              <rect x="226" y="66" width="154" height="52" rx="7" class="kbd-key-base"/>
+            </g>
+
+            <!-- Right Command (Primary Wispr Highlight) -->
+            <g class="kbd-key-interactive is-selected" data-key-id="right_cmd" tabindex="0" role="button" aria-label="Right Command (Recommended)">
+              <rect x="386" y="66" width="60" height="52" rx="7" class="kbd-key-base"/>
+              <text x="394" y="84" class="kbd-glyph-sym">⌘</text>
+              <text x="416" y="108" text-anchor="middle" class="kbd-glyph-xs">command</text>
+            </g>
+
+            <!-- Right Option -->
+            <g class="kbd-key-interactive" data-key-id="right_alt" tabindex="0" role="button" aria-label="Right Option">
+              <rect x="452" y="66" width="46" height="52" rx="7" class="kbd-key-base"/>
+              <text x="460" y="83" class="kbd-glyph-sym">⌥</text>
+              <text x="475" y="108" text-anchor="middle" class="kbd-glyph-xs">option</text>
+            </g>
+
+            <!-- Right Control -->
+            <g class="kbd-key-interactive" data-key-id="right_ctrl" tabindex="0" role="button" aria-label="Right Control">
+              <rect x="504" y="66" width="46" height="52" rx="7" class="kbd-key-base"/>
+              <text x="512" y="83" class="kbd-glyph-sym">⌃</text>
+              <text x="527" y="108" text-anchor="middle" class="kbd-glyph-xs">control</text>
+            </g>
+
+            <!-- Arrow keys cluster -->
+            <g class="kbd-static-row">
+              <rect x="556" y="93" width="22" height="25" rx="5" class="kbd-key-base"/>
+              <text x="567" y="109" text-anchor="middle" class="kbd-glyph-xs">◀</text>
+              <rect x="580" y="66" width="22" height="25" rx="5" class="kbd-key-base"/>
+              <text x="591" y="82" text-anchor="middle" class="kbd-glyph-xs">▲</text>
+              <rect x="580" y="93" width="22" height="25" rx="5" class="kbd-key-base"/>
+              <text x="591" y="109" text-anchor="middle" class="kbd-glyph-xs">▼</text>
+              <rect x="604" y="93" width="22" height="25" rx="5" class="kbd-key-base"/>
+              <text x="615" y="109" text-anchor="middle" class="kbd-glyph-xs">▶</text>
+            </g>
+
+            <!-- Subtle trackpad rim hint -->
+            <rect x="210" y="132" width="220" height="18" rx="6" fill="rgba(255,255,255,0.025)" stroke="rgba(255,255,255,0.06)"/>
+          </svg>
+
+          <div class="onb-key-pills" role="group" aria-label="Quick hotkey presets">
+            <button type="button" class="onb-key-pill is-selected" data-key-id="right_cmd">Right ⌘ Command <span class="onb-pill-rec">Recommended</span></button>
+            <button type="button" class="onb-key-pill" data-key-id="right_alt">Right ⌥ Option</button>
+            <button type="button" class="onb-key-pill" data-key-id="right_ctrl">Right ⌃ Control</button>
+          </div>
+
+          <div id="onb-key-test-status" class="onb-key-test-status" role="status" aria-live="polite">
+            <span class="onb-pulse-dot" aria-hidden="true"></span>
+            <span>Press and hold <strong>Right ⌘ Command</strong> on your keyboard to test…</span>
+          </div>
+        </div>
+
+        <footer class="onb-footer">
+          <button type="button" id="onb-step3-next-btn" class="btn onb-cta-primary">Practice Your First Dictation →</button>
+        </footer>
+      </section>
+
+      <!-- STEP 4: Interactive Practice Sandbox ("De Oefenzandbak") -->
+      <section class="onb-step" data-step="4" hidden>
+        <div class="onb-step-intro">
+          <span class="onb-eyebrow">Live Practice Sandbox</span>
+          <h2 class="onb-title">Try Your First Voice Dictation</h2>
+          <p class="onb-subtitle">Experience how Speakly turns natural speech into clean text in real time.</p>
+        </div>
+
+        <!-- Prompt Card -->
+        <div class="onb-prompt-card">
+          <div class="onb-prompt-head">
+            <span id="onb-prompt-instruction" class="onb-prompt-instruction">Hold <strong>Right ⌘</strong> and read this out loud:</span>
+            <div class="onb-prompt-lang-switch" role="group" aria-label="Practice sentence language">
+              <button type="button" id="onb-prompt-lang-nl" class="onb-mini-lang is-active" data-prompt-lang="nl">🇳🇱 NL</button>
+              <button type="button" id="onb-prompt-lang-en" class="onb-mini-lang" data-prompt-lang="en">🇬🇧 EN</button>
+            </div>
+          </div>
+          <blockquote id="onb-prompt-sentence" class="onb-prompt-sentence">
+            “Hey team, ik test mijn spraakgestuurde typen met Speakly en het werkt razendsnel.”
+          </blockquote>
+        </div>
+
+        <!-- Sandbox Output Card -->
+        <div class="onb-sandbox-card">
+          <div class="onb-sandbox-bar">
+            <div class="onb-sandbox-hud">
+              <span id="onb-sandbox-duck" class="onb-sandbox-duck" data-state="idle" aria-hidden="true">🦆</span>
+              <span id="onb-sandbox-state-badge" class="onb-sandbox-state-badge">Hold <kbd id="onb-sandbox-kbd">Right ⌘</kbd> to speak</span>
+            </div>
+            <div class="onb-sandbox-controls">
+              <button type="button" id="onb-sandbox-mic-btn" class="btn btn-secondary btn-sm">🎤 Click to dictate</button>
+              <button type="button" id="onb-sandbox-demo-btn" class="btn btn-ghost btn-sm" title="Preview the typewriter & celebration without microphone">⚡ Simulate test</button>
+            </div>
+          </div>
+
+          <div id="onb-sandbox-output" class="onb-sandbox-output" role="status" aria-live="polite" aria-label="Practice transcription will appear here">
+            <span class="onb-sandbox-placeholder">Your polished dictation will type out here character-by-character…</span>
+          </div>
+        </div>
+
+        <!-- Dynamic WPM Celebration Card (shown after dictation) -->
+        <div id="onb-wpm-card" class="onb-wpm-card" hidden>
+          <div class="onb-wpm-badge" aria-hidden="true">⚡</div>
+          <div class="onb-wpm-copy">
+            <strong>Boom! You just spoke at <span id="onb-wpm-value">148 WPM</span></strong>
+            <span>That's <strong id="onb-wpm-multiplier">3.5× faster</strong> than average typing (42 WPM) with zero typos.</span>
+          </div>
+          <span class="onb-wpm-check" aria-hidden="true">✓</span>
+        </div>
+
+        <footer class="onb-footer">
+          <button type="button" id="onb-step4-next-btn" class="btn onb-cta-primary" disabled>
+            🔒 Dictate the sentence above to continue
+          </button>
+        </footer>
+      </section>
+
+      <!-- STEP 5: Language Selection (with Flags) & Menu Bar Handoff -->
+      <section class="onb-step" data-step="5" hidden>
+        <div class="onb-step-intro">
+          <span class="onb-eyebrow">Final Touch</span>
+          <h2 class="onb-title">Choose Your Primary Language</h2>
+          <p class="onb-subtitle">Lock your main language for zero-latency Whisper recognition, or stay on Auto-Detect.</p>
+        </div>
+
+        <div id="onb-lang-grid" class="onb-lang-grid" role="radiogroup" aria-label="Primary spoken language">
+          <button type="button" class="onb-lang-card is-selected" data-lang="" role="radio" aria-checked="true">
+            <span class="onb-lang-flag" aria-hidden="true">🌐</span>
+            <span class="onb-lang-meta">
+              <strong>Auto-Detect</strong>
+              <small>Multilingual switch</small>
+            </span>
+          </button>
+          <button type="button" class="onb-lang-card" data-lang="nl" role="radio" aria-checked="false">
+            <span class="onb-lang-flag" aria-hidden="true">🇳🇱</span>
+            <span class="onb-lang-meta">
+              <strong>Nederlands</strong>
+              <small>Vlaams &amp; Hollands</small>
+            </span>
+          </button>
+          <button type="button" class="onb-lang-card" data-lang="en" role="radio" aria-checked="false">
+            <span class="onb-lang-flag" aria-hidden="true">🇬🇧</span>
+            <span class="onb-lang-meta">
+              <strong>English</strong>
+              <small>US &amp; UK</small>
+            </span>
+          </button>
+          <button type="button" class="onb-lang-card" data-lang="fr" role="radio" aria-checked="false">
+            <span class="onb-lang-flag" aria-hidden="true">🇫🇷</span>
+            <span class="onb-lang-meta">
+              <strong>Français</strong>
+              <small>French</small>
+            </span>
+          </button>
+          <button type="button" class="onb-lang-card" data-lang="de" role="radio" aria-checked="false">
+            <span class="onb-lang-flag" aria-hidden="true">🇩🇪</span>
+            <span class="onb-lang-meta">
+              <strong>Deutsch</strong>
+              <small>German</small>
+            </span>
+          </button>
+          <button type="button" class="onb-lang-card" data-lang="es" role="radio" aria-checked="false">
+            <span class="onb-lang-flag" aria-hidden="true">🇪🇸</span>
+            <span class="onb-lang-meta">
+              <strong>Español</strong>
+              <small>Spanish</small>
+            </span>
+          </button>
+        </div>
+
+        <!-- Animated macOS Menu Bar Handoff Visual -->
+        <div class="onb-menubar-card">
+          <div class="onb-menubar-mockup" aria-hidden="true">
+            <div class="onb-menubar-strip">
+              <div class="onb-menubar-left">
+                <span></span>
+                <strong>Speakly</strong>
+                <span>File</span>
+                <span>Edit</span>
+              </div>
+              <div class="onb-menubar-right">
+                <span class="onb-mb-tray-icon">
+                  <svg viewBox="0 0 20 20" fill="none" width="16" height="16">
+                    <circle cx="10" cy="10" r="8" fill="#FFD000"/>
+                    <circle cx="8" cy="8.5" r="1.4" fill="#09090B"/>
+                    <path d="M5 10.5 Q2.5 11 3.5 12.5 Q5.5 13 6.5 11.5 Z" fill="#FF6B00"/>
+                  </svg>
+                  <span class="onb-mb-pulse-ring"></span>
+                  <span class="onb-mb-pointer">↑</span>
+                </span>
+                <span>Wi-Fi</span>
+                <span>15:56</span>
+              </div>
+            </div>
+          </div>
+          <div class="onb-menubar-copy">
+            <strong>Speakly lives quietly in your macOS Menu Bar</strong>
+            <p>Hold <kbd id="onb-final-kbd">Right ⌘</kbd> inside Slack, Gmail, Notion, or Cursor anytime. Click the duck icon in your menu bar to switch AI modes or open settings.</p>
+          </div>
+        </div>
+
+        <footer class="onb-footer">
+          <button type="button" id="onb-finish-btn" class="btn onb-cta-primary">I'm Ready to Dictate Anywhere →</button>
+        </footer>
+      </section>
     </div>
   </dialog>
 

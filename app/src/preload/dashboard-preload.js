@@ -62,5 +62,10 @@ contextBridge.exposeInMainWorld('voxflow', {
     const handler = (_e, data) => cb(data);
     ipcRenderer.on('speakly:usage-updated', handler);
     return () => ipcRenderer.removeListener('speakly:usage-updated', handler);
+  },
+  onNavigateTab: (cb) => {
+    const handler = (_e, data) => cb(data);
+    ipcRenderer.on('voxflow:navigate-tab', handler);
+    return () => ipcRenderer.removeListener('voxflow:navigate-tab', handler);
   }
 });

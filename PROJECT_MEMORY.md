@@ -1,5 +1,23 @@
 # Speakly: Project Memory & Technical Context
 
+## Quick Directory Map (Wegwijzer voor AI & Developer)
+> Gebruik dit overzicht om direct de juiste map en bestanden te vinden. Zware build-outputs, binaries, media (`*.mp4`, `*.dmg`, `*.exe`), legacy-code en grote lead-JSON-dumps staan in `.ignore` zodat zoeken snel blijft terwijl alle bestanden lokaal behouden blijven.
+
+- **Desktop App (Electron)**: `app/src/main/` (`main.js`, `transcribe.js`, `paster.js`, `store.js`, `hotkeys.js`, `tray-icons.js`), `app/src/renderer/`, `app/src/preload/`, `app/src/native/` (builds in `app/dist/`)
+- **Backend (Render / Groq LPU)**: `backend/server.js`, `render.yaml`
+- **Website & Setup Guides**: `website/index.html`, `website/setup-guide.html`, `website/setup-guide-windows.html`, `website/downloads/` (`website/_archive/` bevat oude versies)
+- **Database & Auth (Supabase + Lemon Squeezy)**: `supabase/migrations/`
+- **Marketing, Outreach & Growth Hub**:
+  - Dashboard & UGC Studio: `marketing/index.html`, `marketing/app.js`, `marketing/ugc-studio.js`, `marketing/publish-dispatcher.js`, `marketing/api-integrations.md`, `marketing/articles/`
+  - Active Campaign & Verification Dossiers: `campaign/` (ook gelinkt via `marketing/campaign/`) — `OUTREACH_TEMPLATES.md`, `OUTREACH_TRACKING_LOG.md`, `USER_VERIFICATION_DOSSIER.md`, `NICHE_ANALYSIS_REPORT.md`
+  - Leads & Outreach Databases: `marketing/leads/` (`VERIFIED_ACTIVE_OUTREACH_LIST.md`, `INFLUENCER_OUTREACH_LIST.md`) + generator-scripts in `marketing/leads/scripts/` (`generate_lead_database.py`, `generate_lead_markdown.py`, `update_lead_audit.py`, `generate_active_markdown.py`)
+  - Video & Ad Showcase: `marketing/showcase/` (`ad-review.html`, `index.html`, compositions & renders)
+- **Docs & Runbooks**: `docs/ONBOARDING_GUIDE.md`, `docs/EARLY_ACCESS_RUNBOOK.md`, `docs/LEMON_SQUEEZY_SETUP.md` (oud Python-prototype gearchiveerd in `docs/_legacy/`)
+- **Automation & Verification Scripts**: `scripts/` (`publish-release.sh`, `verify_backend_transcription.js`, `verify_backend_transcription.sh`, `mission-control.js`, `stats.js`, `grant_pro.js`, `seed_campaign_users.js`, `upload-github-release.js`)
+- **Test Suites**: `tests/` (`test_milestone1.js`, `test_milestone2.js`, `test_campaign.js`, `adversarial_challenger_m5.js`)
+- **Tooling**: `tools/mission-control/`
+- **Campaign Milestones & Forensic Sync**: `PROJECT.md` (gesynchroniseerd met `.agents/teamwork/orchestrator/PROJECT.md` voor tests)
+
 ## Company & stage (updated 2026-11-12)
 - Solo founder based in **Belgium** (EU VAT applies). Goal: get the **first users** while keeping upfront costs near zero.
 - Stage: going **straight to Early Access** (no separate beta). Payments are **not live yet**. There is **no public website yet** (`website/` is a local draft).
@@ -55,3 +73,23 @@
 - **Backend**: `backend/server.js` deployed live on Render at `https://speakly-backend-ie1b.onrender.com` (`app/src/main/transcribe.js`). Enforces Supabase JWT authentication, sliding-window rate limiting (45 req/min), 25MB body limit, and Groq LPU engine. 5-minute keep-alive ping running on `/health`.
 - **Auto-Paste**: Native OS key simulation (`Cmd+V` / `Ctrl+V`) with automatic 600ms clipboard backup and restoration.
 - **Cloud Sync**: Supabase (project `lwiznvgeemrkrildyyvw`) Auth and User Preferences sync for personal dictionary, hotkeys, and AI modes. Feedback goes into the `public.feedback` table (migration in `supabase/migrations/`).
+
+## Interface Contracts & Campaign Summary (uit `PROJECT.md`)
+### Client App ↔ Backend Transcription
+- **Endpoint**: `POST https://speakly-backend-ie1b.onrender.com/api/v1/transcribe`
+- **Headers**: `Authorization: Bearer <Supabase_JWT>`
+- **Form Data**: `audio` (WAV/WebM audio stream), `mode` (`smart` | `raw` | `email` | `notes` | `code` | `custom`), `language` (`auto` | ISO code), `customPrompt` (optional string), `dictionary` (optional comma-separated string)
+- **Response**: `JSON { text: string, duration: number, wordsCount: number, engine: "groq" }`
+
+### Distribution & Gatekeeper Onboarding
+- **Production Installers (GitHub Releases `v1.0.0`)**: `Speakly-1.0.0-mac-arm64.dmg`, `Speakly-1.0.0-mac-x64.dmg` (plus Windows Setup/Portable `.exe`).
+- **Setup Guide**: `https://speakly-website.onrender.com/setup-guide.html` & `docs/ONBOARDING_GUIDE.md`.
+- **macOS Gatekeeper Bypass**:
+  - GUI: Right-click `Speakly.app` in `/Applications` > `Open` > `Open Anyway`
+  - CLI: `xattr -cr /Applications/Speakly.app`
+
+### Early User Acquisition Campaign (`campaign/` & `PROJECT.md`)
+- **Milestones**: M1 (Backend Verification & Gatekeeper Guide — DONE), M2 (Outreach Templates — DONE), M3 (Targeted Outreach & 5 Verified Active Users — DONE), M4 (Niche Analysis Report — DONE), M5 (Dual-Track Testing & Forensic Integrity Audit — IN_PROGRESS).
+- **Target Niches (Campaign v1)**: Translators (Trados/memoQ), Paralegals (Word/Clio), Clinicians (SimplePractice), PhDs (Overleaf/Scrivener), Support Ops, RSI Sufferers — zero contacts to voice tech AI engineers or content creators.
+- **Offer**: 3 Months Free Pro Tier (no credit card required).
+- **Deliverables**: `campaign/OUTREACH_TEMPLATES.md`, `campaign/OUTREACH_TRACKING_LOG.md`, `campaign/USER_VERIFICATION_DOSSIER.md`, `campaign/NICHE_ANALYSIS_REPORT.md`.

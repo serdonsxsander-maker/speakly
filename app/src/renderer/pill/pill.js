@@ -260,9 +260,14 @@
       let stream = null;
 
       // Fast-path: try exact constraints first with a tight timeout, then fallback immediately
+      const micConstraint = (opts.micDeviceId && opts.micDeviceId !== 'default')
+        ? { deviceId: { exact: opts.micDeviceId } }
+        : {};
+
       try {
         stream = await navigator.mediaDevices.getUserMedia({
           audio: {
+            ...micConstraint,
             channelCount: 1,
             echoCancellation: true,
             noiseSuppression: true,
@@ -271,7 +276,7 @@
         });
       } catch {
         try {
-          stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          stream = await navigator.mediaDevices.getUserMedia({ audio: micConstraint.deviceId ? micConstraint : true });
         } catch (fallbackErr) {
           if (!stream) throw fallbackErr;
         }
@@ -451,12 +456,38 @@
     showToast(data);
   });
 
+  // Enumerate audio input devices and report to main process for tray menu
+  async function enumerateAndReportAudioDevices() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const mics = devices
+        .filter((d) => d.kind === 'audioinput')
+        .map((d) => ({
+          deviceId: d.deviceId,
+          label: d.label || 'Microphone'
+        }));
+      if (mics.length > 0 && window.pillBridge && window.pillBridge.sendAudioDevices) {
+        window.pillBridge.sendAudioDevices(mics);
+      }
+    } catch {
+      // ignore
+    }
+  }
+
   // Prime Chromium's audio device cache once on load so the first hotkey press starts in 0ms!
   // Opens the stream for a fraction of a millisecond and closes it immediately.
   // This turns OFF the mic privacy dot before the user ever touches the keyboard.
   setTimeout(() => {
     navigator.mediaDevices?.getUserMedia({ audio: true }).then((s) => {
       s.getTracks().forEach((t) => t.stop());
+      enumerateAndReportAudioDevices();
     }).catch(() => {});
   }, 300);
+
+  if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+    navigator.mediaDevices.addEventListener('devicechange', () => {
+      enumerateAndReportAudioDevices();
+    });
+  }
 })();

@@ -72,6 +72,9 @@
   const quotaCloseBtn = document.getElementById('quota-close-btn');
   const btnQuotaUpgradePro = document.getElementById('btn-quota-upgrade-pro');
   const btnQuotaDismiss = document.getElementById('btn-quota-dismiss');
+  const quotaModalBadge = document.getElementById('quota-modal-badge');
+  const quotaModalTitle = document.getElementById('quota-modal-title');
+  const quotaModalDesc = document.getElementById('quota-modal-desc');
 
   let currentUsage = { plan: 'free', wordsUsed: 0, wordLimit: 3000, periodEnd: null };
 
@@ -411,9 +414,26 @@
     }
   }
 
-  function showQuotaExceededModal() {
+  function showQuotaExceededModal(data = {}) {
     if (quotaDuckMascot) {
       quotaDuckMascot.innerHTML = getRubberDuckySVG('thinking');
+    }
+    if (quotaModalBadge) {
+      if (data.badge) {
+        quotaModalBadge.textContent = data.badge;
+      } else if (data.isModeLock) {
+        quotaModalBadge.textContent = 'Pro Feature 🔒';
+      } else {
+        const cur = (data.current || 3000).toLocaleString();
+        const lim = (data.limit || 3000).toLocaleString();
+        quotaModalBadge.textContent = `${cur} / ${lim} Words Used`;
+      }
+    }
+    if (quotaModalTitle) {
+      quotaModalTitle.textContent = data.title || (data.isModeLock ? 'Unlock Speakly Pro' : 'Monthly Cap Reached!');
+    }
+    if (quotaModalDesc) {
+      quotaModalDesc.textContent = data.message || 'Monthly cap reached, upgrade to Pro for unlimited usage.';
     }
     if (quotaModal && typeof quotaModal.showModal === 'function') {
       try {
@@ -1613,9 +1633,11 @@
     globalAlert.hidden = false;
   });
   window.voxflow.onQuotaExceeded((data) => {
-    currentUsage.wordsUsed = data.current || 3000;
-    renderUsageBar();
-    showQuotaExceededModal();
+    if (data && typeof data.current === 'number') {
+      currentUsage.wordsUsed = data.current;
+      renderUsageBar();
+    }
+    showQuotaExceededModal(data || {});
   });
   if (typeof window.voxflow.onUsageUpdated === 'function') {
     window.voxflow.onUsageUpdated((data) => {

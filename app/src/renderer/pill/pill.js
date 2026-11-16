@@ -399,27 +399,29 @@
     setView('idle');
   }
 
-  function showToast({ kind = 'success', message = 'Done' }) {
-    if (kind === 'success') {
+  function showToast({ kind = 'success', title = null, message = 'Done', duration = null }) {
+    if (title) {
+      toastTitleEl.textContent = title;
+    } else if (kind === 'success') {
       toastTitleEl.textContent = 'Pasted! ✨';
-      toastTextEl.textContent = message;
     } else if (kind === 'warning') {
-      toastTitleEl.textContent = 'Copied';
-      toastTextEl.textContent = message;
+      toastTitleEl.textContent = 'Notice';
+    } else if (kind === 'quota') {
+      toastTitleEl.textContent = 'Limit Reached 🦆';
     } else if (kind === 'error') {
       toastTitleEl.textContent = 'Oops!';
-      toastTextEl.textContent = message;
     } else {
       toastTitleEl.textContent = 'Speakly';
-      toastTextEl.textContent = message;
     }
+    toastTextEl.textContent = message;
 
     setView('toast');
 
     if (toastTimeout) clearTimeout(toastTimeout);
+    const timeoutMs = duration || (kind === 'quota' || kind === 'error' ? 3200 : 1800);
     toastTimeout = setTimeout(() => {
       setView('idle');
-    }, kind === 'error' ? 2400 : 1500);
+    }, timeoutMs);
   }
 
   cancelRecBtn.addEventListener('click', (e) => {

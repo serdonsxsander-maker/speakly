@@ -356,10 +356,14 @@ function rebuildTrayMenu() {
         if (isLocked) {
           sendToPill('voxflow:pill-toast', {
             kind: 'warning',
-            message: `${m.name} is a Pro mode. Upgrade for access.`
+            title: 'Pro Feature 🔒',
+            message: `${m.name} is a Pro mode. Upgrade to unlock.`
           });
           sendToDashboard('speakly:quota-exceeded', {
-            message: `${m.name} requires Speakly Pro.`,
+            isModeLock: true,
+            badge: 'Pro Feature 🔒',
+            title: `Unlock ${m.name}`,
+            message: `${m.name} formatting is an exclusive Speakly Pro mode. Upgrade to unlock all AI modes & unlimited words.`,
             limit: 3000,
             current: 0
           });
@@ -521,6 +525,9 @@ async function getValidAccessToken() {
           accessToken: data.session.access_token,
           refreshToken: data.session.refresh_token || auth.refreshToken
         });
+        if (data.session.user) {
+          applyCloudPreferences(data.session.user);
+        }
         broadcastState();
         return data.session.access_token;
       } else if (refreshError) {
@@ -672,6 +679,7 @@ function triggerStartRecording({ source = 'hotkey' } = {}) {
     showDashboard();
     sendToPill('voxflow:pill-toast', {
       kind: 'warning',
+      title: 'Action Needed ⚠️',
       message: 'Accessibility required to paste'
     });
     return;
@@ -699,6 +707,7 @@ function triggerStartRecording({ source = 'hotkey' } = {}) {
       console.warn('[Safety Watchdog] 5-minute maximum recording limit reached. Automatically stopping to protect API costs.');
       sendToPill('voxflow:pill-toast', {
         kind: 'warning',
+        title: 'Safety Limit ⏱️',
         message: 'Auto-stopped: 5 min limit reached'
       });
       triggerStopRecording();
@@ -1442,6 +1451,7 @@ function registerIpcHandlers() {
       if (durationSeconds > 0.05) {
         sendToPill('voxflow:pill-toast', {
           kind: 'muted',
+          title: 'Tip 💡',
           message: 'Hold hotkey while speaking'
         });
         finishIdle(900);
@@ -1457,6 +1467,7 @@ function registerIpcHandlers() {
     if (typeof rmsPeak === 'number' && rmsPeak < rmsThreshold) {
       sendToPill('voxflow:pill-toast', {
         kind: 'muted',
+        title: 'Mic Check 🎤',
         message: 'No speech heard'
       });
       finishIdle(1100);
@@ -1484,6 +1495,7 @@ function registerIpcHandlers() {
       if (!finalText) {
         sendToPill('voxflow:pill-toast', {
           kind: 'muted',
+          title: 'Mic Check 🎤',
           message: 'No speech detected'
         });
         finishIdle(1100);
@@ -1510,16 +1522,19 @@ function registerIpcHandlers() {
       if (pasteResult.pasted) {
         sendToPill('voxflow:pill-toast', {
           kind: 'success',
+          title: 'Pasted! ✨',
           message: `Pasted ${entry.wordCount} ${entry.wordCount === 1 ? 'word' : 'words'}`
         });
       } else if (pasteResult.reason === 'accessibility_missing') {
         sendToPill('voxflow:pill-toast', {
           kind: 'warning',
-          message: 'Copied! Enable Accessibility to auto-paste'
+          title: 'Copied 📋',
+          message: 'Enable Accessibility to auto-paste'
         });
       } else {
         sendToPill('voxflow:pill-toast', {
           kind: 'success',
+          title: 'Copied! 📋',
           message: 'Copied to clipboard (Cmd/Ctrl+V)'
         });
       }
@@ -1532,11 +1547,13 @@ function registerIpcHandlers() {
 
       if (isQuota) {
         sendToPill('voxflow:pill-toast', {
-          kind: 'warning',
-          message: 'Monthly cap reached, upgrade to Pro for unlimited usage'
+          kind: 'quota',
+          title: 'Limit Reached 🦆',
+          message: 'Monthly cap reached (3,000 words). Upgrade to Pro for unlimited dictation.'
         });
         sendToDashboard('speakly:quota-exceeded', {
-          message: err.message,
+          title: 'Monthly Cap Reached',
+          message: err.message || 'You have reached the free 3,000 words cap this month.',
           limit: err.quotaDetails?.limit || 3000,
           current: err.quotaDetails?.current || 3000
         });
@@ -1547,6 +1564,7 @@ function registerIpcHandlers() {
       } else {
         sendToPill('voxflow:pill-toast', {
           kind: 'error',
+          title: 'Oops! ⚠️',
           message: (err && err.message ? err.message : 'Transcription error').slice(0, 56)
         });
         sendToDashboard('voxflow:error', {
@@ -1564,6 +1582,9 @@ function registerIpcHandlers() {
     rebuildTrayMenu();
     sendToPill('voxflow:pill-toast', {
       kind: 'error',
+      title: 'Mic Error ⚠️',
+      message: String(message || 'Microphone unavailable').slice(0, 52)
+    });
       message: String(message || 'Microphone unavailable').slice(0, 52)
     });
     sendToDashboard('voxflow:error', {

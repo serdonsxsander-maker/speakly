@@ -17,9 +17,10 @@ function getGitHubToken() {
   throw new Error('No GitHub token found. Set GITHUB_TOKEN or authenticate via git credential.');
 }
 
-const OWNER = 'serdonsxsander-maker';
-const REPO = 'speakly';
-const TAG = 'v1.0.0';
+const pkg = require('../app/package.json');
+const OWNER = process.env.GITHUB_OWNER || 'serdonsxsander-maker';
+const REPO = process.env.GITHUB_REPO || 'speakly';
+const TAG = process.argv[2] || process.env.RELEASE_TAG || `v${pkg.version}`;
 const DIST_DIR = path.resolve(__dirname, '../app/dist');
 
 const FILES = [

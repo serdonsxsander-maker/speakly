@@ -488,8 +488,25 @@ async function insertFeedbackRow(accessToken, row) {
 async function getValidAccessToken() {
   const state = store.getState();
   const auth = state.auth || {};
-  if (auth.accessToken) return auth.accessToken;
 
+  // Check if accessToken exists and is not expired (decode JWT payload expiry with 60s buffer)
+  if (auth.accessToken) {
+    try {
+      const parts = auth.accessToken.split('.');
+      if (parts.length === 3) {
+        const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
+        const exp = payload.exp ? payload.exp * 1000 : 0;
+        // If token has at least 60 seconds of validity left, use it
+        if (exp > Date.now() + 60000) {
+          return auth.accessToken;
+        }
+      }
+    } catch {
+      // In case of parse error, attempt refresh below
+    }
+  }
+
+  // Token is missing or expired — refresh using stored refresh_token
   if (auth.refreshToken) {
     try {
       const refreshClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -506,13 +523,15 @@ async function getValidAccessToken() {
         });
         broadcastState();
         return data.session.access_token;
+      } else if (refreshError) {
+        console.warn('[Auth Token Refresh Failed]:', refreshError.message);
       }
     } catch (err) {
       console.warn('[Auth Token Refresh Warning]:', err.message);
     }
   }
 
-  return '';
+  return auth.accessToken || '';
 }
 
 async function submitFeedback(payload) {

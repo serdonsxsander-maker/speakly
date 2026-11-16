@@ -1650,6 +1650,16 @@ app.whenReady().then(() => {
     }
   } catch {}
 
+  // Keep Render cloud backend awake and eliminate cold starts (pings every 9 minutes)
+  const warmUpBackend = () => {
+    try {
+      const url = getResolvedBackendUrl();
+      fetch(`${url}/health`).catch(() => {});
+    } catch {}
+  };
+  warmUpBackend();
+  setInterval(warmUpBackend, 9 * 60 * 1000);
+
   app.on('activate', () => {
     showDashboard();
   });

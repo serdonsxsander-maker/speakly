@@ -336,7 +336,7 @@ function fastPathShortUtterance(text) {
 
 /**
  * Speech Transcription & Polish Engine
- * Uses Groq LPU (whisper-large-v3-turbo + llama-3.3-70b-versatile) as primary for ~0.3s latency,
+ * Uses Groq LPU (whisper-large-v3-turbo + openai/gpt-oss-120b & 20b) for ultra-fast response,
  * with automatic fallback to OpenAI if configured.
  */
 async function transcribeAndPolish({
@@ -531,18 +531,18 @@ async function transcribeAndPolish({
 
   const fullSystemPrompt = activeSystemPrompt + userProfilePrompt + vocabHint + appContextPrompt;
 
-  // Candidate LLM models: Groq Llama 3.3 70B & 3.1 8B, or OpenAI GPT-4o-mini
+  // Candidate LLM models on Groq: openai/gpt-oss-120b & openai/gpt-oss-20b, or OpenAI GPT-4o-mini
   const llmCandidates = [];
   if (hasGroq) {
     llmCandidates.push({
       baseUrl: 'https://api.groq.com/openai/v1',
       apiKey: GROQ_API_KEY,
-      model: 'llama-3.3-70b-versatile'
+      model: 'openai/gpt-oss-120b'
     });
     llmCandidates.push({
       baseUrl: 'https://api.groq.com/openai/v1',
       apiKey: GROQ_API_KEY,
-      model: 'llama-3.1-8b-instant'
+      model: 'openai/gpt-oss-20b'
     });
   }
   if (hasOpenAI) {
@@ -555,26 +555,40 @@ async function transcribeAndPolish({
 
   for (const candidate of llmCandidates) {
     try {
-      const llmRes = await fetch(`${candidate.baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${candidate.apiKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          model: candidate.model,
-          temperature: 0.1,
-          max_tokens: 1500,
-          messages: [
-            { role: 'system', content: fullSystemPrompt },
-            { role: 'user', content: `<raw_dictation>\n${rawText}\n</raw_dictation>` }
-          ]
-        })
-      });
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 4000); // 4-second safety ceiling
+      let llmRes;
+      try {
+        llmRes = await fetch(`${candidate.baseUrl}/chat/completions`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${candidate.apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            model: candidate.model,
+            temperature: 0.1,
+            max_tokens: 1500,
+            messages: [
+              { role: 'system', content: fullSystemPrompt },
+              { role: 'user', content: `<raw_dictation>\n${rawText}\n</raw_dictation>` }
+            ]
+          }),
+          signal: controller.signal
+        });
+      } finally {
+        clearTimeout(timer);
+      }
 
       if (llmRes.ok) {
         const llmData = await llmRes.json();
         let polished = String(llmData?.choices?.[0]?.message?.content || '').trim();
+        // Fallback for reasoning models if content was empty
+        if (!polished && llmData?.choices?.[0]?.message?.reasoning) {
+          const r = String(llmData.choices[0].message.reasoning).trim();
+          const match = r.match(/output(?: is|:)?\s*["“']([^"”']+)["”']/i);
+          if (match) polished = match[1].trim();
+        }
         polished = polished.replace(/^<raw_dictation>|<\/raw_dictation>$/gi, '').trim();
         if (polished) {
           return {
@@ -583,6 +597,9 @@ async function transcribeAndPolish({
             engine: `${activeEngine}+${candidate.model}`
           };
         }
+      } else {
+        const errText = await llmRes.text().catch(() => '');
+        console.warn(`LLM model ${candidate.model} failed (HTTP ${llmRes.status}): ${errText}`);
       }
     } catch (err) {
       console.warn(`LLM model ${candidate.model} failed, trying next:`, err.message);

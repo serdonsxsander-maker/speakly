@@ -175,6 +175,12 @@ class Store {
           languageStats: { ...(parsed.languageStats || {}) },
           history: Array.isArray(parsed.history) ? parsed.history.slice(0, 20) : []
         };
+
+        // Ensure holdKey matches physical keyboard capabilities:
+        // On macOS, keyboards do not have standalone push-to-talk F-keys. Fall back to right_cmd if an F-key was stored.
+        if (isMac && typeof this._data.settings.holdKey === 'string' && /^f\d+$/i.test(this._data.settings.holdKey)) {
+          this._data.settings.holdKey = 'right_cmd';
+        }
         // SECURITY: early builds shipped shared API keys baked into the app. Those keys are revoked.
         // Wipe any copy persisted in a tester's local settings so requests route through the Speakly backend.
         const REVOKED_KEY_PREFIXES = ['sk-proj-5ZRCF0biq1s2', 'gsk_VcxiihhYyg3E671'];

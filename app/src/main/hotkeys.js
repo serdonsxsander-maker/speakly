@@ -14,17 +14,17 @@ const HOLD_KEY_MAP = {
   right_cmd: {
     code: uiohookModule ? uiohookModule.UiohookKey.MetaRight : 3676,
     macLabel: 'Right ⌘ Command',
-    winLabel: 'Right ⊞ Win'
+    winLabel: 'Right ⊞ Windows'
   },
   left_cmd: {
     code: uiohookModule ? uiohookModule.UiohookKey.Meta : 3675,
     macLabel: 'Left ⌘ Command',
-    winLabel: 'Left ⊞ Win'
+    winLabel: 'Left ⊞ Windows'
   },
   right_alt: {
     code: uiohookModule ? uiohookModule.UiohookKey.AltRight : 3640,
     macLabel: 'Right ⌥ Option',
-    winLabel: 'Right Alt'
+    winLabel: 'Right Alt (AltGr)'
   },
   left_alt: {
     code: uiohookModule ? uiohookModule.UiohookKey.Alt : 56,
@@ -51,21 +51,6 @@ const HOLD_KEY_MAP = {
     macLabel: 'Left ⇧ Shift',
     winLabel: 'Left Shift'
   },
-  f5: {
-    code: uiohookModule ? uiohookModule.UiohookKey.F5 : 63,
-    macLabel: 'F5',
-    winLabel: 'F5'
-  },
-  f6: {
-    code: uiohookModule ? uiohookModule.UiohookKey.F6 : 64,
-    macLabel: 'F6',
-    winLabel: 'F6'
-  },
-  f7: {
-    code: uiohookModule ? uiohookModule.UiohookKey.F7 : 65,
-    macLabel: 'F7',
-    winLabel: 'F7'
-  },
   f8: {
     code: uiohookModule ? uiohookModule.UiohookKey.F8 : 66,
     macLabel: 'F8',
@@ -81,16 +66,16 @@ const HOLD_KEY_MAP = {
     macLabel: 'F10',
     winLabel: 'F10'
   },
-  f11: {
-    code: uiohookModule ? uiohookModule.UiohookKey.F11 : 87,
-    macLabel: 'F11',
-    winLabel: 'F11'
-  },
   f12: {
     code: uiohookModule ? uiohookModule.UiohookKey.F12 : 88,
     macLabel: 'F12',
     winLabel: 'F12'
-  }
+  },
+  // Legacy entries retained so existing user configurations never crash
+  f5: { code: uiohookModule ? uiohookModule.UiohookKey.F5 : 63, macLabel: 'F5', winLabel: 'F5' },
+  f6: { code: uiohookModule ? uiohookModule.UiohookKey.F6 : 64, macLabel: 'F6', winLabel: 'F6' },
+  f7: { code: uiohookModule ? uiohookModule.UiohookKey.F7 : 65, macLabel: 'F7', winLabel: 'F7' },
+  f11: { code: uiohookModule ? uiohookModule.UiohookKey.F11 : 87, macLabel: 'F11', winLabel: 'F11' }
 };
 
 function resolveMacKeyMonitorPath() {
@@ -126,10 +111,36 @@ class HotkeyManager {
 
   getHoldKeyOptions() {
     const isMac = process.platform === 'darwin';
-    return Object.entries(HOLD_KEY_MAP).map(([id, info]) => ({
-      id,
-      label: isMac ? info.macLabel : info.winLabel
-    }));
+    if (isMac) {
+      // macOS: Show only physical Apple keyboard modifier keys that exist on MacBooks/Magic Keyboards.
+      // Modern Mac keyboards use F-keys as hardware media/brightness/volume controls, not push-to-talk buttons.
+      return [
+        { id: 'right_cmd', label: 'Right ⌘ Command' },
+        { id: 'left_cmd', label: 'Left ⌘ Command' },
+        { id: 'right_alt', label: 'Right ⌥ Option' },
+        { id: 'left_alt', label: 'Left ⌥ Option' },
+        { id: 'left_ctrl', label: 'Left ⌃ Control' },
+        { id: 'right_ctrl', label: 'Right ⌃ Control' },
+        { id: 'right_shift', label: 'Right ⇧ Shift' },
+        { id: 'left_shift', label: 'Left ⇧ Shift' }
+      ];
+    }
+
+    // Windows: Show physical PC keyboard keys (Ctrl, AltGr, Shift, Windows keys, and standard PC Function keys)
+    return [
+      { id: 'right_ctrl', label: 'Right Ctrl' },
+      { id: 'left_ctrl', label: 'Left Ctrl' },
+      { id: 'right_alt', label: 'Right Alt (AltGr)' },
+      { id: 'left_alt', label: 'Left Alt' },
+      { id: 'right_shift', label: 'Right Shift' },
+      { id: 'left_shift', label: 'Left Shift' },
+      { id: 'right_cmd', label: 'Right ⊞ Windows' },
+      { id: 'left_cmd', label: 'Left ⊞ Windows' },
+      { id: 'f8', label: 'F8' },
+      { id: 'f9', label: 'F9' },
+      { id: 'f10', label: 'F10' },
+      { id: 'f12', label: 'F12' }
+    ];
   }
 
   canUseLowLevelHook() {

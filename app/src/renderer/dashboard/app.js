@@ -125,6 +125,14 @@
   const getGroqLink = document.getElementById('get-groq-link');
 
   const holdKeySelect = document.getElementById('hold-key-select');
+  const holdKeyTip = document.getElementById('hold-key-tip');
+  if (holdKeyTip) {
+    if (window.voxflow.platform === 'win32') {
+      holdKeyTip.innerHTML = '💡 <strong>Tip for Windows:</strong> <code>Right Ctrl</code> or <code>Right Alt</code> are the most ergonomic single-key push-to-talk buttons!';
+    } else {
+      holdKeyTip.innerHTML = '💡 <strong>Tip for Mac:</strong> <code>Right ⌥ Option</code> or <code>Right ⌘ Command</code> are the most ergonomic single-key push-to-talk buttons!';
+    }
+  }
   const recordHotkeyBtn = document.getElementById('record-hotkey-btn');
   const recordHotkeyLabel = document.getElementById('record-hotkey-label');
   const languageSelect = document.getElementById('language-select');
@@ -799,7 +807,9 @@
   }
 
   function renderHoldKeyOptions(options = [], selectedId) {
-    if (holdKeySelect.options.length !== options.length) {
+    const currentValues = Array.from(holdKeySelect.options).map((o) => `${o.value}:${o.textContent}`).join('|');
+    const newValues = options.map((o) => `${o.id}:${o.label}`).join('|');
+    if (currentValues !== newValues) {
       holdKeySelect.replaceChildren();
       for (const opt of options) {
         const el = document.createElement('option');
@@ -946,14 +956,32 @@
     4: 'Step 4 of 5 · Practice',
     5: 'Step 5 of 5 · Language'
   };
-  const ONB_KEY_LABELS = {
-    right_cmd: 'Right ⌘ Command',
-    left_cmd: 'Left ⌘ Command',
-    right_alt: 'Right ⌥ Option',
-    left_alt: 'Left ⌥ Option',
-    right_ctrl: 'Right ⌃ Control',
-    left_ctrl: 'Left ⌃ Control'
-  };
+  const isWin = window.voxflow.platform === 'win32';
+  const ONB_KEY_LABELS = isWin
+    ? {
+        right_ctrl: 'Right Ctrl',
+        left_ctrl: 'Left Ctrl',
+        right_alt: 'Right Alt (AltGr)',
+        left_alt: 'Left Alt',
+        right_shift: 'Right Shift',
+        left_shift: 'Left Shift',
+        right_cmd: 'Right ⊞ Windows',
+        left_cmd: 'Left ⊞ Windows',
+        f8: 'F8',
+        f9: 'F9',
+        f10: 'F10',
+        f12: 'F12'
+      }
+    : {
+        right_cmd: 'Right ⌘ Command',
+        left_cmd: 'Left ⌘ Command',
+        right_alt: 'Right ⌥ Option',
+        left_alt: 'Left ⌥ Option',
+        left_ctrl: 'Left ⌃ Control',
+        right_ctrl: 'Right ⌃ Control',
+        right_shift: 'Right ⇧ Shift',
+        left_shift: 'Left ⇧ Shift'
+      };
   const ONB_PROMPT_SENTENCES = {
     nl: 'Hey team, ik test mijn spraakgestuurde typen met Speakly en het werkt razendsnel.',
     en: "Hey team, I'm testing my voice typing with Speakly, and it works flawlessly."
@@ -1039,8 +1067,9 @@
   }
 
   function getOnbHotkeyLabel(state = appState) {
-    const keyId = state?.settings?.holdKey || 'right_cmd';
-    return ONB_KEY_LABELS[keyId] || state?.hotkeyDisplay || 'Right ⌘ Command';
+    const defaultKey = isWin ? 'right_ctrl' : 'right_cmd';
+    const keyId = state?.settings?.holdKey || defaultKey;
+    return ONB_KEY_LABELS[keyId] || state?.hotkeyDisplay || (isWin ? 'Right Ctrl' : 'Right ⌘ Command');
   }
 
   function syncOnbGoalPills() {
@@ -1054,7 +1083,8 @@
   function syncOnbHotkeyUI(state = appState) {
     const settings = state?.settings || {};
     const triggerMode = settings.triggerMode || 'hold';
-    const holdKey = settings.holdKey || 'right_cmd';
+    const defaultKey = isWin ? 'right_ctrl' : 'right_cmd';
+    const holdKey = settings.holdKey || defaultKey;
     const label = getOnbHotkeyLabel(state);
 
     onbTriggerSegBtns.forEach((btn) => {
@@ -1067,7 +1097,7 @@
       el.classList.toggle('is-selected', el.dataset.keyId === holdKey);
     });
 
-    onbKeyPills.forEach((pill) => {
+    document.querySelectorAll('.onb-key-pills .onb-key-pill').forEach((pill) => {
       pill.classList.toggle('is-selected', pill.dataset.keyId === holdKey);
     });
 
@@ -1076,7 +1106,11 @@
       onbKeyTestStatus.innerHTML = `<span class="onb-pulse-dot" aria-hidden="true"></span><span>${verb} <strong>${label}</strong> on your keyboard to test…</span>`;
     }
 
-    const shortLabel = label.replace(' Command', '').replace(' Option', '').replace(' Control', '');
+    const shortLabel = label
+      .replace(' Command', '')
+      .replace(' Option', '')
+      .replace(' Control', '')
+      .replace(' Windows', '');
     if (onbPromptInstruction) {
       const actionVerb = triggerMode === 'toggle' ? 'Tap' : 'Hold';
       onbPromptInstruction.innerHTML = `${actionVerb} <strong>${shortLabel}</strong> and read this out loud:`;
@@ -1666,34 +1700,34 @@
     recordHotkeyBtn.style.borderColor = '';
 
     // Map common key to our friendly options
-    let chosenId = 'right_cmd';
+    let chosenId = isWin ? 'right_ctrl' : 'right_cmd';
     let chosenLabel = e.key;
 
     if (e.code === 'AltRight') {
       chosenId = 'right_alt';
-      chosenLabel = 'Right ⌥ Option';
+      chosenLabel = isWin ? 'Right Alt (AltGr)' : 'Right ⌥ Option';
     } else if (e.code === 'AltLeft') {
       chosenId = 'left_alt';
-      chosenLabel = 'Left ⌥ Option';
+      chosenLabel = isWin ? 'Left Alt' : 'Left ⌥ Option';
     } else if (e.code === 'ControlRight') {
       chosenId = 'right_ctrl';
-      chosenLabel = 'Right ⌃ Control';
+      chosenLabel = isWin ? 'Right Ctrl' : 'Right ⌃ Control';
     } else if (e.code === 'ControlLeft') {
       chosenId = 'left_ctrl';
-      chosenLabel = 'Left ⌃ Control';
+      chosenLabel = isWin ? 'Left Ctrl' : 'Left ⌃ Control';
     } else if (e.code === 'ShiftRight') {
       chosenId = 'right_shift';
-      chosenLabel = 'Right ⇧ Shift';
+      chosenLabel = isWin ? 'Right Shift' : 'Right ⇧ Shift';
     } else if (e.code === 'ShiftLeft') {
       chosenId = 'left_shift';
-      chosenLabel = 'Left ⇧ Shift';
+      chosenLabel = isWin ? 'Left Shift' : 'Left ⇧ Shift';
     } else if (e.code === 'MetaRight') {
       chosenId = 'right_cmd';
-      chosenLabel = 'Right ⌘ Command';
+      chosenLabel = isWin ? 'Right ⊞ Windows' : 'Right ⌘ Command';
     } else if (e.code === 'MetaLeft') {
       chosenId = 'left_cmd';
-      chosenLabel = 'Left ⌘ Command';
-    } else if (['F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'].includes(e.key)) {
+      chosenLabel = isWin ? 'Left ⊞ Windows' : 'Left ⌘ Command';
+    } else if (isWin && ['F8', 'F9', 'F10', 'F12'].includes(e.key)) {
       chosenId = e.key.toLowerCase();
       chosenLabel = e.key;
     } else {
@@ -2194,13 +2228,52 @@
     pill.addEventListener('click', () => selectOnbHotkey(pill.dataset.keyId));
   });
 
+  function setupSystemSpecificKeyboard() {
+    if (!isWin) return;
+
+    // Adapt SVG keyboard key labels for Windows PC keyboard
+    const keyLabels = {
+      left_ctrl: { sym: '', text: 'ctrl' },
+      left_alt: { sym: '', text: 'alt' },
+      left_cmd: { sym: '⊞', text: 'win' },
+      right_cmd: { sym: '⊞', text: 'win' },
+      right_alt: { sym: '', text: 'alt gr' },
+      right_ctrl: { sym: '', text: 'ctrl' }
+    };
+
+    onbKeyInteractiveEls.forEach((el) => {
+      const cfg = keyLabels[el.dataset.keyId];
+      if (cfg) {
+        const symEl = el.querySelector('.kbd-glyph-sym');
+        const textEl = el.querySelector('.kbd-glyph-xs');
+        if (symEl) symEl.textContent = cfg.sym;
+        if (textEl) textEl.textContent = cfg.text;
+      }
+    });
+
+    const pillsContainer = document.querySelector('.onb-key-pills');
+    if (pillsContainer) {
+      pillsContainer.innerHTML = `
+        <button type="button" class="onb-key-pill is-selected" data-key-id="right_ctrl">Right Ctrl <span class="onb-pill-rec">Recommended</span></button>
+        <button type="button" class="onb-key-pill" data-key-id="right_alt">Right Alt (AltGr)</button>
+        <button type="button" class="onb-key-pill" data-key-id="left_ctrl">Left Ctrl</button>
+      `;
+      Array.from(pillsContainer.querySelectorAll('.onb-key-pill')).forEach((pill) => {
+        pill.addEventListener('click', () => selectOnbHotkey(pill.dataset.keyId));
+      });
+    }
+  }
+  setupSystemSpecificKeyboard();
+
   const DOM_CODE_TO_KEY_ID = {
     MetaRight: 'right_cmd',
     MetaLeft: 'left_cmd',
     AltRight: 'right_alt',
     AltLeft: 'left_alt',
     ControlRight: 'right_ctrl',
-    ControlLeft: 'left_ctrl'
+    ControlLeft: 'left_ctrl',
+    ShiftRight: 'right_shift',
+    ShiftLeft: 'left_shift'
   };
 
   window.addEventListener('keydown', (e) => {

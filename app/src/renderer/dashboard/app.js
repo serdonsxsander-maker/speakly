@@ -387,11 +387,13 @@
     if (dictLockBanner && dictInput && dictSubmitBtn) {
       if (isPro) {
         dictLockBanner.hidden = true;
+        dictLockBanner.style.display = 'none';
         dictInput.disabled = false;
         dictSubmitBtn.disabled = false;
         dictInput.placeholder = 'e.g. Acme Corp, PostgreSQL, ProductName, Alex Rivera';
       } else {
         dictLockBanner.hidden = false;
+        dictLockBanner.style.display = 'flex';
         dictInput.disabled = true;
         dictSubmitBtn.disabled = true;
         dictInput.placeholder = '🔒 Personal Dictionary is locked on Free Tier (Upgrade to Pro)';
@@ -829,6 +831,13 @@
 
     applyTheme(settings.theme);
 
+    // Sync Pro status from subscription immediately so all child sections render accurately
+    const sub = state.subscription || {};
+    const isPro = sub.plan === 'pro' && (sub.status === 'active' || sub.status === 'on_trial');
+    if (isPro) {
+      currentUsage.plan = 'pro';
+    }
+
     sidebarTriggerVerb.textContent = settings.triggerMode === 'hold' ? 'Hold' : 'Press';
     sidebarHotkeyKbd.textContent = state.hotkeyDisplay;
     playgroundHotkey.textContent = state.hotkeyDisplay;
@@ -895,6 +904,7 @@
       const sub = state.subscription || {};
       const isPro = sub.plan === 'pro' && (sub.status === 'active' || sub.status === 'on_trial');
       currentUsage.plan = isPro ? 'pro' : 'free';
+      renderUsageBar();
       renderModes(state.modes, settings.activeModeId);
       const subBadge = document.getElementById('sub-plan-badge');
       const subDesc = document.getElementById('sub-plan-desc');

@@ -1,6 +1,83 @@
 const fs = require('fs');
+const os = require('os');
 const path = require('path');
 const { app } = require('electron');
+
+const COMMON_STOPWORDS = new Set([
+  'the', 'a', 'an', 'to', 'in', 'on', 'of', 'and', 'or', 'is', 'are', 'was', 'were',
+  'be', 'been', 'it', 'its', 'that', 'this', 'these', 'those', 'for', 'with', 'as',
+  'at', 'by', 'from', 'but', 'not', 'so', 'if', 'do', 'does', 'did', 'have', 'has',
+  'had', 'can', 'could', 'will', 'would', 'i', 'me', 'my', 'you', 'your', 'he',
+  'him', 'his', 'she', 'her', 'we', 'us', 'our', 'they', 'them', 'their', 'what',
+  'which', 'who', 'how', 'when', 'where', 'why',
+  'de', 'het', 'een', 'en', 'van', 'op', 'dat', 'die', 'deze', 'dit', 'zijn', 'te',
+  'voor', 'met', 'als', 'aan', 'om', 'maar', 'niet', 'geen', 'er', 'nog', 'al', 'wel',
+  'ook', 'ik', 'mij', 'je', 'jij', 'jouw', 'hij', 'hem', 'zij', 'ze', 'haar', 'wij',
+  'ons', 'onze', 'hun',
+  'hi', 'hey', 'hello', 'hoi', 'hallo', 'dag', 'beste', 'dear', 'goedemorgen',
+  'goedemiddag', 'goedenavond', 'thanks', 'bedankt', 'um', 'uh', 'eh', 'euh'
+]);
+
+function cleanToken(tok) {
+  return String(tok || '')
+    .replace(/^[.,!?;:"'“”‘’()[\]{}<>]+|[.,!?;:"'“”‘’()[\]{}<>]+$/g, '')
+    .trim();
+}
+
+function diceBigramSimilarity(a, b) {
+  const s1 = String(a || '').toLowerCase();
+  const s2 = String(b || '').toLowerCase();
+  if (!s1 || !s2) return 0;
+  if (s1 === s2) return 1;
+  if (s1.length < 2 || s2.length < 2) {
+    return s1[0] === s2[0] ? 0.5 : 0;
+  }
+  const bigrams = new Map();
+  for (let i = 0; i < s1.length - 1; i++) {
+    const bg = s1.slice(i, i + 2);
+    bigrams.set(bg, (bigrams.get(bg) || 0) + 1);
+  }
+  let matches = 0;
+  for (let i = 0; i < s2.length - 1; i++) {
+    const bg = s2.slice(i, i + 2);
+    const count = bigrams.get(bg) || 0;
+    if (count > 0) {
+      bigrams.set(bg, count - 1);
+      matches++;
+    }
+  }
+  return (2 * matches) / (s1.length - 1 + (s2.length - 1));
+}
+
+function computeLcsPairs(a, b) {
+  const n = a.length;
+  const m = b.length;
+  const dp = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+  for (let i = n - 1; i >= 0; i--) {
+    for (let j = m - 1; j >= 0; j--) {
+      if (a[i] === b[j]) {
+        dp[i][j] = dp[i + 1][j + 1] + 1;
+      } else {
+        dp[i][j] = Math.max(dp[i + 1][j], dp[i][j + 1]);
+      }
+    }
+  }
+  const matches = [];
+  let i = 0;
+  let j = 0;
+  while (i < n && j < m) {
+    if (a[i] === b[j]) {
+      matches.push([i, j]);
+      i++;
+      j++;
+    } else if (dp[i + 1][j] >= dp[i][j + 1]) {
+      i++;
+    } else {
+      j++;
+    }
+  }
+  return matches;
+}
 
 const DEFAULT_MODES = [
   {
@@ -113,6 +190,7 @@ function getDefaultState() {
       preserveClipboard: false, // Keep dictated text on clipboard so manual Cmd+V is always available and no async race conditions
       showIdlePill: false, // Hidden by default when idle! Only appears when recording/speaking
       launchAtLogin: true,
+      autoLearnDictionary: true, // Automatically learn vocabulary & phonetic corrections when user edits dictated text
       theme: 'system' // 'system' | 'dark' | 'light'
     },
     dictionary: [
@@ -125,6 +203,7 @@ function getDefaultState() {
       'WhatsApp',
       'Google Meet'
     ],
+    learnedCorrections: [], // Array of { from: string, to: string, count: number, updatedAt: string }
     customModes: [],
     auth: {
       user: null,
@@ -168,6 +247,7 @@ class Store {
         this._data = {
           settings: { ...defaults.settings, ...(parsed.settings || {}) },
           dictionary: Array.isArray(parsed.dictionary) ? parsed.dictionary : defaults.dictionary,
+          learnedCorrections: Array.isArray(parsed.learnedCorrections) ? parsed.learnedCorrections.slice(0, 100) : [],
           customModes: Array.isArray(parsed.customModes) ? parsed.customModes : [],
           auth: { ...defaults.auth, ...(parsed.auth || {}) },
           subscription: { ...defaults.subscription, ...(parsed.subscription || {}) },
@@ -178,7 +258,11 @@ class Store {
 
         // Ensure holdKey matches physical keyboard capabilities:
         // On macOS, keyboards do not have standalone push-to-talk F-keys. Fall back to right_cmd if an F-key was stored.
-        if (isMac && typeof this._data.settings.holdKey === 'string' && /^f\d+$/i.test(this._data.settings.holdKey)) {
+        if (
+          process.platform === 'darwin' &&
+          typeof this._data.settings.holdKey === 'string' &&
+          /^f\d+$/i.test(this._data.settings.holdKey)
+        ) {
           this._data.settings.holdKey = 'right_cmd';
         }
         // SECURITY: early builds shipped shared API keys baked into the app. Those keys are revoked.
@@ -247,6 +331,242 @@ class Store {
     this._data.dictionary = cleaned;
     this.save();
     return this.getState();
+  }
+
+  _upsertDictionaryTerm(term) {
+    const clean = String(term || '').trim();
+    if (!clean) return false;
+    const lower = clean.toLowerCase();
+    const idx = this._data.dictionary.findIndex((w) => String(w || '').trim().toLowerCase() === lower);
+    if (idx >= 0) {
+      if (this._data.dictionary[idx] !== clean) {
+        this._data.dictionary[idx] = clean;
+        return true;
+      }
+      return false;
+    }
+    this._data.dictionary.push(clean);
+    return true;
+  }
+
+  _upsertLearnedCorrection(fromPhrase, toPhrase) {
+    const from = String(fromPhrase || '').trim();
+    const to = String(toPhrase || '').trim();
+    if (!from || !to || from === to) return null;
+    if (!Array.isArray(this._data.learnedCorrections)) {
+      this._data.learnedCorrections = [];
+    }
+    const lowerFrom = from.toLowerCase();
+    const now = new Date().toISOString();
+    const idx = this._data.learnedCorrections.findIndex((r) => String(r?.from || '').toLowerCase() === lowerFrom);
+    if (idx >= 0) {
+      const existing = this._data.learnedCorrections[idx];
+      const updated = {
+        from,
+        to,
+        count: (existing.count || 1) + 1,
+        updatedAt: now
+      };
+      this._data.learnedCorrections.splice(idx, 1);
+      this._data.learnedCorrections.unshift(updated);
+      return updated;
+    }
+    const created = { from, to, count: 1, updatedAt: now };
+    this._data.learnedCorrections.unshift(created);
+    this._data.learnedCorrections = this._data.learnedCorrections.slice(0, 100);
+    return created;
+  }
+
+  addLearnedCorrection({ from, to }) {
+    if (!this._data) this.init();
+    const cleanFrom = cleanToken(from);
+    const cleanTo = cleanToken(to);
+    if (!cleanFrom || !cleanTo) return this.getState();
+    this._upsertLearnedCorrection(cleanFrom, cleanTo);
+    this._upsertDictionaryTerm(cleanTo);
+    this.save();
+    return this.getState();
+  }
+
+  removeLearnedCorrection(from) {
+    if (!this._data) this.init();
+    const target = String(from || '').trim().toLowerCase();
+    this._data.learnedCorrections = (this._data.learnedCorrections || []).filter(
+      (r) => String(r?.from || '').trim().toLowerCase() !== target
+    );
+    this.save();
+    return this.getState();
+  }
+
+  setLearnedCorrections(rules) {
+    if (!this._data) this.init();
+    if (!Array.isArray(rules)) return this.getState();
+    this._data.learnedCorrections = rules
+      .filter((r) => r && typeof r.from === 'string' && typeof r.to === 'string' && r.from.trim() && r.to.trim())
+      .slice(0, 100);
+    this.save();
+    return this.getState();
+  }
+
+  learnFromEdit({ originalText, editedText, historyId = null, force = false }) {
+    if (!this._data) this.init();
+    if (typeof originalText !== 'string' || typeof editedText !== 'string') {
+      return { learned: [], corrections: [], state: this.getState() };
+    }
+    const origTrimmed = originalText.trim();
+    const editTrimmed = editedText.trim();
+    if (!origTrimmed || !editTrimmed || origTrimmed === editTrimmed) {
+      return { learned: [], corrections: [], state: this.getState() };
+    }
+
+    const origRawTokens = origTrimmed.split(/\s+/);
+    const editRawTokens = editTrimmed.split(/\s+/);
+    const origWords = origRawTokens.map(cleanToken).filter(Boolean);
+    const editWords = editRawTokens.map(cleanToken).filter(Boolean);
+
+    if (origWords.length === 0 || editWords.length === 0) {
+      return { learned: [], corrections: [], state: this.getState() };
+    }
+
+    // Safety similarity check to avoid learning from completely unrelated pasted/replaced content
+    if (!force) {
+      const origLower = origWords.map((w) => w.toLowerCase());
+      const editLower = editWords.map((w) => w.toLowerCase());
+      const editCounts = new Map();
+      for (const w of editLower) editCounts.set(w, (editCounts.get(w) || 0) + 1);
+      let overlap = 0;
+      for (const w of origLower) {
+        const c = editCounts.get(w) || 0;
+        if (c > 0) {
+          editCounts.set(w, c - 1);
+          overlap++;
+        }
+      }
+      const maxLen = Math.max(origLower.length, editLower.length);
+      if (origLower.length >= 4) {
+        if (overlap / maxLen < 0.4) {
+          return { learned: [], corrections: [], state: this.getState() };
+        }
+      } else {
+        const charSim = diceBigramSimilarity(origWords.join(' '), editWords.join(' '));
+        if (overlap < 1 && charSim < 0.35) {
+          return { learned: [], corrections: [], state: this.getState() };
+        }
+      }
+    }
+
+    // Align tokens via LCS (exact case first so casing improvements like "pxl" -> "PXL" are detected)
+    const matches = computeLcsPairs(origWords, editWords);
+    const anchors = [...matches, [origWords.length, editWords.length]];
+
+    const learnedWords = [];
+    const learnedPairs = [];
+    let prevOrig = 0;
+    let prevEdit = 0;
+
+    for (const [matchOrig, matchEdit] of anchors) {
+      let oStart = prevOrig;
+      let eStart = prevEdit;
+      const oEnd = matchOrig;
+      const eEnd = matchEdit;
+
+      prevOrig = matchOrig + 1;
+      prevEdit = matchEdit + 1;
+
+      if (oStart === oEnd && eStart === eEnd) continue;
+
+      let origSlice = origWords.slice(oStart, oEnd);
+      let editSlice = editWords.slice(eStart, eEnd);
+
+      // Absorb immediately preceding mid-sentence matching capitalized proper noun (e.g. "Syntra" + "pixel" -> "Syntra PXL")
+      if (
+        oStart > 1 &&
+        eStart > 1 &&
+        origSlice.length >= 1 &&
+        origSlice.length <= 2 &&
+        editSlice.length >= 1 &&
+        editSlice.length <= 2
+      ) {
+        const prevMatchedOrig = origWords[oStart - 1];
+        const prevMatchedEdit = editWords[eStart - 1];
+        const prevRawBefore = oStart >= 2 ? origRawTokens[oStart - 2] : '';
+        const afterSentenceBreak = prevRawBefore && /[.!?]$/.test(prevRawBefore);
+        if (
+          prevMatchedOrig &&
+          prevMatchedOrig === prevMatchedEdit &&
+          /^[A-Z]/.test(prevMatchedOrig) &&
+          !COMMON_STOPWORDS.has(prevMatchedOrig.toLowerCase()) &&
+          !afterSentenceBreak
+        ) {
+          oStart -= 1;
+          eStart -= 1;
+          origSlice = origWords.slice(oStart, oEnd);
+          editSlice = editWords.slice(eStart, eEnd);
+        }
+      }
+
+      if (editSlice.length < 1 || editSlice.length > 3) continue;
+
+      const toPhrase = editSlice.join(' ').trim();
+      const fromPhrase = origSlice.join(' ').trim();
+
+      if (toPhrase.length < 2 || /^\d+$/.test(toPhrase)) continue;
+      if (editSlice.length === 1 && COMMON_STOPWORDS.has(toPhrase.toLowerCase())) continue;
+
+      // Ignore trivial sentence-start capitalization ("hello" -> "Hello")
+      if (
+        origSlice.length === 1 &&
+        editSlice.length === 1 &&
+        fromPhrase.toLowerCase() === toPhrase.toLowerCase() &&
+        /^[A-Z][a-z]+$/.test(toPhrase) &&
+        (oStart === 0 || /[.!?]$/.test(origRawTokens[oStart - 1] || ''))
+      ) {
+        continue;
+      }
+
+      this._upsertDictionaryTerm(toPhrase);
+      if (!learnedWords.includes(toPhrase)) {
+        learnedWords.push(toPhrase);
+      }
+
+      if (
+        fromPhrase &&
+        origSlice.length <= 3 &&
+        fromPhrase.toLowerCase() !== toPhrase.toLowerCase() &&
+        !COMMON_STOPWORDS.has(fromPhrase.toLowerCase())
+      ) {
+        const sim = diceBigramSimilarity(fromPhrase, toPhrase);
+        const sameInitial = fromPhrase[0]?.toLowerCase() === toPhrase[0]?.toLowerCase();
+        const plausible =
+          force ||
+          sim >= 0.25 ||
+          sameInitial ||
+          (origWords.length >= 3 && origSlice.length <= 2 && editSlice.length <= 2);
+
+        if (plausible) {
+          const rule = this._upsertLearnedCorrection(fromPhrase, toPhrase);
+          if (rule) {
+            learnedPairs.push({ from: rule.from, to: rule.to });
+          }
+        }
+      }
+    }
+
+    if (historyId) {
+      const histItem = (this._data.history || []).find((h) => h.id === historyId);
+      if (histItem) {
+        histItem.text = editTrimmed;
+        if (learnedWords.length > 0) {
+          histItem.learnedTerms = learnedWords;
+        }
+      }
+    }
+
+    if (learnedWords.length > 0 || learnedPairs.length > 0 || historyId) {
+      this.save();
+    }
+
+    return { learned: learnedWords, corrections: learnedPairs, state: this.getState() };
   }
 
   saveCustomMode(mode) {
@@ -420,6 +740,7 @@ class Store {
       },
       stats: this._data.stats,
       dictionary: this._data.dictionary,
+      learnedCorrections: this._data.learnedCorrections,
       customModes: this._data.customModes,
       history: this._data.history
     };

@@ -900,9 +900,140 @@ function captureActiveAppContext() {
 // 5 minutes max recording safety limit to protect API costs and avoid memory buildup
 const MAX_RECORDING_DURATION_MS = 5 * 60 * 1000;
 let recordingSafetyWatchdog = null;
+let postPasteWatchTimers = [];
+
+function clearPostPasteWatch() {
+  for (const t of postPasteWatchTimers) {
+    clearTimeout(t);
+  }
+  postPasteWatchTimers = [];
+}
+
+function extractMatchingSegment(fieldValue, baselineText) {
+  const full = String(fieldValue || '').trim();
+  const base = String(baselineText || '').trim();
+  if (!full || !base) return '';
+  if (full.length <= Math.max(200, base.length * 2.2)) {
+    return full;
+  }
+
+  // In multi-line fields (emails, notes, docs), locate the paragraph/line most similar to the pasted dictation
+  const baseWords = new Set(
+    base
+      .toLowerCase()
+      .split(/\s+/)
+      .map((w) => w.replace(/[^\w]/g, ''))
+      .filter((w) => w.length >= 2)
+  );
+  if (baseWords.size === 0) return '';
+
+  const segments = full
+    .split(/\n+/)
+    .map((s) => s.trim())
+    .filter((s) => s && s.length <= Math.max(240, base.length * 2.2));
+
+  let bestSeg = '';
+  let bestScore = 0;
+  for (const seg of segments) {
+    const segWords = seg
+      .toLowerCase()
+      .split(/\s+/)
+      .map((w) => w.replace(/[^\w]/g, ''))
+      .filter((w) => w.length >= 2);
+    let matches = 0;
+    for (const w of segWords) {
+      if (baseWords.has(w)) matches++;
+    }
+    const score = matches / Math.max(1, baseWords.size);
+    if (score > bestScore) {
+      bestScore = score;
+      bestSeg = seg;
+    }
+  }
+  return bestScore >= 0.4 ? bestSeg : '';
+}
+
+function schedulePostPasteLearningWatch({ pastedText, historyId }) {
+  clearPostPasteWatch();
+  const curState = store.getState();
+  if (curState.settings.autoLearnDictionary === false || curState.subscription?.plan !== 'pro') {
+    return;
+  }
+
+  let currentBaseline = String(pastedText || '').trim();
+  if (!currentBaseline) return;
+
+  let initialClipboard = '';
+  try {
+    initialClipboard = clipboard.readText();
+  } catch {}
+
+  const tryLearnCandidate = (rawText) => {
+    if (currentRecordingState !== 'idle') return;
+    const candidate = extractMatchingSegment(rawText, currentBaseline);
+    if (!candidate || candidate === currentBaseline) return;
+
+    const result = store.learnFromEdit({
+      originalText: currentBaseline,
+      editedText: candidate,
+      historyId,
+      force: false
+    });
+
+    if (result.learned.length > 0 || result.corrections.length > 0) {
+      currentBaseline = candidate;
+      syncPreferencesToCloud();
+      broadcastState();
+
+      const label =
+        result.corrections.length > 0
+          ? `"${result.corrections[0].from}" → "${result.corrections[0].to}"`
+          : `Added "${result.learned[0]}" to Dictionary`;
+      sendToPill('voxflow:pill-toast', {
+        kind: 'success',
+        title: 'Auto-Learned 🦆',
+        message: label
+      });
+    }
+  };
+
+  for (const delayMs of [4500, 8000]) {
+    const timer = setTimeout(() => {
+      if (currentRecordingState !== 'idle') return;
+
+      try {
+        const cbNow = clipboard.readText();
+        if (cbNow && cbNow !== initialClipboard) {
+          tryLearnCandidate(cbNow);
+        }
+      } catch {}
+
+      if (process.platform === 'darwin') {
+        execFile(
+          'osascript',
+          [
+            '-e', 'tell application "System Events"',
+            '-e', 'set fp to first application process whose frontmost is true',
+            '-e', 'set focusedEl to value of attribute "AXFocusedUIElement" of fp',
+            '-e', 'return value of attribute "AXValue" of focusedEl',
+            '-e', 'end tell'
+          ],
+          { timeout: 1000 },
+          (err, stdout) => {
+            if (!err && stdout && stdout.trim()) {
+              tryLearnCandidate(stdout.trim());
+            }
+          }
+        );
+      }
+    }, delayMs);
+    postPasteWatchTimers.push(timer);
+  }
+}
 
 function triggerStartRecording({ source = 'hotkey' } = {}) {
   if (currentRecordingState !== 'idle') return;
+  clearPostPasteWatch();
 
   // Gate check on macOS: if Accessibility is not trusted, warn user and open setup dashboard
   if (process.platform === 'darwin' && !systemPreferences.isTrustedAccessibilityClient(false)) {
@@ -1043,7 +1174,9 @@ async function syncPreferencesToCloud() {
     userLastName: state.settings.userLastName,
     language: state.settings.language,
     provider: state.settings.provider,
-    dictionary: state.dictionary
+    autoLearnDictionary: state.settings.autoLearnDictionary,
+    dictionary: state.dictionary,
+    learnedCorrections: state.learnedCorrections || []
   };
   try {
     const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -1083,6 +1216,9 @@ function applyCloudPreferences(user) {
   if (cloudPrefs.aiPromptTarget) patch.aiPromptTarget = cloudPrefs.aiPromptTarget;
   if (cloudPrefs.language !== undefined) patch.language = cloudPrefs.language;
   if (cloudPrefs.provider) patch.provider = cloudPrefs.provider;
+  if (cloudPrefs.autoLearnDictionary !== undefined) {
+    patch.autoLearnDictionary = Boolean(cloudPrefs.autoLearnDictionary);
+  }
 
   // Populate First Name & Last Name from cloudPrefs or OAuth metadata if not already set
   if (cloudPrefs.userFirstName) {
@@ -1104,6 +1240,16 @@ function applyCloudPreferences(user) {
   }
   if (Array.isArray(cloudPrefs.dictionary) && cloudPrefs.dictionary.length > 0) {
     store.setDictionary(cloudPrefs.dictionary);
+  }
+  if (Array.isArray(cloudPrefs.learnedCorrections) && cloudPrefs.learnedCorrections.length > 0) {
+    const existing = store.getState().learnedCorrections || [];
+    const byFrom = new Map();
+    for (const r of [...cloudPrefs.learnedCorrections, ...existing]) {
+      if (r && typeof r.from === 'string' && typeof r.to === 'string' && r.from.trim() && r.to.trim()) {
+        byFrom.set(r.from.trim().toLowerCase(), r);
+      }
+    }
+    store.setLearnedCorrections(Array.from(byFrom.values()));
   }
   if (meta.speakly_subscription) {
     store.setSubscription(meta.speakly_subscription);
@@ -1500,6 +1646,29 @@ function registerIpcHandlers() {
     return buildPublicState();
   });
 
+  ipcMain.handle('voxflow:learn-from-edit', (_event, { originalText, editedText, historyId = null, force = false } = {}) => {
+    const res = store.learnFromEdit({ originalText, editedText, historyId, force });
+    if (res.learned.length > 0 || res.corrections.length > 0 || historyId) {
+      syncPreferencesToCloud();
+      broadcastState();
+    }
+    return { ...res, state: buildPublicState() };
+  });
+
+  ipcMain.handle('voxflow:add-learned-correction', (_event, { from, to } = {}) => {
+    store.addLearnedCorrection({ from, to });
+    syncPreferencesToCloud();
+    broadcastState();
+    return buildPublicState();
+  });
+
+  ipcMain.handle('voxflow:remove-learned-correction', (_event, from) => {
+    store.removeLearnedCorrection(from);
+    syncPreferencesToCloud();
+    broadcastState();
+    return buildPublicState();
+  });
+
   ipcMain.handle('voxflow:save-custom-mode', (_event, mode) => {
     store.saveCustomMode(mode);
     broadcastState();
@@ -1724,6 +1893,7 @@ function registerIpcHandlers() {
         mimeType: 'audio/wav',
         settings: state.settings,
         dictionary: state.dictionary,
+        learnedCorrections: state.learnedCorrections || [],
         mode: activeMode,
         activeContext: lastActiveAppContext,
         predictedLanguages: predictedLangs,
@@ -1763,6 +1933,7 @@ function registerIpcHandlers() {
           title: 'Pasted! ✨',
           message: `Pasted ${entry.wordCount} ${entry.wordCount === 1 ? 'word' : 'words'}`
         });
+        schedulePostPasteLearningWatch({ pastedText: finalText, historyId: entry.id });
       } else if (pasteResult.reason === 'accessibility_missing') {
         sendToPill('voxflow:pill-toast', {
           kind: 'warning',

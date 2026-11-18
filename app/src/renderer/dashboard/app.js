@@ -93,6 +93,13 @@
   const dictionaryForm = document.getElementById('dictionary-form');
   const dictInput = document.getElementById('dict-input');
   const dictionaryTags = document.getElementById('dictionary-tags');
+  const prefAutoLearnDict = document.getElementById('pref-auto-learn-dict');
+  const learnedCorrectionsWrap = document.getElementById('learned-corrections-wrap');
+  const learnedCorrectionsTags = document.getElementById('learned-corrections-tags');
+
+  let lastSeenHistoryId = null;
+  let lastPlaygroundDictation = null;
+  let playgroundDebounceTimer = null;
 
   // Settings elements
   const accountBadge = document.getElementById('account-badge');
@@ -390,7 +397,7 @@
         dictLockBanner.style.display = 'none';
         dictInput.disabled = false;
         dictSubmitBtn.disabled = false;
-        dictInput.placeholder = 'e.g. Acme Corp, PostgreSQL, ProductName, Alex Rivera';
+        dictInput.placeholder = 'e.g. Syntra PXL, PostgreSQL, or mishear rule: Xander -> Xsander';
       } else {
         dictLockBanner.hidden = false;
         dictLockBanner.style.display = 'flex';
@@ -573,6 +580,89 @@
         }, 1200);
       });
 
+      const teachBtn = document.createElement('button');
+      teachBtn.type = 'button';
+      teachBtn.className = 'btn btn-secondary btn-sm';
+      teachBtn.textContent = '✏️ Correct & Teach';
+      teachBtn.addEventListener('click', () => {
+        if (li.querySelector('.history-teach-row')) return;
+        textP.hidden = true;
+
+        const editRow = document.createElement('div');
+        editRow.className = 'history-teach-row';
+        editRow.style.display = 'flex';
+        editRow.style.gap = '8px';
+        editRow.style.alignItems = 'center';
+        editRow.style.margin = '8px 0';
+
+        const editInput = document.createElement('input');
+        editInput.type = 'text';
+        editInput.className = 'input-sm';
+        editInput.value = item.text;
+        editInput.style.flex = '1';
+
+        const saveBtn = document.createElement('button');
+        saveBtn.type = 'button';
+        saveBtn.className = 'btn btn-primary btn-sm';
+        saveBtn.textContent = 'Save & Teach 🦆';
+
+        const cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'btn btn-ghost btn-sm';
+        cancelBtn.textContent = 'Cancel';
+
+        const commitEdit = async () => {
+          const updatedText = editInput.value.trim();
+          if (!updatedText || updatedText === item.text.trim()) {
+            editRow.remove();
+            textP.hidden = false;
+            return;
+          }
+          saveBtn.disabled = true;
+          saveBtn.textContent = 'Saving…';
+          try {
+            const res = await window.voxflow.learnFromEdit({
+              originalText: item.text,
+              editedText: updatedText,
+              historyId: item.id,
+              force: true
+            });
+            item.text = updatedText;
+            textP.textContent = updatedText;
+            editRow.remove();
+            textP.hidden = false;
+            const learnedCount = (res?.corrections?.length || 0) + (res?.learned?.length || 0);
+            teachBtn.textContent = learnedCount > 0 ? '✓ Learned!' : '✓ Saved';
+            setTimeout(() => {
+              teachBtn.textContent = '✏️ Correct & Teach';
+            }, 1800);
+          } catch {
+            saveBtn.disabled = false;
+            saveBtn.textContent = 'Save & Teach 🦆';
+          }
+        };
+
+        saveBtn.addEventListener('click', commitEdit);
+        editInput.addEventListener('keydown', (ev) => {
+          if (ev.key === 'Enter') {
+            ev.preventDefault();
+            commitEdit();
+          } else if (ev.key === 'Escape') {
+            editRow.remove();
+            textP.hidden = false;
+          }
+        });
+        cancelBtn.addEventListener('click', () => {
+          editRow.remove();
+          textP.hidden = false;
+        });
+
+        editRow.append(editInput, saveBtn, cancelBtn);
+        li.insertBefore(editRow, actions);
+        editInput.focus();
+        editInput.select();
+      });
+
       const delBtn = document.createElement('button');
       delBtn.type = 'button';
       delBtn.className = 'btn btn-ghost btn-sm';
@@ -581,7 +671,7 @@
         window.voxflow.deleteHistoryItem(item.id);
       });
 
-      actions.append(copyBtn, delBtn);
+      actions.append(copyBtn, teachBtn, delBtn);
       li.append(meta, textP, actions);
       historyList.appendChild(li);
     }
@@ -808,6 +898,43 @@
     }
   }
 
+  function renderLearnedCorrections(corrections = []) {
+    if (!learnedCorrectionsWrap || !learnedCorrectionsTags) return;
+    const valid = Array.isArray(corrections) ? corrections.filter((r) => r && r.from && r.to) : [];
+    learnedCorrectionsTags.replaceChildren();
+    learnedCorrectionsWrap.hidden = valid.length === 0;
+
+    for (const rule of valid) {
+      const li = document.createElement('li');
+      li.className = 'vocab-tag';
+      li.style.gap = '6px';
+
+      const fromSpan = document.createElement('span');
+      fromSpan.textContent = rule.from;
+      fromSpan.style.color = 'var(--text-muted)';
+      fromSpan.style.textDecoration = 'line-through';
+
+      const arrowSpan = document.createElement('span');
+      arrowSpan.textContent = '→';
+      arrowSpan.style.color = 'var(--text-muted)';
+
+      const toStrong = document.createElement('strong');
+      toStrong.textContent = rule.to;
+      toStrong.style.color = '#ffd000';
+
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.setAttribute('aria-label', `Remove correction ${rule.from} to ${rule.to}`);
+      removeBtn.textContent = '×';
+      removeBtn.addEventListener('click', () => {
+        window.voxflow.removeLearnedCorrection(rule.from);
+      });
+
+      li.append(fromSpan, arrowSpan, toStrong, removeBtn);
+      learnedCorrectionsTags.appendChild(li);
+    }
+  }
+
   function renderHoldKeyOptions(options = [], selectedId) {
     const currentValues = Array.from(holdKeySelect.options).map((o) => `${o.value}:${o.textContent}`).join('|');
     const newValues = options.map((o) => `${o.id}:${o.label}`).join('|');
@@ -849,7 +976,22 @@
     renderHistory(state.history);
     renderModes(state.modes, settings.activeModeId);
     renderDictionary(state.dictionary);
+    renderLearnedCorrections(state.learnedCorrections || []);
     renderHoldKeyOptions(state.holdKeyOptions, settings.holdKey);
+
+    if (prefAutoLearnDict) {
+      prefAutoLearnDict.checked = settings.autoLearnDictionary !== false;
+    }
+
+    const latestHist = Array.isArray(state.history) ? state.history[0] : null;
+    if (latestHist && latestHist.id) {
+      if (lastSeenHistoryId !== null && latestHist.id !== lastSeenHistoryId) {
+        if (document.activeElement === playgroundTextarea || (playgroundTextarea && playgroundTextarea.value.includes(latestHist.text))) {
+          lastPlaygroundDictation = { text: latestHist.text, id: latestHist.id, time: Date.now() };
+        }
+      }
+      lastSeenHistoryId = latestHist.id;
+    }
 
     const isOffline = settings.provider === 'local';
     if (prefOfflineMode) {
@@ -1656,14 +1798,52 @@
     window.voxflow.clearHistory();
   });
 
-  dictionaryForm.addEventListener('submit', (e) => {
+  dictionaryForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const raw = dictInput.value.trim();
     if (!raw || !appState) return;
+    const ruleMatch = raw.match(/^(.+?)\s*(?:=>|->)\s*(.+)$/);
+    if (ruleMatch) {
+      const from = ruleMatch[1].trim();
+      const to = ruleMatch[2].trim();
+      if (from && to) {
+        await window.voxflow.addLearnedCorrection({ from, to });
+        dictInput.value = '';
+        return;
+      }
+    }
     const additions = raw.split(',').map((s) => s.trim()).filter(Boolean);
     window.voxflow.setDictionary([...appState.dictionary, ...additions]);
     dictInput.value = '';
   });
+
+  if (prefAutoLearnDict) {
+    prefAutoLearnDict.addEventListener('change', () => {
+      window.voxflow.updateSettings({ autoLearnDictionary: prefAutoLearnDict.checked });
+    });
+  }
+
+  if (playgroundTextarea) {
+    playgroundTextarea.addEventListener('input', () => {
+      if (playgroundDebounceTimer) clearTimeout(playgroundDebounceTimer);
+      playgroundDebounceTimer = setTimeout(async () => {
+        if (!lastPlaygroundDictation) return;
+        if (Date.now() - lastPlaygroundDictation.time > 30000) return;
+        if (appState?.settings?.autoLearnDictionary === false || currentUsage.plan !== 'pro') return;
+        const edited = playgroundTextarea.value.trim();
+        if (!edited || edited === lastPlaygroundDictation.text.trim()) return;
+        const res = await window.voxflow.learnFromEdit({
+          originalText: lastPlaygroundDictation.text,
+          editedText: edited,
+          historyId: lastPlaygroundDictation.id,
+          force: false
+        });
+        if (res && ((res.learned && res.learned.length > 0) || (res.corrections && res.corrections.length > 0))) {
+          lastPlaygroundDictation.text = edited;
+        }
+      }, 1500);
+    });
+  }
 
   providerRadios.forEach((r) => {
     r.addEventListener('change', () => {
@@ -2554,6 +2734,13 @@
 
   // IPC Subscriptions
   window.voxflow.onStateUpdated((next) => renderState(next));
+  if (typeof window.voxflow.onDictationResult === 'function') {
+    window.voxflow.onDictationResult((data) => {
+      if (data && data.text && document.activeElement === playgroundTextarea) {
+        lastPlaygroundDictation = { text: data.text, id: data.id || null, time: Date.now() };
+      }
+    });
+  }
   window.voxflow.onRecordingStatus(({ state }) => {
     updateRecordingIndicators(state);
     updateOnboardingRecordingState(state);

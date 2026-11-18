@@ -280,6 +280,24 @@
           <button type="button" id="btn-dict-upgrade-pro" class="btn btn-primary" style="background: #ffd000; color: #06080e; font-weight: 700; border: none; white-space: nowrap; cursor: pointer; padding: 8px 16px;">Upgrade to Pro (10€/mo)</button>
         </div>
 
+        <!-- Auto-Learn from Corrections Card -->
+        <section class="card" aria-labelledby="auto-learn-heading" style="margin-bottom: 4px;">
+          <div class="toggles-list">
+            <label class="toggle-row" for="pref-auto-learn-dict" style="margin: 0;">
+              <div>
+                <h2 id="auto-learn-heading" style="font-size: 14.5px; margin: 0 0 4px; display: flex; align-items: center; gap: 8px;">
+                  <span>🧠 Auto-Learn from Corrections</span>
+                  <span class="pill-tag" style="background: rgba(52, 211, 153, 0.14); color: #34d399; font-size: 11px;">On-Device Privacy</span>
+                </h2>
+                <p style="margin: 0; font-size: 12.5px; color: var(--text-muted); line-height: 1.45;">
+                  Automatically learns brand names and phonetic fixes whenever you edit dictated text within a few seconds of pasting (no background mic).
+                </p>
+              </div>
+              <input type="checkbox" id="pref-auto-learn-dict" checked>
+            </label>
+          </div>
+        </section>
+
         <section id="dict-card" class="card" aria-labelledby="add-word-heading">
           <h2 id="add-word-heading">Add Vocabulary Term</h2>
           <form id="dictionary-form" class="inline-form">
@@ -287,11 +305,19 @@
             <input
               type="text"
               id="dict-input"
-              placeholder="e.g. Acme Corp, PostgreSQL, ProductName, Alex Rivera"
+              placeholder="e.g. Syntra PXL, PostgreSQL, or mishear rule: Xander -> Xsander"
               required>
             <button type="submit" id="dict-submit-btn" class="btn btn-primary">Add Term</button>
           </form>
           <ul id="dictionary-tags" class="tag-cloud" aria-label="Saved vocabulary terms"></ul>
+
+          <div id="learned-corrections-wrap" style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border);" hidden>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+              <h3 style="font-size: 13.5px; font-weight: 600; margin: 0; color: var(--text-primary);">✨ Learned Phonetic Corrections (Misheard → Corrected)</h3>
+              <span style="font-size: 11.5px; color: var(--text-muted);">Applied automatically in real time</span>
+            </div>
+            <ul id="learned-corrections-tags" class="tag-cloud" aria-label="Learned phonetic corrections"></ul>
+          </div>
         </section>
       </section>
 

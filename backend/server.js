@@ -344,6 +344,32 @@ function fastPathShortUtterance(text) {
 }
 
 /**
+ * Deterministic whole-word phonetic & vocabulary correction pass.
+ */
+function applyLearnedCorrections(text, learnedCorrections = []) {
+  if (!text || !Array.isArray(learnedCorrections) || learnedCorrections.length === 0) {
+    return text;
+  }
+  let out = text;
+  const sorted = [...learnedCorrections]
+    .filter((r) => r && typeof r.from === 'string' && typeof r.to === 'string' && r.from.trim() && r.to.trim())
+    .sort((a, b) => b.from.trim().length - a.from.trim().length);
+
+  for (const rule of sorted) {
+    const fromStr = rule.from.trim();
+    const toStr = rule.to.trim();
+    const escaped = fromStr.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    try {
+      const regex = new RegExp(`\\b${escaped}\\b`, 'gi');
+      out = out.replace(regex, toStr);
+    } catch {
+      // Ignore malformed rule
+    }
+  }
+  return out;
+}
+
+/**
  * Speech Transcription & Polish Engine
  * Uses Groq LPU (whisper-large-v3-turbo + openai/gpt-oss-120b & 20b) for ultra-fast response,
  * with automatic fallback to OpenAI if configured.
@@ -353,6 +379,7 @@ async function transcribeAndPolish({
   mimeType = 'audio/wav',
   language = '',
   dictionary = [],
+  learnedCorrections = [],
   modeId = 'smart',
   modePrompt = '',
   activeContext = '',
@@ -366,6 +393,11 @@ async function transcribeAndPolish({
     throw new Error('AI transcription service not configured on server (missing GROQ_API_KEY and OPENAI_API_KEY).');
   }
 
+  const learnedTerms = Array.isArray(learnedCorrections)
+    ? learnedCorrections.map((r) => r && r.to).filter(Boolean)
+    : [];
+  const effectiveDictionary = [...new Set([...(Array.isArray(dictionary) ? dictionary : []), ...learnedTerms])];
+
   // 1. Transcription (STT) via Groq or OpenAI
   let rawText = '';
   let activeEngine = hasGroq ? 'groq-lpu' : 'openai';
@@ -376,8 +408,8 @@ async function transcribeAndPolish({
   // Format anti-hallucination Whisper prompt:
   // Remove "Vocabulary:" prefix and cap to top 20 most relevant terms formatted naturally as a sentence
   let whisperPrompt = '';
-  if (dictionary && Array.isArray(dictionary) && dictionary.length > 0) {
-    const cleanTerms = dictionary
+  if (effectiveDictionary.length > 0) {
+    const cleanTerms = effectiveDictionary
       .map((t) => String(t || '').trim())
       .filter((t) => t.length > 0 && !/^vocabulary:?$/i.test(t))
       .slice(0, 20);
@@ -478,7 +510,7 @@ async function transcribeAndPolish({
   if (rawWordCount >= 1 && rawWordCount <= 4 && modeId !== 'notes' && modeId !== 'email') {
     return {
       rawText,
-      finalText: fastPathShortUtterance(rawText),
+      finalText: applyLearnedCorrections(fastPathShortUtterance(rawText), learnedCorrections),
       engine: `${activeEngine}+fast-path`
     };
   }
@@ -487,14 +519,18 @@ async function transcribeAndPolish({
   if (modeId === 'raw') {
     return {
       rawText,
-      finalText: fallbackCleanup(rawText),
+      finalText: applyLearnedCorrections(fallbackCleanup(rawText), learnedCorrections),
       engine: activeEngine
     };
   }
 
   // 2. Grammar & Polish via LLM
   const activeSystemPrompt = (modePrompt && modePrompt.trim()) ? modePrompt.trim() : GRAMMAR_CLEANUP_PROMPT;
-  const vocabHint = dictionary.length > 0 ? `\nEnsure terms are spelled accurately: ${dictionary.join(', ')}.` : '';
+  const vocabHint = effectiveDictionary.length > 0 ? `\nEnsure terms are spelled accurately: ${effectiveDictionary.join(', ')}.` : '';
+  const correctionsHint =
+    Array.isArray(learnedCorrections) && learnedCorrections.length > 0
+      ? `\nSpeaker's Personal Phonetic Corrections (always fix these mishears): ${learnedCorrections.slice(0, 30).map((r) => `"${r.from}" -> "${r.to}"`).join(', ')}.`
+      : '';
 
   // Task 4: Personal Style & User Profile Context
   let userProfilePrompt = '';
@@ -542,7 +578,7 @@ async function transcribeAndPolish({
     appContextPrompt = `\nActive application/window where the user is dictating: "${activeContext}". Use this context to resolve ambiguous words accurately.${appStyleBias}`;
   }
 
-  const fullSystemPrompt = activeSystemPrompt + userProfilePrompt + vocabHint + appContextPrompt;
+  const fullSystemPrompt = activeSystemPrompt + userProfilePrompt + vocabHint + correctionsHint + appContextPrompt;
 
   // Candidate LLM models on Groq: openai/gpt-oss-120b & openai/gpt-oss-20b, or OpenAI GPT-4o-mini
   const llmCandidates = [];
@@ -606,7 +642,7 @@ async function transcribeAndPolish({
         if (polished) {
           return {
             rawText,
-            finalText: polished,
+            finalText: applyLearnedCorrections(polished, learnedCorrections),
             engine: `${activeEngine}+${candidate.model}`
           };
         }
@@ -622,7 +658,7 @@ async function transcribeAndPolish({
   // Graceful fallback to raw text cleanup if LLM polish times out or fails
   return {
     rawText,
-    finalText: fallbackCleanup(rawText),
+    finalText: applyLearnedCorrections(fallbackCleanup(rawText), learnedCorrections),
     engine: activeEngine
   };
 }
@@ -1246,6 +1282,7 @@ const server = http.createServer(async (req, res) => {
       let mimeType = 'audio/wav';
       let language = '';
       let dictionary = [];
+      let learnedCorrections = [];
       let modeId = 'smart';
       let modePrompt = '';
       let activeContext = '';
@@ -1258,6 +1295,7 @@ const server = http.createServer(async (req, res) => {
         mimeType = parsed.mimeType || 'audio/wav';
         language = parsed.language || '';
         dictionary = Array.isArray(parsed.dictionary) ? parsed.dictionary : [];
+        learnedCorrections = Array.isArray(parsed.learnedCorrections) ? parsed.learnedCorrections : [];
         modeId = parsed.modeId || 'smart';
         modePrompt = parsed.modePrompt || '';
         activeContext = parsed.activeContext || '';
@@ -1349,6 +1387,7 @@ const server = http.createServer(async (req, res) => {
       // If user is on free plan, strip any custom vocabulary terms and fall back to Smart Polish if locked mode requested
       if (userPlan === 'free') {
         dictionary = [];
+        learnedCorrections = [];
         if (modeId !== 'smart' && modeId !== 'raw') {
           modeId = 'smart';
           modePrompt = '';
@@ -1361,6 +1400,7 @@ const server = http.createServer(async (req, res) => {
         mimeType,
         language,
         dictionary,
+        learnedCorrections,
         modeId,
         modePrompt,
         activeContext,

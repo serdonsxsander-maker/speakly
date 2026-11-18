@@ -191,6 +191,7 @@ function getDefaultState() {
       showIdlePill: false, // Hidden by default when idle! Only appears when recording/speaking
       launchAtLogin: true,
       autoLearnDictionary: true, // Automatically learn vocabulary & phonetic corrections when user edits dictated text
+      useScreenContext: true, // Read on-screen proper nouns & cursor prefix locally via Accessibility (no screen recording)
       theme: 'system' // 'system' | 'dark' | 'light'
     },
     dictionary: [
@@ -736,7 +737,8 @@ class Store {
         toggleAccelerator: this._data.settings.toggleAccelerator,
         activeModeId: this._data.settings.activeModeId,
         theme: this._data.settings.theme,
-        provider: this._data.settings.provider
+        provider: this._data.settings.provider,
+        useScreenContext: this._data.settings.useScreenContext
       },
       stats: this._data.stats,
       dictionary: this._data.dictionary,

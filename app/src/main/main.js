@@ -850,34 +850,298 @@ async function submitFeedback(payload) {
 }
 
 let lastActiveAppContext = '';
+let lastScreenContext = { cursorPrefix: '', screenTerms: [], isSecureField: false };
 
-function captureActiveAppContext() {
-  if (process.platform === 'darwin') {
-    execFile(
-      'osascript',
-      [
-        '-e',
-        'tell application "System Events" to set fp to first application process whose frontmost is true',
-        '-e',
-        'set appName to name of fp',
-        '-e',
-        'set winTitle to ""',
-        '-e',
-        'try',
-        '-e',
-        'set winTitle to name of front window of fp',
-        '-e',
-        'end try',
-        '-e',
-        'return appName & " | " & winTitle'
-      ],
-      { timeout: 1200 },
-      (err, stdout) => {
-        if (!err && stdout) {
-          lastActiveAppContext = String(stdout).trim().slice(0, 140);
-        }
+const UI_SCREEN_STOPWORDS = new Set([
+  'file', 'edit', 'view', 'window', 'help', 'history', 'bookmarks', 'profiles', 'tab', 'tabs',
+  'close', 'minimize', 'zoom', 'back', 'forward', 'reload', 'refresh', 'search', 'send',
+  'cancel', 'delete', 'save', 'open', 'settings', 'preferences', 'untitled', 'button', 'group',
+  'toolbar', 'scrollarea', 'webarea', 'splitter', 'application', 'system', 'events', 'menu',
+  'item', 'text', 'field', 'value', 'missing', 'true', 'false', 'null', 'undefined', 'electron',
+  'speakly', 'chrome', 'safari', 'finder', 'desktop', 'documents', 'downloads', 'google',
+  'the', 'and', 'for', 'with', 'from', 'this', 'that', 'have', 'has', 'had', 'your', 'you',
+  'are', 'was', 'were', 'not', 'but', 'what', 'all', 'when', 'can', 'said', 'there', 'use',
+  'each', 'which', 'how', 'their', 'will', 'other', 'about', 'out', 'many', 'then', 'them',
+  'these', 'some', 'her', 'him', 'his', 'she', 'would', 'make', 'like', 'into', 'time', 'look',
+  'two', 'more', 'write', 'see', 'number', 'way', 'could', 'people', 'than', 'first', 'water',
+  'been', 'call', 'who', 'oil', 'its', 'now', 'find', 'long', 'down', 'day', 'did', 'get',
+  'come', 'made', 'may', 'part', 'new', 'inbox', 'sent', 'drafts', 'trash', 'archive', 'today',
+  'yesterday', 'tomorrow', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday',
+  'sunday', 'january', 'february', 'march', 'april', 'june', 'july', 'august', 'september',
+  'october', 'november', 'december', 'een', 'het', 'van', 'naar', 'voor', 'met', 'niet', 'ook',
+  'maar', 'dan', 'nog', 'wel', 'geen', 'meer', 'deze', 'dit', 'dat', 'wat', 'wie', 'hoe',
+  'waar', 'wanneer', 'aan', 'uit', 'bij', 'door', 'over', 'onder', 'tussen', 'zonder', 'alle'
+]);
+
+function extractScreenTermsLocally(rawText = '') {
+  const input = String(rawText || '');
+  if (!input.trim()) return [];
+
+  // Strip URLs, emails, unix file paths, and standalone numbers locally on-device
+  const sanitized = input
+    .replace(/https?:\/\/\S+/gi, ' ')
+    .replace(/\bwww\.\S+/gi, ' ')
+    .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b/g, ' ')
+    .replace(/(?:^|\s)\/[A-Za-z0-9._/@-]+/g, ' ')
+    .replace(/\b\d+\b/g, ' ');
+
+  const seenLower = new Set();
+  const normalizeCandidate = (rawCandidate, isTechnical = false) => {
+    let candidate = String(rawCandidate || '').replace(/\s+/g, ' ').trim();
+    if (!candidate || candidate.length < 3 || candidate.length > 40) return null;
+
+    // Trim leading/trailing UI/common stopwords from multi-word capitalized phrases
+    if (!isTechnical && candidate.includes(' ')) {
+      const parts = candidate.split(' ');
+      while (parts.length > 0 && UI_SCREEN_STOPWORDS.has(parts[0].toLowerCase())) parts.shift();
+      while (parts.length > 0 && UI_SCREEN_STOPWORDS.has(parts[parts.length - 1].toLowerCase())) parts.pop();
+      candidate = parts.join(' ');
+      if (!candidate || candidate.length < 3) return null;
+    }
+
+    const words = candidate.split(/\s+/);
+    if (words.every((w) => UI_SCREEN_STOPWORDS.has(w.toLowerCase()))) return null;
+    if (/^\d+$/.test(candidate)) return null;
+    // Skip hash-like tokens or numbers-heavy strings
+    if (/\d{4,}/.test(candidate) || /^[0-9a-f]{8,}$/i.test(candidate)) return null;
+
+    const key = candidate.toLowerCase();
+    if (seenLower.has(key)) return null;
+    seenLower.add(key);
+    return candidate;
+  };
+
+  // 1. Technical identifiers (camelCase, PascalCase, snake_case) in order of appearance
+  const techMatches = sanitized.match(
+    /\b(?:[a-z][a-z0-9]*[A-Z][A-Za-z0-9]*|[A-Z][a-z0-9]+[A-Z][A-Za-z0-9]*|[a-zA-Z][a-zA-Z0-9]*_[a-zA-Z0-9_]+)\b/g
+  ) || [];
+  const techTerms = [];
+  for (const m of techMatches) {
+    if (techTerms.length >= 20) break;
+    const norm = normalizeCandidate(m, true);
+    if (norm) techTerms.push(norm);
+  }
+
+  // 2. Capitalized Proper Nouns (single or two-word names/brands; never cross stopwords, tech terms, or newlines)
+  const nounTerms = [];
+  const tokenRe = /([A-Za-z][A-Za-z0-9]{1,24})|([^\sA-Za-z0-9]+|\n)/g;
+  let match;
+  let pendingFirst = null;
+  let prevEnd = -1;
+
+  const flushPending = () => {
+    if (!pendingFirst) return;
+    const norm = normalizeCandidate(pendingFirst, false);
+    if (norm) nounTerms.push(norm);
+    pendingFirst = null;
+  };
+
+  while ((match = tokenRe.exec(sanitized)) !== null) {
+    if (nounTerms.length >= 20) break;
+    const word = match[1];
+    const sep = match[2];
+
+    if (sep) {
+      flushPending();
+      continue;
+    }
+
+    const gap = sanitized.slice(prevEnd, match.index);
+    if (prevEnd !== -1 && /[\n\r]|[^\s]/.test(gap)) {
+      flushPending();
+    }
+    prevEnd = match.index + word.length;
+
+    const lower = word.toLowerCase();
+    const isCapitalized = /^[A-Z]/.test(word);
+    const isStopword = UI_SCREEN_STOPWORDS.has(lower);
+    const alreadySeen = seenLower.has(lower);
+
+    if (!isCapitalized || isStopword || alreadySeen || word.length < 2) {
+      flushPending();
+      continue;
+    }
+
+    if (!pendingFirst) {
+      if (word.length >= 3) {
+        pendingFirst = word;
       }
-    );
+    } else {
+      const norm = normalizeCandidate(`${pendingFirst} ${word}`, false);
+      if (norm) nounTerms.push(norm);
+      pendingFirst = null;
+    }
+  }
+  flushPending();
+
+  // Balance technical identifiers and proper nouns so neither starves the other within the 20-term cap
+  const merged = [
+    ...techTerms.slice(0, 10),
+    ...nounTerms.slice(0, 10),
+    ...techTerms.slice(10),
+    ...nounTerms.slice(10)
+  ];
+  return merged.slice(0, 20);
+}
+
+function captureActiveAppContext({ useScreenContext = true } = {}) {
+  lastScreenContext = { cursorPrefix: '', screenTerms: [], isSecureField: false };
+
+  if (process.platform === 'darwin') {
+    if (!useScreenContext) {
+      execFile(
+        'osascript',
+        [
+          '-e',
+          'tell application "System Events" to set fp to first application process whose frontmost is true',
+          '-e',
+          'set appName to name of fp',
+          '-e',
+          'set winTitle to ""',
+          '-e',
+          'try',
+          '-e',
+          'set winTitle to name of front window of fp',
+          '-e',
+          'end try',
+          '-e',
+          'return appName & " | " & winTitle'
+        ],
+        { timeout: 1200 },
+        (err, stdout) => {
+          if (!err && stdout) {
+            lastActiveAppContext = String(stdout).trim().slice(0, 140);
+          }
+        }
+      );
+      return;
+    }
+
+    const appleScript = `
+tell application "System Events"
+  set fp to first application process whose frontmost is true
+  set appName to ""
+  try
+    set appName to (name of fp) as string
+  end try
+  set winTitle to ""
+  try
+    set winTitle to (name of front window of fp) as string
+  end try
+  set isSecure to "0"
+  set cursorCtx to ""
+  set winTerms to ""
+  try
+    set fel to value of attribute "AXFocusedUIElement" of fp
+    set fRole to ""
+    set fSub to ""
+    try
+      set fRole to (value of attribute "AXRole" of fel) as string
+    end try
+    try
+      set fSub to (value of attribute "AXSubrole" of fel) as string
+    end try
+    if fRole contains "AXSecureTextField" or fSub contains "AXSecureTextField" then
+      set isSecure to "1"
+    else
+      set rawVal to ""
+      try
+        set vv to value of attribute "AXValue" of fel
+        if vv is not missing value and (class of vv is text) then set rawVal to vv
+      end try
+      set valLen to length of rawVal
+      if valLen > 0 then
+        set hasRange to false
+        set caretEnd to valLen
+        try
+          set sr to value of attribute "AXSelectedTextRange" of fel
+          if class of sr is list and (count of sr) >= 1 then
+            set caretEnd to item 1 of sr
+            set hasRange to true
+          end if
+        end try
+        if hasRange then
+          if caretEnd > valLen then set caretEnd to valLen
+          if caretEnd > 0 then
+            set sliceStart to caretEnd - 160
+            if sliceStart < 1 then set sliceStart to 1
+            set cursorCtx to text sliceStart thru caretEnd of rawVal
+          end if
+        else
+          set sliceStart to valLen - 160
+          if sliceStart < 1 then set sliceStart to 1
+          set cursorCtx to text sliceStart thru valLen of rawVal
+        end if
+      end if
+    end if
+  end try
+  if isSecure is "0" then
+    try
+      set fw to front window of fp
+      try
+        repeat with n in (name of every UI element of fw)
+          if n is not missing value then set winTerms to winTerms & linefeed & (n as string)
+        end repeat
+      end try
+      try
+        repeat with s in (value of every static text of fw)
+          if s is not missing value then set winTerms to winTerms & linefeed & (s as string)
+        end repeat
+      end try
+      set els to UI elements of fw
+      set maxN to count of els
+      if maxN > 20 then set maxN to 20
+      repeat with i from 1 to maxN
+        set el to item i of els
+        try
+          set subEls to UI elements of el
+          set subN to count of subEls
+          if subN > 15 then set subN to 15
+          repeat with j from 1 to subN
+            set se to item j of subEls
+            try
+              set snm to name of se
+              if snm is not missing value then set winTerms to winTerms & linefeed & (snm as string)
+            end try
+            try
+              set sv to value of se
+              if sv is not missing value and (class of sv is text) then set winTerms to winTerms & linefeed & sv
+            end try
+          end repeat
+        end try
+      end repeat
+    end try
+  end if
+  return appName & " | " & winTitle & "__SPEAKLY_SEP__" & isSecure & "__SPEAKLY_SEP__" & cursorCtx & "__SPEAKLY_SEP__" & winTerms
+end tell`.trim();
+
+    execFile('osascript', ['-e', appleScript], { timeout: 1400 }, (err, stdout) => {
+      if (err || !stdout) return;
+      const parts = String(stdout).split('__SPEAKLY_SEP__');
+      const header = String(parts[0] || '').trim();
+      lastActiveAppContext = header.slice(0, 140);
+
+      const isSecureField = String(parts[1] || '').trim() === '1';
+      if (isSecureField) {
+        lastScreenContext = { cursorPrefix: '', screenTerms: [], isSecureField: true };
+        return;
+      }
+
+      const rawCursor = String(parts[2] || '')
+        .replace(/missing value/gi, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+      const cursorPrefix = rawCursor.slice(-80);
+      const winTitle = header.includes(' | ') ? header.split(' | ').slice(1).join(' | ') : '';
+      const rawWindowText = `${winTitle}\n${String(parts[3] || '')}`;
+      const screenTerms = extractScreenTermsLocally(rawWindowText);
+
+      lastScreenContext = {
+        cursorPrefix,
+        screenTerms,
+        isSecureField: false
+      };
+    });
   } else if (process.platform === 'win32') {
     execFile(
       'powershell',
@@ -890,7 +1154,16 @@ function captureActiveAppContext() {
       { timeout: 1200 },
       (err, stdout) => {
         if (!err && stdout) {
-          lastActiveAppContext = String(stdout).trim().slice(0, 140);
+          const header = String(stdout).trim();
+          lastActiveAppContext = header.slice(0, 140);
+          if (useScreenContext) {
+            const winTitle = header.includes(' | ') ? header.split(' | ').slice(1).join(' | ') : header;
+            lastScreenContext = {
+              cursorPrefix: '',
+              screenTerms: extractScreenTermsLocally(winTitle),
+              isSecureField: false
+            };
+          }
         }
       }
     );
@@ -1076,8 +1349,8 @@ function triggerStartRecording({ source = 'hotkey' } = {}) {
     }
   }, MAX_RECORDING_DURATION_MS);
 
-  // Asynchronously capture active app & window title while user speaks (0ms latency overhead)
-  captureActiveAppContext();
+  // Asynchronously capture active app, cursor prefix, & local screen terms while user speaks (0ms latency overhead)
+  captureActiveAppContext({ useScreenContext: state.settings.useScreenContext !== false });
 
   // 2. Show HUD pill on top of fullscreen/desktop without stealing focus
   positionPillOnActiveDisplay();
@@ -1175,6 +1448,7 @@ async function syncPreferencesToCloud() {
     language: state.settings.language,
     provider: state.settings.provider,
     autoLearnDictionary: state.settings.autoLearnDictionary,
+    useScreenContext: state.settings.useScreenContext,
     dictionary: state.dictionary,
     learnedCorrections: state.learnedCorrections || []
   };
@@ -1218,6 +1492,9 @@ function applyCloudPreferences(user, { replacePersonalData = false } = {}) {
   if (cloudPrefs.provider) patch.provider = cloudPrefs.provider;
   if (cloudPrefs.autoLearnDictionary !== undefined) {
     patch.autoLearnDictionary = Boolean(cloudPrefs.autoLearnDictionary);
+  }
+  if (cloudPrefs.useScreenContext !== undefined) {
+    patch.useScreenContext = Boolean(cloudPrefs.useScreenContext);
   }
 
   // Strictly scope First Name & Last Name to the authenticated account
@@ -1929,6 +2206,10 @@ function registerIpcHandlers() {
         learnedCorrections: state.learnedCorrections || [],
         mode: activeMode,
         activeContext: lastActiveAppContext,
+        screenContext:
+          state.settings.useScreenContext !== false && !lastScreenContext.isSecureField
+            ? lastScreenContext
+            : null,
         predictedLanguages: predictedLangs,
         authToken: token
       });

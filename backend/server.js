@@ -387,6 +387,8 @@ async function transcribeAndPolish({
   modeId = 'smart',
   modePrompt = '',
   activeContext = '',
+  screenTerms = [],
+  cursorPrefix = '',
   userProfile = null,
   predictedLanguages = []
 }) {
@@ -406,8 +408,14 @@ async function transcribeAndPolish({
   const learnedTerms = Array.isArray(learnedCorrections)
     ? learnedCorrections.map((r) => r && r.to).filter(Boolean)
     : [];
+  const cleanScreenTerms = Array.isArray(screenTerms)
+    ? screenTerms
+        .map((t) => String(t || '').trim())
+        .filter((t) => t.length >= 2 && t.length <= 40)
+        .slice(0, 20)
+    : [];
   const effectiveDictionary = [
-    ...new Set([...(Array.isArray(dictionary) ? dictionary : []), ...learnedTerms, ...profileNameTerms])
+    ...new Set([...(Array.isArray(dictionary) ? dictionary : []), ...learnedTerms, ...profileNameTerms, ...cleanScreenTerms])
   ];
 
   // 1. Transcription (STT) via Groq or OpenAI
@@ -592,6 +600,9 @@ async function transcribeAndPolish({
     }
 
     appContextPrompt = `\nActive application/window where the user is dictating: "${activeContext}". Use this context to resolve ambiguous words accurately.${appStyleBias}`;
+  }
+  if (cursorPrefix && typeof cursorPrefix === 'string' && cursorPrefix.trim()) {
+    appContextPrompt += `\nText immediately preceding the cursor in the active text field: "${cursorPrefix.trim().slice(-100)}". Match the surrounding sentence flow, language, and capitalization naturally (for example, if continuing mid-sentence, do not capitalize the first word unless it is a proper noun), and NEVER repeat the preceding text in your output.`;
   }
 
   const fullSystemPrompt = activeSystemPrompt + userProfilePrompt + vocabHint + correctionsHint + appContextPrompt;
@@ -1302,6 +1313,8 @@ const server = http.createServer(async (req, res) => {
       let modeId = 'smart';
       let modePrompt = '';
       let activeContext = '';
+      let screenTerms = [];
+      let cursorPrefix = '';
       let userProfile = null;
       let predictedLanguages = [];
 
@@ -1315,6 +1328,8 @@ const server = http.createServer(async (req, res) => {
         modeId = parsed.modeId || 'smart';
         modePrompt = parsed.modePrompt || '';
         activeContext = parsed.activeContext || '';
+        screenTerms = Array.isArray(parsed.screenTerms) ? parsed.screenTerms.slice(0, 20) : [];
+        cursorPrefix = typeof parsed.cursorPrefix === 'string' ? parsed.cursorPrefix.slice(-100) : '';
         userProfile = parsed.userProfile || null;
         predictedLanguages = Array.isArray(parsed.predictedLanguages) ? parsed.predictedLanguages : [];
       } else {
@@ -1443,6 +1458,8 @@ const server = http.createServer(async (req, res) => {
         modeId,
         modePrompt,
         activeContext,
+        screenTerms,
+        cursorPrefix,
         userProfile,
         predictedLanguages
       });

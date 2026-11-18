@@ -370,7 +370,7 @@ function getBackendUrl(settings) {
   return BACKEND_URL;
 }
 
-async function transcribeViaBackend({ audioBuffer, mimeType, language, dictionary, learnedCorrections = [], mode, activeContext = '', userProfile = null, predictedLanguages = [], authToken = '', backendUrl = '' }) {
+async function transcribeViaBackend({ audioBuffer, mimeType, language, dictionary, learnedCorrections = [], mode, activeContext = '', screenTerms = [], cursorPrefix = '', userProfile = null, predictedLanguages = [], authToken = '', backendUrl = '' }) {
   const base64Audio = audioBuffer.toString('base64');
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 15000);
@@ -396,6 +396,8 @@ async function transcribeViaBackend({ audioBuffer, mimeType, language, dictionar
         dictionary,
         learnedCorrections,
         activeContext,
+        screenTerms,
+        cursorPrefix,
         userProfile,
         predictedLanguages,
         modeId: mode?.id || 'smart',
@@ -490,7 +492,7 @@ async function callWhisperStt({ baseUrl, apiKey, sttModel, audioBuffer, mimeType
   }
 }
 
-async function transcribeDirect({ audioBuffer, mimeType, settings, dictionary, learnedCorrections = [], mode, activeContext = '', predictedLanguages = [] }) {
+async function transcribeDirect({ audioBuffer, mimeType, settings, dictionary, learnedCorrections = [], mode, activeContext = '', cursorPrefix = '', predictedLanguages = [] }) {
   const providerKey = settings.provider === 'groq' ? 'groq' : 'openai';
   const providerCfg = PROVIDERS[providerKey];
   let apiKey = (providerKey === 'groq' ? settings.groqApiKey : settings.openaiApiKey || '').trim();
@@ -641,6 +643,9 @@ async function transcribeDirect({ audioBuffer, mimeType, settings, dictionary, l
 
     contextPrompt = `\nActive application/window where the user is dictating: "${activeContext}". Use this context to resolve ambiguous words accurately.${appStyleBias}`;
   }
+  if (cursorPrefix && cursorPrefix.trim()) {
+    contextPrompt += `\nText immediately preceding the cursor in the active text field: "${cursorPrefix.trim()}". Match the surrounding sentence flow, language, and capitalization naturally (for example, if continuing mid-sentence, do not capitalize the first word unless it is a proper noun), and NEVER repeat the preceding text in your output.`;
+  }
 
   // Format user profile style & language context
   let langPrompt = '';
@@ -706,7 +711,7 @@ async function transcribeDirect({ audioBuffer, mimeType, settings, dictionary, l
   return { rawText, finalText: basicCleanup(rawText) };
 }
 
-async function transcribeAudio({ audioBuffer, mimeType = 'audio/wav', settings, dictionary = [], learnedCorrections = [], mode, activeContext = '', predictedLanguages = [], authToken = '' }) {
+async function transcribeAudio({ audioBuffer, mimeType = 'audio/wav', settings, dictionary = [], learnedCorrections = [], mode, activeContext = '', screenContext = null, predictedLanguages = [], authToken = '' }) {
   const capName = (s) => String(s || '').trim().replace(/(^|\s)([a-z])/g, (_, p, c) => p + c.toUpperCase());
   const properFirst = capName(settings.userFirstName);
   const properLast = capName(settings.userLastName);
@@ -714,7 +719,21 @@ async function transcribeAudio({ audioBuffer, mimeType = 'audio/wav', settings, 
   const learnedTerms = Array.isArray(learnedCorrections)
     ? learnedCorrections.map((r) => r && r.to).filter(Boolean)
     : [];
-  const effectiveDictionary = [...new Set([...(dictionary || []), ...learnedTerms, ...profileNames])];
+  const screenTerms =
+    settings?.useScreenContext !== false &&
+    screenContext &&
+    !screenContext.isSecureField &&
+    Array.isArray(screenContext.screenTerms)
+      ? screenContext.screenTerms.slice(0, 20)
+      : [];
+  const cursorPrefix =
+    settings?.useScreenContext !== false &&
+    screenContext &&
+    !screenContext.isSecureField &&
+    typeof screenContext.cursorPrefix === 'string'
+      ? screenContext.cursorPrefix.slice(-80)
+      : '';
+  const effectiveDictionary = [...new Set([...(dictionary || []), ...learnedTerms, ...profileNames, ...screenTerms])];
 
   const runPipeline = async () => {
     // 0. STRICT OFFLINE MODE: 100% On-Device execution. Zero cloud calls, zero API keys required.
@@ -742,6 +761,8 @@ async function transcribeAudio({ audioBuffer, mimeType = 'audio/wav', settings, 
           learnedCorrections,
           mode,
           activeContext,
+          screenTerms,
+          cursorPrefix,
           userProfile,
           predictedLanguages,
           authToken,
@@ -764,7 +785,7 @@ async function transcribeAudio({ audioBuffer, mimeType = 'audio/wav', settings, 
       (settings.provider === 'groq' ? settings.groqApiKey : settings.openaiApiKey) || '';
     if (activeKey && activeKey.trim()) {
       try {
-        return await transcribeDirect({ audioBuffer, mimeType, settings, dictionary: effectiveDictionary, learnedCorrections, mode, activeContext, predictedLanguages });
+        return await transcribeDirect({ audioBuffer, mimeType, settings, dictionary: effectiveDictionary, learnedCorrections, mode, activeContext, cursorPrefix, predictedLanguages });
       } catch (directErr) {
         console.warn('Direct API error:', directErr.message);
         throw directErr;
@@ -781,6 +802,8 @@ async function transcribeAudio({ audioBuffer, mimeType = 'audio/wav', settings, 
         learnedCorrections,
         mode,
         activeContext,
+        screenTerms,
+        cursorPrefix,
         userProfile,
         predictedLanguages,
         authToken,
@@ -795,7 +818,7 @@ async function transcribeAudio({ audioBuffer, mimeType = 'audio/wav', settings, 
       }
     }
 
-    return transcribeDirect({ audioBuffer, mimeType, settings, dictionary: effectiveDictionary, learnedCorrections, mode, activeContext, predictedLanguages });
+    return transcribeDirect({ audioBuffer, mimeType, settings, dictionary: effectiveDictionary, learnedCorrections, mode, activeContext, cursorPrefix, predictedLanguages });
   };
 
   const result = await runPipeline();

@@ -150,6 +150,7 @@
   const prefAudioFeedback = document.getElementById('pref-audio-feedback');
   const prefShowPill = document.getElementById('pref-show-pill');
   const prefLaunchLogin = document.getElementById('pref-launch-login');
+  const prefScreenContext = document.getElementById('pref-screen-context');
 
   // Alert banner
   const globalAlert = document.getElementById('global-alert');
@@ -981,6 +982,9 @@
 
     if (prefAutoLearnDict) {
       prefAutoLearnDict.checked = settings.autoLearnDictionary !== false;
+    }
+    if (prefScreenContext) {
+      prefScreenContext.checked = settings.useScreenContext !== false;
     }
 
     const latestHist = Array.isArray(state.history) ? state.history[0] : null;
@@ -1987,6 +1991,12 @@
   if (prefLaunchLogin) {
     prefLaunchLogin.addEventListener('change', () => {
       window.voxflow.updateSettings({ launchAtLogin: prefLaunchLogin.checked });
+    });
+  }
+
+  if (prefScreenContext) {
+    prefScreenContext.addEventListener('change', () => {
+      window.voxflow.updateSettings({ useScreenContext: prefScreenContext.checked });
     });
   }
 

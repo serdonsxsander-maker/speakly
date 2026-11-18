@@ -126,13 +126,19 @@ function sendMacPasteFallback() {
 async function pasteAtCursor(text, { preserveClipboard = false } = {}) {
   if (!text) return { pasted: false, reason: 'empty' };
 
+  const clean = String(text).trim();
+  if (!clean) return { pasted: false, reason: 'empty' };
+
+  // Append a trailing space after sentence-ending punctuation so back-to-back dictations don't run together
+  const textToPaste = /[.!?…]$/.test(clean) ? `${clean} ` : clean;
+
   const isMac = process.platform === 'darwin';
   const isWin = process.platform === 'win32';
 
   const prevClipboard = preserveClipboard ? snapshotClipboard() : null;
 
   // 1. Write formatted speech text to system clipboard
-  clipboard.writeText(text);
+  clipboard.writeText(textToPaste);
 
   if (isMac && !systemPreferences.isTrustedAccessibilityClient(false)) {
     try {

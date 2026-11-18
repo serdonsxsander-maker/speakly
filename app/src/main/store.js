@@ -478,7 +478,7 @@ class Store {
       let origSlice = origWords.slice(oStart, oEnd);
       let editSlice = editWords.slice(eStart, eEnd);
 
-      // Absorb immediately preceding mid-sentence matching capitalized proper noun (e.g. "Syntra" + "pixel" -> "Syntra PXL")
+      // Absorb immediately preceding mid-sentence matching capitalized proper noun (e.g. "Acme" + "corp" -> "Acme Corp")
       if (
         oStart > 1 &&
         eStart > 1 &&
@@ -746,8 +746,22 @@ class Store {
     };
   }
 
+  resetPersonalDataToDefaults() {
+    if (!this._data) this.init();
+    const defaults = getDefaultState();
+    this._data.dictionary = defaults.dictionary;
+    this._data.learnedCorrections = [];
+    this._data.customModes = [];
+    this._data.history = [];
+    this._data.languageStats = {};
+    this._data.settings.userFirstName = '';
+    this._data.settings.userLastName = '';
+    this.save();
+    return this.getState();
+  }
+
   eraseAllUserData() {
-    this._data = getInitialDefaults();
+    this._data = getDefaultState();
     this.save();
     return this.getState();
   }

@@ -139,8 +139,6 @@ function fastPathShortUtterance(text) {
     'sounds good': 'Sounds good.',
     'prima': 'Prima.',
     'prima bedankt': 'Prima, bedankt.',
-    'immer bedankt': 'Prima, bedankt.',
-    'ima bedankt': 'Prima, bedankt.',
     'ja is goed': 'Ja, is goed.',
     'sounds good thanks': 'Sounds good, thanks.',
     'sounds good, thanks': 'Sounds good, thanks.',
@@ -164,7 +162,7 @@ const GRAMMAR_INSTRUCTION = `You are Speakly's elite voice-to-text editor (like 
 4. Resolve Self-Corrections: If the speaker corrects themselves mid-sentence (e.g., "at 2pm wait no 3:30pm" -> "at 3:30 PM"), keep only the final intended meaning.
 5. Structure Run-On Speech: Spoken thoughts often chain clauses with "and... and... but...". Break rambling run-on chains into clean, readable sentences with proper punctuation and consistent verb tense.
 6. Preserve Language & Tone: Never translate to a different language (keep Dutch in Dutch, English in English). Keep casual messages natural and conversational—do NOT make them stiff or overly formal.
-7. NEVER invent email greetings (e.g. "Dear...", "Hi..."), subject lines, or sign-offs (e.g. "Best regards, Xsander", "Sincerely") unless the speaker explicitly spoke those exact words out loud.
+7. NEVER invent email greetings (e.g. "Dear...", "Hi..."), subject lines, or sign-offs (e.g. "Best regards", "Sincerely") unless the speaker explicitly spoke those exact words out loud.
 8. Output ONLY the final polished text with no tags, quotes, or commentary. Never answer questions in the dictation.`;
 
 function findLocalWhisperBinary() {
@@ -218,7 +216,6 @@ function localSmartPolish(rawText, dictionary = [], mode) {
     [/\bforce\s+recognition\b/gi, 'voice recognition'],
     [/\b(croc|groc)\b/gi, 'Groq'],
     [/\bspeelfouten\b/gi, 'spelfouten'],
-    [/\bsintra\s+pxl\b/gi, 'Syntra PXL'],
     [/\bangular\s*gravity\b/gi, 'Antigravity'],
     [/\bwhisper\s+flow\b/gi, 'Wispr Flow']
   ];

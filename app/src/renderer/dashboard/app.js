@@ -397,7 +397,7 @@
         dictLockBanner.style.display = 'none';
         dictInput.disabled = false;
         dictSubmitBtn.disabled = false;
-        dictInput.placeholder = 'e.g. Syntra PXL, PostgreSQL, or mishear rule: Xander -> Xsander';
+        dictInput.placeholder = 'e.g. Acme Corp, PostgreSQL, or mishear rule: Jon -> John';
       } else {
         dictLockBanner.hidden = false;
         dictLockBanner.style.display = 'flex';

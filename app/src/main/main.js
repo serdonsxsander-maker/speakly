@@ -1203,7 +1203,7 @@ function stopActiveOAuthServer() {
   }
 }
 
-function applyCloudPreferences(user) {
+function applyCloudPreferences(user, { replacePersonalData = false } = {}) {
   if (!user) return;
   const meta = user?.user_metadata || {};
   const cloudPrefs = meta.speakly_prefs || {};
@@ -1220,40 +1220,72 @@ function applyCloudPreferences(user) {
     patch.autoLearnDictionary = Boolean(cloudPrefs.autoLearnDictionary);
   }
 
-  // Populate First Name & Last Name from cloudPrefs or OAuth metadata if not already set
-  if (cloudPrefs.userFirstName) {
+  // Strictly scope First Name & Last Name to the authenticated account
+  const oauthFullName = String(meta.full_name || meta.name || '').trim();
+  const oauthParts = oauthFullName ? oauthFullName.split(/\s+/) : [];
+  const oauthFirst = meta.given_name || oauthParts[0] || '';
+  const oauthLast = meta.family_name || oauthParts.slice(1).join(' ') || '';
+
+  if (cloudPrefs.userFirstName !== undefined) {
     patch.userFirstName = cloudPrefs.userFirstName;
-  } else if (!curSettings.userFirstName && (meta.given_name || meta.full_name || meta.name)) {
-    const parts = String(meta.full_name || meta.name || '').trim().split(/\s+/);
-    patch.userFirstName = meta.given_name || parts[0] || '';
-    if (!curSettings.userLastName) {
-      patch.userLastName = meta.family_name || parts.slice(1).join(' ') || '';
-    }
+  } else if (oauthFirst) {
+    patch.userFirstName = oauthFirst;
+  } else if (replacePersonalData) {
+    patch.userFirstName = '';
   }
-  if (cloudPrefs.userLastName) {
+
+  if (cloudPrefs.userLastName !== undefined) {
     patch.userLastName = cloudPrefs.userLastName;
+  } else if (oauthLast) {
+    patch.userLastName = oauthLast;
+  } else if (replacePersonalData) {
+    patch.userLastName = '';
   }
 
   if (Object.keys(patch).length > 0) {
     store.updateSettings(patch);
     if (hotkeyManager) hotkeyManager.configure(store.getState().settings);
   }
-  if (Array.isArray(cloudPrefs.dictionary) && cloudPrefs.dictionary.length > 0) {
-    store.setDictionary(cloudPrefs.dictionary);
-  }
-  if (Array.isArray(cloudPrefs.learnedCorrections) && cloudPrefs.learnedCorrections.length > 0) {
-    const existing = store.getState().learnedCorrections || [];
-    const byFrom = new Map();
-    for (const r of [...cloudPrefs.learnedCorrections, ...existing]) {
-      if (r && typeof r.from === 'string' && typeof r.to === 'string' && r.from.trim() && r.to.trim()) {
-        byFrom.set(r.from.trim().toLowerCase(), r);
-      }
+  if (Array.isArray(cloudPrefs.dictionary)) {
+    if (replacePersonalData || cloudPrefs.dictionary.length > 0) {
+      store.setDictionary(cloudPrefs.dictionary);
     }
-    store.setLearnedCorrections(Array.from(byFrom.values()));
+  }
+  if (Array.isArray(cloudPrefs.learnedCorrections)) {
+    if (replacePersonalData) {
+      store.setLearnedCorrections(cloudPrefs.learnedCorrections);
+    } else if (cloudPrefs.learnedCorrections.length > 0) {
+      const existing = store.getState().learnedCorrections || [];
+      const byFrom = new Map();
+      for (const r of [...cloudPrefs.learnedCorrections, ...existing]) {
+        if (r && typeof r.from === 'string' && typeof r.to === 'string' && r.from.trim() && r.to.trim()) {
+          byFrom.set(r.from.trim().toLowerCase(), r);
+        }
+      }
+      store.setLearnedCorrections(Array.from(byFrom.values()));
+    }
   }
   if (meta.speakly_subscription) {
     store.setSubscription(meta.speakly_subscription);
   }
+}
+
+function setAuthenticatedUserSession({ user, accessToken, refreshToken, isSignUp = false }) {
+  const prevUserId = store.getState().auth?.user?.id || null;
+  const nextUserId = user?.id || null;
+  const isAccountSwitch = Boolean(nextUserId && prevUserId !== nextUserId);
+
+  if (!isSignUp && isAccountSwitch) {
+    store.resetPersonalDataToDefaults();
+  }
+
+  store.setAuth({
+    user: { id: user?.id, email: user?.email },
+    accessToken: accessToken || '',
+    refreshToken: refreshToken || ''
+  });
+
+  applyCloudPreferences(user, { replacePersonalData: !isSignUp && isAccountSwitch });
 }
 
 function registerIpcHandlers() {
@@ -1295,12 +1327,11 @@ function registerIpcHandlers() {
             if (code) {
               const { data, error } = await supabase.auth.exchangeCodeForSession(code);
               if (error) throw error;
-              store.setAuth({
-                user: { id: data.user?.id, email: data.user?.email },
+              setAuthenticatedUserSession({
+                user: data.user,
                 accessToken: data.session?.access_token || '',
                 refreshToken: data.session?.refresh_token || ''
               });
-              applyCloudPreferences(data.user);
               broadcastState();
               showDashboard();
 
@@ -1391,13 +1422,12 @@ function registerIpcHandlers() {
                 const { data: userData, error: userError } = await supabase.auth.getUser(accessToken);
                 if (userError) throw userError;
 
-                store.setAuth({
-                  user: { id: userData.user?.id, email: userData.user?.email },
+                setAuthenticatedUserSession({
+                  user: userData.user,
                   accessToken,
                   refreshToken: refreshToken || ''
                 });
 
-                applyCloudPreferences(userData.user);
                 broadcastState();
                 showDashboard();
 
@@ -1491,7 +1521,9 @@ function registerIpcHandlers() {
       userLastName: state.settings.userLastName,
       language: state.settings.language,
       provider: state.settings.provider,
-      dictionary: state.dictionary
+      autoLearnDictionary: state.settings.autoLearnDictionary,
+      dictionary: state.dictionary,
+      learnedCorrections: state.learnedCorrections || []
     };
 
     let authResult;
@@ -1516,21 +1548,22 @@ function registerIpcHandlers() {
     const user = authResult.data?.user;
     const sessionData = authResult.data?.session;
 
-    store.setAuth({
-      user: { id: user?.id, email: user?.email },
+    setAuthenticatedUserSession({
+      user,
       accessToken: sessionData?.access_token || '',
-      refreshToken: sessionData?.refresh_token || ''
+      refreshToken: sessionData?.refresh_token || '',
+      isSignUp: Boolean(isSignUp)
     });
-
-    applyCloudPreferences(user);
 
     broadcastState();
     return buildPublicState();
   });
 
   ipcMain.handle('voxflow:auth-logout', () => {
+    clearPostPasteWatch();
     store.setAuth({ user: null, accessToken: '', refreshToken: '' });
     store.setSubscription({ plan: 'free', status: 'trial', customerPortalUrl: '', renewsAt: null });
+    store.resetPersonalDataToDefaults();
     broadcastState();
     return buildPublicState();
   });

@@ -77,7 +77,7 @@ You are Speakly's real-time grammar and speech cleanup engine.
 3. Remove speech disfluencies, filler words (um, uh, like, you know), and word repetitions (e.g. "correct. Correct" -> "correct", "I I want" -> "I want").
 4. Resolve mid-sentence self-corrections (e.g. "at 2pm wait no 3:30pm" -> "at 3:30 PM").
 5. Adapt words to fit the sentence structure cleanly and naturally while keeping the speaker's original meaning and language. Never translate to a different language.
-6. NEVER invent email greetings (e.g. "Dear...", "Hi..."), subject lines, or sign-offs (e.g. "Best regards, Xsander", "Sincerely") unless the speaker explicitly spoke those exact words out loud.
+6. NEVER invent email greetings (e.g. "Dear...", "Hi..."), subject lines, or sign-offs (e.g. "Best regards", "Sincerely") unless the speaker explicitly spoke those exact words out loud.
 7. Output ONLY the final polished text ready to paste. Never wrap in quotes or add conversational commentary.
 `;
 
@@ -327,8 +327,6 @@ function fastPathShortUtterance(text) {
     'sounds good': 'Sounds good.',
     'prima': 'Prima.',
     'prima bedankt': 'Prima, bedankt.',
-    'immer bedankt': 'Prima, bedankt.',
-    'ima bedankt': 'Prima, bedankt.',
     'ja is goed': 'Ja, is goed.',
     'sounds good thanks': 'Sounds good, thanks.',
     'sounds good, thanks': 'Sounds good, thanks.',
@@ -558,7 +556,7 @@ async function transcribeAndPolish({
         userProfilePrompt += `\nSpeaker's Name: "${name}". Preserve correct spelling if spoken by the user. Do NOT invent a sign-off or letter signature.`;
       }
       if (preferredFirst) {
-        userProfilePrompt += ` If the transcription contains a phonetic mishear of the speaker's name (e.g. "Xander", "Sander", "Zander" when the speaker's name is "${preferredFirst}"), always correct it to "${preferredFirst}".`;
+        userProfilePrompt += ` If the transcription contains a phonetic mishear of the speaker's name "${preferredFirst}", always correct it to "${preferredFirst}".`;
       }
     }
     const prefLang = userProfile.preferredLanguage || language;
@@ -1402,7 +1400,7 @@ const server = http.createServer(async (req, res) => {
       }
 
       // Free Plan Restriction: Personal Dictionary & Advanced AI Modes (Email, Notes, Dev) are LOCKED to Pro users
-      // If user is on free plan, strip any custom vocabulary terms and fall back to Smart Polish if locked mode requested
+      // For Pro users, merge account-stored personal dictionary & learned corrections from their Supabase profile
       if (userPlan === 'free') {
         dictionary = [];
         learnedCorrections = [];
@@ -1410,6 +1408,29 @@ const server = http.createServer(async (req, res) => {
           modeId = 'smart';
           modePrompt = '';
         }
+      } else {
+        const cloudPrefs = authResult.user?.user_metadata?.speakly_prefs || {};
+        if (Array.isArray(cloudPrefs.dictionary) && cloudPrefs.dictionary.length > 0) {
+          dictionary = [...new Set([...dictionary, ...cloudPrefs.dictionary])];
+        }
+        if (Array.isArray(cloudPrefs.learnedCorrections) && cloudPrefs.learnedCorrections.length > 0) {
+          const mergedRules = new Map();
+          for (const rule of [...cloudPrefs.learnedCorrections, ...learnedCorrections]) {
+            if (rule && typeof rule.from === 'string' && typeof rule.to === 'string' && rule.from.trim() && rule.to.trim()) {
+              mergedRules.set(rule.from.trim().toLowerCase(), rule);
+            }
+          }
+          learnedCorrections = Array.from(mergedRules.values());
+        }
+        const firstName = userProfile?.firstName || cloudPrefs.userFirstName || '';
+        const lastName = userProfile?.lastName || cloudPrefs.userLastName || '';
+        const fullName = userProfile?.fullName || [firstName, lastName].filter(Boolean).join(' ');
+        userProfile = {
+          ...(userProfile || {}),
+          firstName,
+          lastName,
+          fullName
+        };
       }
 
       // 5. In-Memory Transcribe & Polish (Zero Audio Persistence Guarantee)
